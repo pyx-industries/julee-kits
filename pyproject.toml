@@ -1,0 +1,65 @@
+# Workspace root for julee-kits. It ships nothing itself; each kit is its
+# own distribution in its own directory.
+
+[tool.uv.workspace]
+members = ["polling"]
+
+# Development only, and not part of any kit's published metadata: the kits
+# need julee 0.2.0, which is not released yet, so the checkout builds
+# against a commit of julee's master. Delete this once 0.2.0 is on PyPI.
+[tool.uv.sources]
+julee = { git = "https://github.com/pyx-industries/julee", rev = "691f886a2669c66bdb939ddb349ff31a09b07f9a" }
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+# Ruff is used for linting only. Formatting is handled by black.
+line-length = 88
+target-version = "py311"
+exclude = [".git", ".venv", "__pycache__", "*.pyc", ".pytest_cache", ".mypy_cache"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "UP"]
+ignore = [
+    "E501",  # line too long (handled by the formatter)
+    "B008",  # function calls in argument defaults
+    "B904",  # raise from
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*.py" = ["B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["julee_polling"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["temporalio.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["polling/src"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = ["--strict-markers", "--tb=short", "-n", "auto", "--dist", "loadgroup"]
+markers = [
+    "unit: Unit tests (fast, isolated)",
+    "integration: Integration tests (slower, with dependencies)",
+    "e2e: End-to-end tests (slowest, full stack)",
+    "slow: Slow tests (stress tests, load tests)",
+]
