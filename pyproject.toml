@@ -9,7 +9,7 @@ members = ["ceap", "polling"]
 # and julee.integrations.minio.testing are both newer than 0.2.0). Delete
 # this once 0.3.0 is on PyPI, and the kits resolve from the index.
 [tool.uv.sources]
-julee = { git = "https://github.com/pyx-industries/julee", rev = "79c45beae2b588b56ce66e0c0d335f15f8631512" }
+julee = { git = "https://github.com/pyx-industries/julee", rev = "44080f44c3f618eba0ead4e127e42be9a2b0d44e" }
 
 [tool.uv]
 package = false

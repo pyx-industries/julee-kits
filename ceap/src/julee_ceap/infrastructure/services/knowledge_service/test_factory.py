@@ -9,10 +9,10 @@ import io
 from datetime import UTC, datetime
 
 import pytest
-
-from julee_ceap.domain.models.custom_fields.content_stream import (
+from julee.core.entities.content_stream import (
     ContentStream,
 )
+
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,

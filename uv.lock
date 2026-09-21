@@ -904,7 +904,7 @@ wheels = [
 [[package]]
 name = "julee"
 version = "0.2.0"
-source = { git = "https://github.com/pyx-industries/julee?rev=79c45beae2b588b56ce66e0c0d335f15f8631512#79c45beae2b588b56ce66e0c0d335f15f8631512" }
+source = { git = "https://github.com/pyx-industries/julee?rev=44080f44c3f618eba0ead4e127e42be9a2b0d44e#44080f44c3f618eba0ead4e127e42be9a2b0d44e" }
 dependencies = [
     { name = "pydantic" },
 ]
@@ -968,8 +968,8 @@ requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.0.0" },
     { name = "jsonpointer", specifier = ">=3.0.0" },
     { name = "jsonschema", specifier = ">=4.0.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee?rev=79c45beae2b588b56ce66e0c0d335f15f8631512" },
-    { name = "julee", extras = ["temporal", "api", "minio"], git = "https://github.com/pyx-industries/julee?rev=79c45beae2b588b56ce66e0c0d335f15f8631512" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee?rev=44080f44c3f618eba0ead4e127e42be9a2b0d44e" },
+    { name = "julee", extras = ["temporal", "api", "minio"], git = "https://github.com/pyx-industries/julee?rev=44080f44c3f618eba0ead4e127e42be9a2b0d44e" },
     { name = "multihash", specifier = ">=0.1.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
@@ -1010,8 +1010,8 @@ dev = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee?rev=79c45beae2b588b56ce66e0c0d335f15f8631512" },
-    { name = "julee", extras = ["temporal"], git = "https://github.com/pyx-industries/julee?rev=79c45beae2b588b56ce66e0c0d335f15f8631512" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee?rev=44080f44c3f618eba0ead4e127e42be9a2b0d44e" },
+    { name = "julee", extras = ["temporal"], git = "https://github.com/pyx-industries/julee?rev=44080f44c3f618eba0ead4e127e42be9a2b0d44e" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },

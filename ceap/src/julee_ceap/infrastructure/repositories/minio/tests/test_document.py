@@ -13,12 +13,12 @@ from unittest.mock import Mock
 
 import multihash
 import pytest
+from julee.core.entities.content_stream import (
+    ContentStream,
+)
 from julee.integrations.minio.testing import FakeMinioClient
 from minio.error import S3Error
 
-from julee_ceap.domain.models.custom_fields.content_stream import (
-    ContentStream,
-)
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.infrastructure.repositories.minio.document import (
     MinioDocumentRepository,

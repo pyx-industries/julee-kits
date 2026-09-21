@@ -7,15 +7,15 @@ Re-exports commonly used models for convenient importing:
 
 # Document models
 # Assembly models
+# Custom field types
+from julee.core.entities.content_stream import ContentStream
+
 from .assembly import Assembly, AssemblyStatus
 from .assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
     KnowledgeServiceQuery,
 )
-
-# Custom field types
-from .custom_fields.content_stream import ContentStream
 from .document import Document, DocumentStatus
 
 # Configuration models

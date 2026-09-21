@@ -9,10 +9,10 @@ idempotency, error handling, and content operations including content_bytes.
 import io
 
 import pytest
-
-from julee_ceap.domain.models.custom_fields.content_stream import (
+from julee.core.entities.content_stream import (
     ContentStream,
 )
+
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.infrastructure.repositories.memory.document import (
     MemoryDocumentRepository,
