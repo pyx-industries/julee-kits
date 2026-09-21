@@ -18,13 +18,13 @@ import logging
 from datetime import UTC, datetime
 
 import multihash
+from julee.core.entities.content_stream import (
+    ContentStream,
+)
 from julee.integrations.minio.client import MinioClient, MinioRepositoryMixin
 from minio.error import S3Error
 from pydantic import BaseModel, ConfigDict
 
-from julee_ceap.domain.models.custom_fields.content_stream import (
-    ContentStream,
-)
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.repositories.document import DocumentRepository
 

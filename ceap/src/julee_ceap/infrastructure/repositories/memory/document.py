@@ -16,11 +16,11 @@ import io
 import logging
 from typing import Any
 
-from julee.repositories.memory import MemoryRepositoryMixin
-
-from julee_ceap.domain.models.custom_fields.content_stream import (
+from julee.core.entities.content_stream import (
     ContentStream,
 )
+from julee.repositories.memory import MemoryRepositoryMixin
+
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.repositories.document import DocumentRepository
 

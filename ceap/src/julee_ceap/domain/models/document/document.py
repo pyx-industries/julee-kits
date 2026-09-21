@@ -13,12 +13,11 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from julee.core.entities.entity import Entity
-from pydantic import Field, ValidationInfo, field_validator, model_validator
-
-from julee_ceap.domain.models.custom_fields.content_stream import (
+from julee.core.entities.content_stream import (
     ContentStream,
 )
+from julee.core.entities.entity import Entity
+from pydantic import Field, ValidationInfo, field_validator, model_validator
 
 
 def delegate_to_content(*method_names: str) -> Callable[[type], type]:
