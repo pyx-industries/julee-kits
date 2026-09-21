@@ -26,3 +26,9 @@ The kit provides:
 - **Apps:** a FastAPI application and a Temporal worker.
 
 Fixtures for a demonstration run ship in `src/julee_ceap/fixtures/`.
+
+## The demonstration
+
+`deploy/` holds a Docker Compose stack that runs the whole pipeline — the
+API, the worker, a demo UI, and the Temporal and MinIO they need. See
+[deploy/README.md](deploy/README.md).
