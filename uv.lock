@@ -371,10 +371,14 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.1.16"
-source = { git = "https://github.com/pyx-industries/julee?rev=691f886a2669c66bdb939ddb349ff31a09b07f9a#691f886a2669c66bdb939ddb349ff31a09b07f9a" }
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b8/49/7f04a3a17846d1803fed8befc456b5b3b8998d7ae0f35c1c751c2ec8c844/julee-0.2.0.tar.gz", hash = "sha256:4c27644fde067745ed926e5018a1fd0876d8fe3c8468e1e29f9cf66a9be89493", size = 280843, upload-time = "2026-09-21T20:19:19.746Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/b4/dce5f3c89a7db9d59ad13be77e2730d0797264dddc4a468d11a80fd0902b/julee-0.2.0-py3-none-any.whl", hash = "sha256:5f482f6f6a89ec384c34f73491f0ae1bc21a88ee2c1fb31f0ae66e6f288e6977", size = 397399, upload-time = "2026-09-21T20:19:18.519Z" },
 ]
 
 [package.optional-dependencies]
@@ -411,8 +415,8 @@ dev = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee?rev=691f886a2669c66bdb939ddb349ff31a09b07f9a" },
-    { name = "julee", extras = ["temporal"], git = "https://github.com/pyx-industries/julee?rev=691f886a2669c66bdb939ddb349ff31a09b07f9a" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.2.0" },
+    { name = "julee", extras = ["temporal"], specifier = ">=0.2.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },

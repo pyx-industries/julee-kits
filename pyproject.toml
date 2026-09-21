@@ -4,12 +4,6 @@
 [tool.uv.workspace]
 members = ["polling"]
 
-# Development only, and not part of any kit's published metadata: the kits
-# need julee 0.2.0, which is not released yet, so the checkout builds
-# against a commit of julee's master. Delete this once 0.2.0 is on PyPI.
-[tool.uv.sources]
-julee = { git = "https://github.com/pyx-industries/julee", rev = "691f886a2669c66bdb939ddb349ff31a09b07f9a" }
-
 [tool.uv]
 package = false
 
