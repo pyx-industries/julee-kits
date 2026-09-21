@@ -4,13 +4,6 @@
 [tool.uv.workspace]
 members = ["ceap", "polling"]
 
-# Development only, and not part of any kit's published metadata: the CEAP
-# kit needs julee 0.3.0, which is not released yet (julee.core.validation
-# and julee.integrations.minio.testing are both newer than 0.2.0). Delete
-# this once 0.3.0 is on PyPI, and the kits resolve from the index.
-[tool.uv.sources]
-julee = { git = "https://github.com/pyx-industries/julee", rev = "44080f44c3f618eba0ead4e127e42be9a2b0d44e" }
-
 [tool.uv]
 package = false
 
