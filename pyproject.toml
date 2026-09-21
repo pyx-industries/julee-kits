@@ -2,7 +2,14 @@
 # own distribution in its own directory.
 
 [tool.uv.workspace]
-members = ["polling"]
+members = ["ceap", "polling"]
+
+# Development only, and not part of any kit's published metadata: the CEAP
+# kit needs julee 0.3.0, which is not released yet (julee.core.validation
+# and julee.integrations.minio.testing are both newer than 0.2.0). Delete
+# this once 0.3.0 is on PyPI, and the kits resolve from the index.
+[tool.uv.sources]
+julee = { git = "https://github.com/pyx-industries/julee", rev = "79c45beae2b588b56ce66e0c0d335f15f8631512" }
 
 [tool.uv]
 package = false
@@ -26,7 +33,7 @@ ignore = [
 "tests/**/*.py" = ["B"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["julee_polling"]
+known-first-party = ["julee_ceap", "julee_polling"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -41,16 +48,35 @@ strict_equality = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["temporalio.*"]
+module = [
+    "temporalio.*",
+    # Untyped, with no published stubs
+    "jsonpointer",
+    "multihash",
+]
 ignore_missing_imports = true
 
+# Same settings as julee's, so a kit is type-checked as strictly as the
+# framework: constructor calls are checked against the model's fields.
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
 [tool.pytest.ini_options]
-testpaths = ["polling/src"]
+testpaths = ["ceap/src", "polling/src"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
-addopts = ["--strict-markers", "--tb=short", "-n", "auto", "--dist", "loadgroup"]
+addopts = [
+    "--strict-markers",
+    "--tb=short",
+    # A test that stops making progress fails rather than holding the machine
+    "--timeout=300",
+    "-n", "auto",
+    "--dist", "loadgroup",
+]
 markers = [
     "unit: Unit tests (fast, isolated)",
     "integration: Integration tests (slower, with dependencies)",

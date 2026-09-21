@@ -9,13 +9,13 @@ install:
 # Linting
 lint:
 	@echo "Linting..."
-	uv run black --check polling/src/
-	uv run ruff check polling/src/
+	uv run black --check ceap/src/ polling/src/
+	uv run ruff check ceap/src/ polling/src/
 
 # Type checking
 typecheck:
 	@echo "Type checking..."
-	uv run mypy polling/src/
+	uv run mypy ceap/src/ polling/src/
 
 # Unit tests
 test:
@@ -24,16 +24,18 @@ test:
 
 # Each kit is a julee solution, and runs julee's doctrine against itself
 test-doctrine:
-	@echo "Running doctrine tests for julee-polling..."
-	JULEE_TARGET=$(CURDIR)/polling uv run pytest --pyargs julee.core.doctrine
+	@for kit in ceap polling; do \
+		echo "Running doctrine tests for julee-$$kit..."; \
+		JULEE_TARGET=$(CURDIR)/$$kit uv run pytest --pyargs julee.core.doctrine || exit $$?; \
+	done
 
 # The checks CI runs; run before pushing
 check: lint typecheck test test-doctrine
 
 # Format
 format:
-	uv run black polling/src/
-	uv run ruff check --fix polling/src/
+	uv run black ceap/src/ polling/src/
+	uv run ruff check --fix ceap/src/ polling/src/
 
 clean:
 	rm -rf .pytest_cache .mypy_cache **/__pycache__ htmlcov .coverage

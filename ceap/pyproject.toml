@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "julee-ceap"
+version = "0.1.0"
+description = "Capture, Extract, Assemble, Publish: document processing for julee solutions"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "GPL-3.0"
+authors = [
+    {name = "Pyx Industries", email = "chris@pyx.io"}
+]
+keywords = ["julee", "document-processing", "temporal", "ai"]
+
+dependencies = [
+    # The kit needs julee's entities and services, its Temporal and MinIO
+    # integrations, and FastAPI for its API app.
+    "julee[temporal,api,minio]>=0.3.0",
+    # Knowledge service
+    "anthropic>=0.66.0",
+    # Schemas, content addressing and fixtures
+    "jsonschema>=4.0.0",
+    "jsonpointer>=3.0.0",
+    "multihash>=0.1.1",
+    # multihash 0.1.1 imports six without declaring it
+    "six>=1.16.0",
+    "PyYAML>=6.0.0",
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.5.0",
+    "pytest-timeout>=2.3.0",
+    "factory-boy>=3.2.0",
+    "hypothesis>=6.0.0",
+    "mypy>=1.7.0",
+    "types-PyYAML",
+    "types-jsonschema",
+    "black>=24.0.0",
+    "ruff>=0.5.0",
+    "julee[doctrine]>=0.3.0",
+]
+
+# A kit announces itself here. Installing it does not activate it; a
+# solution adopts it in [tool.julee] kits.
+[project.entry-points."julee.kits"]
+ceap = "julee_ceap:kit"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["julee_ceap*"]
+
+[tool.setuptools.package-data]
+julee_ceap = ["py.typed", "fixtures/*.yaml", "fixtures/*.json"]
+
+[tool.julee]
+# This kit is a julee solution in its own right, and runs its own doctrine.
+# The package itself is the bounded context, so discovery starts above it.
+search_root = "src"
