@@ -1,0 +1,50 @@
+name: Publish to PyPI
+
+# Each kit is its own distribution, so a tag says which one it releases:
+# ceap-v0.1.0 releases julee-ceap, polling-v0.1.0 releases julee-polling.
+on:
+  push:
+    tags:
+      - 'ceap-v*'
+      - 'polling-v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Required for trusted publishing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.12'
+
+      - name: Choose the kit from the tag
+        id: dist
+        run: |
+          kit="${GITHUB_REF_NAME%-v*}"
+          case "$kit" in
+            ceap|polling) echo "package=julee-$kit" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unexpected tag: ${GITHUB_REF_NAME}" >&2; exit 1 ;;
+          esac
+
+      - name: Check the tag matches the version
+        run: |
+          version="${GITHUB_REF_NAME#*-v}"
+          declared=$(uv version --package "${{ steps.dist.outputs.package }}" --short)
+          if [ "$version" != "$declared" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match ${{ steps.dist.outputs.package }} $declared" >&2
+            exit 1
+          fi
+
+      - name: Build package
+        run: uv build --package ${{ steps.dist.outputs.package }}
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish
