@@ -32,3 +32,9 @@ Fixtures for a demonstration run ship in `src/julee_ceap/fixtures/`.
 `deploy/` holds a Docker Compose stack that runs the whole pipeline — the
 API, the worker, a demo UI, and the Temporal and MinIO they need. See
 [deploy/README.md](deploy/README.md).
+
+## Releasing
+
+The kits release on their own tags, `ceap-vX.Y.Z` and `polling-vX.Y.Z`.
+The workflow checks the tag against the version in the kit's
+`pyproject.toml` and refuses a mismatch.

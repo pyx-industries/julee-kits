@@ -57,7 +57,9 @@ where = ["src"]
 include = ["julee_ceap*"]
 
 [tool.setuptools.package-data]
-julee_ceap = ["py.typed", "fixtures/*.yaml", "fixtures/*.json"]
+# The demonstration loads documents by the filename documents.yaml gives,
+# so every fixture ships, not just the structured ones.
+julee_ceap = ["py.typed", "fixtures/*"]
 
 [tool.julee]
 # This kit is a julee solution in its own right, and runs its own doctrine.

@@ -38,6 +38,10 @@ dev = [
 [project.entry-points."julee.kits"]
 polling = "julee_polling:kit"
 
+# PEP 561: the kit is typed.
+[tool.setuptools.package-data]
+julee_polling = ["py.typed"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["julee_polling*"]
