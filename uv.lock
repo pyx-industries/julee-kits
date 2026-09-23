@@ -1101,14 +1101,14 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.5.0"
+version = "0.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/bd/683755fe905276d68a9b69acb455c1c747a0ab264c74498b37e86bf20fb1/julee-0.5.0.tar.gz", hash = "sha256:79f0c456c86d7a2825f46c0ac1bffbe7b618c47065127053091c5b24f57728a8", size = 108650, upload-time = "2026-09-23T08:33:33.139Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f7/ed/e5a2d606477c1b851a27483066345679339a9a3d95552b5d246c5a753dee/julee-0.5.1.tar.gz", hash = "sha256:8c763c75f5a848d84914911900b532c0d8b6accff0623c322dd05e91482503c2", size = 112533, upload-time = "2026-09-23T10:21:29.794Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/db/b2/a3b8a322c8657fa0f9bf7669752202e6863d9d13f9cc151124bec2b16fd9/julee-0.5.0-py3-none-any.whl", hash = "sha256:6b3af30df35aabe05401100c58ead695c3ee70162926067322d77f5824c18619", size = 138347, upload-time = "2026-09-23T08:33:32.017Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/aa/0d3ea084bfc8ab6260c92a120f5a53da2cae981cf914d0a5ba549ae2ebf7/julee-0.5.1-py3-none-any.whl", hash = "sha256:ce82664acda04d646427003a3cc3e98c56872323a441e4f0672593e2e984991d", size = 143726, upload-time = "2026-09-23T10:21:28.44Z" },
 ]
 
 [package.optional-dependencies]
@@ -1153,8 +1153,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "julee", specifier = ">=0.5,<0.6" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5,<0.6" },
+    { name = "julee", specifier = ">=0.5.1,<0.6" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5.1,<0.6" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
