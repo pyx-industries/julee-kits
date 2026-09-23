@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "julee-polling"
-version = "0.1.0"
+version = "0.1.1"
 description = "Polling for julee solutions: watch an external endpoint for new data"
 readme = "README.md"
 requires-python = ">=3.11"
