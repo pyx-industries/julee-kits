@@ -1226,7 +1226,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-hcd"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "hcd" }
 dependencies = [
     { name = "docutils" },
@@ -1304,11 +1304,12 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-viewpoints"
-version = "0.1.2"
+version = "0.2.0"
 source = { editable = "viewpoints" }
 dependencies = [
     { name = "julee" },
-    { name = "pyyaml" },
+    { name = "julee-c4" },
+    { name = "julee-hcd" },
     { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
@@ -1331,15 +1332,16 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "julee", specifier = ">=0.3.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.3.0" },
+    { name = "julee", specifier = ">=0.5.2,<0.6" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5.2,<0.6" },
+    { name = "julee-c4", editable = "c4" },
+    { name = "julee-hcd", editable = "hcd" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
     { name = "pytest-timeout", marker = "extra == 'dev'", specifier = ">=2.3.0" },
     { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.5.0" },
-    { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5.0" },
     { name = "sphinx", specifier = ">=7.0.0" },
     { name = "types-docutils", marker = "extra == 'dev'" },

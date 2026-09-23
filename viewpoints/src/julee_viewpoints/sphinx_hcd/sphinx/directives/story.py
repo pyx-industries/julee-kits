@@ -12,13 +12,14 @@ Provides directives for rendering user stories from Gherkin feature files:
 from collections import defaultdict
 
 from docutils import nodes
+from julee.core.utils import normalize_name, slugify
 
-from ...domain.models.story import Story
-from ...usecases import (
+from julee_hcd.domain.models.story import Story
+from julee_hcd.usecases import (
     get_epics_for_story,
     get_journeys_for_story,
 )
-from ...utils import normalize_name, slugify
+
 from .base import HCDDirective, make_deprecated_directive
 
 
@@ -451,8 +452,10 @@ def build_story_seealso(story, env, docname: str, hcd_context):
     Returns:
         Seealso admonition node or None if no links
     """
+    from julee.core.utils import slugify
+
     from ...config import get_config
-    from ...utils import path_to_root, slugify
+    from ...utils import path_to_root
 
     config = get_config()
     prefix = path_to_root(docname)

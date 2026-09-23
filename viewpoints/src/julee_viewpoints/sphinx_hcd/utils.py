@@ -8,46 +8,6 @@ import re
 from docutils import nodes
 
 
-def normalize_name(name: str) -> str:
-    """Normalize a name for comparison (lowercase, hyphens to spaces).
-
-    Args:
-        name: Name to normalize
-
-    Returns:
-        Normalized lowercase name with consistent spacing
-    """
-    return name.lower().replace("-", " ").replace("_", " ").strip()
-
-
-def slugify(text: str) -> str:
-    """Create a URL-safe slug from text.
-
-    Args:
-        text: Text to slugify
-
-    Returns:
-        URL-safe slug string
-    """
-    slug = text.lower()
-    slug = re.sub(r"[^a-z0-9\s-]", "", slug)
-    slug = re.sub(r"[\s_]+", "-", slug)
-    slug = re.sub(r"-+", "-", slug)
-    return slug.strip("-")
-
-
-def kebab_to_snake(name: str) -> str:
-    """Convert kebab-case to snake_case for Python module names.
-
-    Args:
-        name: Kebab-case name (e.g., 'audit-analysis')
-
-    Returns:
-        Snake_case name (e.g., 'audit_analysis')
-    """
-    return name.replace("-", "_")
-
-
 def parse_list_option(value: str) -> list[str]:
     """Parse a newline-separated list option with optional bullet prefixes.
 

@@ -19,11 +19,12 @@ from typing import Any
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from julee.core.utils import normalize_name
 
-from ...domain.models.journey import Journey, JourneyStep
-from ...domain.repositories import JourneyRepository
+from julee_hcd.domain.models.journey import Journey, JourneyStep
+from julee_hcd.domain.repositories import JourneyRepository
+
 from ...utils import (
-    normalize_name,
     parse_csv_option,
     parse_list_option,
     path_to_root,

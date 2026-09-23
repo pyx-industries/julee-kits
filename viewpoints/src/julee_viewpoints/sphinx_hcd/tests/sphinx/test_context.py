@@ -1,9 +1,9 @@
 """Tests for HCDContext."""
 
 import pytest
+from julee.core.entities.accelerator import Accelerator
 
-from julee_viewpoints.sphinx_hcd.domain.models import (
-    Accelerator,
+from julee_hcd.domain.models import (
     App,
     AppType,
     Epic,

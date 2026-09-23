@@ -7,15 +7,17 @@ Provides directives for rendering application information:
 """
 
 from docutils import nodes
+from julee.core.utils import normalize_name, slugify
 
-from ...domain.models.app import App, AppType
-from ...usecases import (
+from julee_hcd.domain.models.app import App, AppType
+from julee_hcd.usecases import (
     get_epics_for_app,
     get_journeys_for_app,
     get_personas_for_app,
     get_stories_for_app,
 )
-from ...utils import normalize_name, path_to_root, slugify
+
+from ...utils import path_to_root
 from .base import HCDDirective
 
 
@@ -274,8 +276,9 @@ def build_app_index(docname: str, hcd_context):
 
 def build_apps_for_persona(docname: str, persona_arg: str, hcd_context):
     """Build list of apps for a persona."""
+    from julee_hcd.usecases import derive_personas_from_stories, get_apps_for_persona
+
     from ...config import get_config
-    from ...usecases import derive_personas, get_apps_for_persona
 
     config = get_config()
     prefix = path_to_root(docname)
@@ -286,7 +289,7 @@ def build_apps_for_persona(docname: str, persona_arg: str, hcd_context):
     all_epics = hcd_context.epic_repo.list_all()
 
     # Derive personas
-    personas = derive_personas(all_stories, all_epics)
+    personas = derive_personas_from_stories(all_stories, all_epics)
 
     # Find the persona
     persona = None

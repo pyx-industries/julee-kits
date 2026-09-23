@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from julee_viewpoints.sphinx_hcd.parsers.gherkin import (
+from julee_hcd.parsers.gherkin import (
     parse_feature_content,
     parse_feature_file,
     scan_feature_directory,

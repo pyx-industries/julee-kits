@@ -2,12 +2,12 @@
 
 import pytest
 import pytest_asyncio
-
-from julee_viewpoints.sphinx_hcd.domain.models.accelerator import (
+from julee.core.entities.accelerator import (
     Accelerator,
     IntegrationReference,
 )
-from julee_viewpoints.sphinx_hcd.repositories.memory.accelerator import (
+
+from julee_hcd.infrastructure.repositories.memory.accelerator import (
     MemoryAcceleratorRepository,
 )
 

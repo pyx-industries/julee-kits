@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from julee_viewpoints.sphinx_hcd.domain.models.app import AppType
-from julee_viewpoints.sphinx_hcd.domain.models.integration import Direction
-from julee_viewpoints.sphinx_hcd.parsers.yaml import (
+from julee_hcd.domain.models.app import AppType
+from julee_hcd.domain.models.integration import Direction
+from julee_hcd.parsers.yaml import (
     parse_app_manifest,
     parse_integration_manifest,
     parse_manifest_content,
