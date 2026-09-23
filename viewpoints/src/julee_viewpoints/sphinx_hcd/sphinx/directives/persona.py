@@ -1,8 +1,12 @@
 """Persona directives for sphinx_hcd.
 
-Generates PlantUML use case diagrams dynamically from epic and story data.
+Provides directives for defining personas and generating persona indexes,
+plus PlantUML use case diagrams dynamically generated from epic and story
+data.
 
 Provides directives:
+- define-persona: Define a persona with HCD metadata
+- persona-index: Render index of defined personas
 - persona-diagram: Generate UML diagram for a single persona showing their epics
 - persona-index-diagram: Generate UML diagram for staff or external persona groups
 """
@@ -12,14 +16,17 @@ from collections.abc import Callable
 from typing import Any
 
 from docutils import nodes
+from docutils.parsers.rst import directives
 from julee.core.utils import normalize_name, slugify
 
+from julee_hcd.domain.models.persona import Persona
 from julee_hcd.usecases import (
     derive_personas_by_app_type,
     derive_personas_from_stories,
     get_epics_for_persona,
 )
 
+from ...utils import parse_list_option, path_to_root
 from .base import HCDDirective
 
 
@@ -33,6 +40,119 @@ class PersonaIndexDiagramPlaceholder(nodes.General, nodes.Element):
     """Placeholder node for persona-index-diagram, replaced at doctree-resolved."""
 
     pass
+
+
+class PersonaIndexPlaceholder(nodes.General, nodes.Element):
+    """Placeholder node for persona-index, replaced at doctree-resolved."""
+
+    pass
+
+
+class DefinePersonaDirective(HCDDirective):
+    """Define a persona with HCD metadata.
+
+    Options:
+        :name: Display name (defaults to slug title-cased)
+        :goals: Bullet list of goals
+        :frustrations: Bullet list of frustrations
+        :jobs-to-be-done: Bullet list of JTBD
+
+    Example::
+
+        .. define-persona:: solutions-developer
+           :name: Solutions Developer
+           :goals:
+              Build reliable workflow solutions
+              Maintain audit trails for compliance
+           :frustrations:
+              Boilerplate infrastructure code
+           :jobs-to-be-done:
+              Implement business processes as durable workflows
+
+           A developer building production systems with Julee...
+    """
+
+    required_arguments = 1
+    has_content = True
+    option_spec: dict[str, Callable[[str], Any]] = {
+        "name": directives.unchanged,
+        "goals": directives.unchanged,
+        "frustrations": directives.unchanged,
+        "jobs-to-be-done": directives.unchanged,
+    }
+
+    def run(self) -> list[nodes.Node]:
+        slug = self.arguments[0]
+        docname = self.env.docname
+
+        name = self.options.get("name", "").strip()
+        if not name:
+            name = slug.replace("-", " ").title()
+
+        goals = parse_list_option(self.options.get("goals", ""))
+        frustrations = parse_list_option(self.options.get("frustrations", ""))
+        jobs_to_be_done = parse_list_option(self.options.get("jobs-to-be-done", ""))
+        context = "\n".join(self.content).strip()
+
+        persona = Persona.from_definition(
+            slug=slug,
+            name=name,
+            goals=tuple(goals),
+            frustrations=tuple(frustrations),
+            jobs_to_be_done=tuple(jobs_to_be_done),
+            context=context,
+            docname=docname,
+        )
+        self.hcd_context.persona_repo.save(persona)
+
+        result_nodes: list[nodes.Node] = []
+
+        if context:
+            context_para = nodes.paragraph()
+            context_para += nodes.Text(context)
+            result_nodes.append(context_para)
+
+        if goals:
+            result_nodes.extend(self._build_list_section("Goals", goals))
+        if frustrations:
+            result_nodes.extend(self._build_list_section("Frustrations", frustrations))
+        if jobs_to_be_done:
+            result_nodes.extend(
+                self._build_list_section("Jobs to be Done", jobs_to_be_done)
+            )
+
+        return result_nodes
+
+    def _build_list_section(self, title: str, items: list[str]) -> list[nodes.Node]:
+        """Build a titled bullet list section."""
+        heading = nodes.paragraph()
+        heading += nodes.strong(text=title)
+
+        bullet_list = nodes.bullet_list()
+        for item in items:
+            list_item = nodes.list_item()
+            para = nodes.paragraph()
+            para += nodes.Text(item)
+            list_item += para
+            bullet_list += list_item
+
+        return [heading, bullet_list]
+
+
+class PersonaIndexDirective(HCDDirective):
+    """Render index of defined personas.
+
+    Usage::
+
+        .. persona-index::
+
+    Lists personas defined via ``define-persona``. Personas known only
+    from a story's "As a ..." line are not included here - see
+    persona-diagram / persona-index-diagram for story-derived views.
+    """
+
+    def run(self) -> list[nodes.Node]:
+        return [PersonaIndexPlaceholder()]
 
 
 class PersonaDiagramDirective(HCDDirective):
@@ -329,6 +449,73 @@ def build_persona_index_diagram(group_type: str, docname: str, hcd_context):
     return [node]
 
 
+def _persona_link(persona: Persona, docname: str, config) -> nodes.reference:
+    """Create a reference node linking to a persona page."""
+    prefix = path_to_root(docname)
+    if persona.docname:
+        persona_path = f"{prefix}{persona.docname}.html"
+    else:
+        personas_dir = config.get_doc_path("personas")
+        persona_path = f"{prefix}{personas_dir}/{persona.slug}.html"
+    ref = nodes.reference("", "", refuri=persona_path)
+    ref += nodes.Text(persona.name)
+    return ref
+
+
+def _first_sentence(text: str) -> str:
+    """Extract the first sentence from text."""
+    if not text:
+        return ""
+    for i, char in enumerate(text):
+        if char in ".!?" and (i + 1 >= len(text) or text[i + 1] in " \n"):
+            return text[: i + 1]
+    return text
+
+
+def build_persona_index(docname: str, hcd_context) -> list[nodes.Node]:
+    """Build a bullet list of defined personas with first-sentence descriptions."""
+    from ...config import get_config
+
+    config = get_config()
+    all_personas = hcd_context.persona_repo.list_all()
+
+    if not all_personas:
+        para = nodes.paragraph()
+        para += nodes.emphasis(text="No personas defined")
+        return [para]
+
+    bullet_list = nodes.bullet_list()
+
+    for persona in sorted(all_personas, key=lambda p: p.name):
+        item = nodes.list_item()
+        para = nodes.paragraph()
+        para += _persona_link(persona, docname, config)
+        item += para
+
+        if persona.context:
+            first = _first_sentence(persona.context)
+            if first:
+                desc_para = nodes.paragraph()
+                desc_para += nodes.Text(first)
+                item += desc_para
+
+        bullet_list += item
+
+    return [bullet_list]
+
+
+def clear_persona_state(app, env, docname):
+    """Clear persona state when a document is re-read."""
+    from julee_hcd.domain.repositories import PersonaRepository
+
+    from ..context import get_hcd_context
+
+    hcd_context = get_hcd_context(app)
+    async_repo = hcd_context.persona_repo.async_repo
+    assert isinstance(async_repo, PersonaRepository)
+    hcd_context.persona_repo.run_async(async_repo.clear_by_docname(docname))
+
+
 def process_persona_placeholders(app, doctree, docname):
     """Replace persona diagram placeholders with rendered content."""
     from ..context import get_hcd_context
@@ -345,4 +532,9 @@ def process_persona_placeholders(app, doctree, docname):
     for node in doctree.traverse(PersonaIndexDiagramPlaceholder):
         group_type = node["group_type"]
         content = build_persona_index_diagram(group_type, docname, hcd_context)
+        node.replace_self(content)
+
+    # Process persona-index placeholders
+    for node in doctree.traverse(PersonaIndexPlaceholder):
+        content = build_persona_index(docname, hcd_context)
         node.replace_self(content)

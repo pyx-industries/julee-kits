@@ -28,6 +28,15 @@ from .app import (
     process_app_placeholders,
 )
 from .base import HCDDirective, make_deprecated_directive
+from .contrib import (
+    ContribIndexDirective,
+    ContribIndexPlaceholder,
+    ContribListDirective,
+    ContribListPlaceholder,
+    DefineContribDirective,
+    clear_contrib_state,
+    process_contrib_placeholders,
+)
 from .epic import (
     DefineEpicDirective,
     EpicIndexDirective,
@@ -59,10 +68,14 @@ from .journey import (
     process_journey_steps,
 )
 from .persona import (
+    DefinePersonaDirective,
     PersonaDiagramDirective,
     PersonaDiagramPlaceholder,
     PersonaIndexDiagramDirective,
     PersonaIndexDiagramPlaceholder,
+    PersonaIndexDirective,
+    PersonaIndexPlaceholder,
+    clear_persona_state,
     process_persona_placeholders,
 )
 from .story import (
@@ -152,9 +165,21 @@ __all__ = [
     "IntegrationIndexPlaceholder",
     "process_integration_placeholders",
     # Persona directives
+    "DefinePersonaDirective",
     "PersonaDiagramDirective",
     "PersonaDiagramPlaceholder",
     "PersonaIndexDiagramDirective",
     "PersonaIndexDiagramPlaceholder",
+    "PersonaIndexDirective",
+    "PersonaIndexPlaceholder",
+    "clear_persona_state",
     "process_persona_placeholders",
+    # Contrib directives
+    "DefineContribDirective",
+    "ContribIndexDirective",
+    "ContribIndexPlaceholder",
+    "ContribListDirective",
+    "ContribListPlaceholder",
+    "clear_contrib_state",
+    "process_contrib_placeholders",
 ]

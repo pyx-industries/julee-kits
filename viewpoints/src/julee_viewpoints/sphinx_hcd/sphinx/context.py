@@ -10,16 +10,20 @@ from typing import TYPE_CHECKING
 
 from julee_hcd.domain.repositories import (
     AcceleratorRepository,
+    ContribRepository,
     EpicRepository,
     JourneyRepository,
+    PersonaRepository,
 )
 from julee_hcd.infrastructure.repositories.memory import (
     MemoryAcceleratorRepository,
     MemoryAppRepository,
     MemoryCodeInfoRepository,
+    MemoryContribRepository,
     MemoryEpicRepository,
     MemoryIntegrationRepository,
     MemoryJourneyRepository,
+    MemoryPersonaRepository,
     MemoryStoryRepository,
 )
 
@@ -31,9 +35,11 @@ if TYPE_CHECKING:
 
     from julee_hcd.domain.models import (
         App,
+        ContribModule,
         Epic,
         Integration,
         Journey,
+        Persona,
         Story,
     )
 
@@ -71,6 +77,12 @@ class HCDContext:
     code_info_repo: SyncRepositoryAdapter["BoundedContextInfo"] = field(
         default_factory=lambda: SyncRepositoryAdapter(MemoryCodeInfoRepository())
     )
+    persona_repo: SyncRepositoryAdapter["Persona"] = field(
+        default_factory=lambda: SyncRepositoryAdapter(MemoryPersonaRepository())
+    )
+    contrib_repo: SyncRepositoryAdapter["ContribModule"] = field(
+        default_factory=lambda: SyncRepositoryAdapter(MemoryContribRepository())
+    )
 
     def clear_all(self) -> None:
         """Clear all repositories.
@@ -84,6 +96,8 @@ class HCDContext:
         self.accelerator_repo.clear()
         self.integration_repo.clear()
         self.code_info_repo.clear()
+        self.persona_repo.clear()
+        self.contrib_repo.clear()
 
     def clear_by_docname(self, docname: str) -> dict[str, int]:
         """Clear entities defined in a specific document.
@@ -118,6 +132,20 @@ class HCDContext:
         assert isinstance(accel_async, AcceleratorRepository)
         results["accelerators"] = self.accelerator_repo.run_async(
             accel_async.clear_by_docname(docname)
+        )
+
+        # Persona repo has clear_by_docname
+        persona_async = self.persona_repo.async_repo
+        assert isinstance(persona_async, PersonaRepository)
+        results["personas"] = self.persona_repo.run_async(
+            persona_async.clear_by_docname(docname)
+        )
+
+        # Contrib repo has clear_by_docname
+        contrib_async = self.contrib_repo.async_repo
+        assert isinstance(contrib_async, ContribRepository)
+        results["contribs"] = self.contrib_repo.run_async(
+            contrib_async.clear_by_docname(docname)
         )
 
         return results

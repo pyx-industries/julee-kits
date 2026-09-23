@@ -5,8 +5,10 @@ Clears document-specific state when a document is re-read.
 
 from ..directives import (
     clear_accelerator_state,
+    clear_contrib_state,
     clear_epic_state,
     clear_journey_state,
+    clear_persona_state,
 )
 
 
@@ -29,6 +31,12 @@ def on_env_purge_doc(app, env, docname):
 
     # Clear accelerator state for this document
     clear_accelerator_state(app, env, docname)
+
+    # Clear persona state for this document
+    clear_persona_state(app, env, docname)
+
+    # Clear contrib state for this document
+    clear_contrib_state(app, env, docname)
 
     # Clear documented apps tracker
     if hasattr(env, "documented_apps") and docname in env.documented_apps:

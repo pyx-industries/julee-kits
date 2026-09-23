@@ -37,7 +37,8 @@ Usage in conf.py::
 
 from sphinx.util import logging
 
-from .config import init_config
+from .config import get_config, init_config
+from .sphinx.context import get_hcd_context
 
 logger = logging.getLogger(__name__)
 
@@ -56,12 +57,18 @@ def setup(app):
         AppIndexPlaceholder,
         AppsForPersonaDirective,
         AppsForPersonaPlaceholder,
+        # Contrib directives
+        ContribIndexDirective,
+        ContribIndexPlaceholder,
+        ContribListDirective,
+        ContribListPlaceholder,
         # Accelerator directives
         DefineAcceleratorDirective,
         DefineAcceleratorPlaceholder,
         # App directives
         DefineAppDirective,
         DefineAppPlaceholder,
+        DefineContribDirective,
         # Epic directives
         DefineEpicDirective,
         # Integration directives
@@ -69,6 +76,8 @@ def setup(app):
         DefineIntegrationPlaceholder,
         # Journey directives
         DefineJourneyDirective,
+        # Persona directives
+        DefinePersonaDirective,
         DependentAcceleratorsDirective,
         DependentAcceleratorsPlaceholder,
         EpicIndexDirective,
@@ -89,11 +98,12 @@ def setup(app):
         JourneyDependencyGraphPlaceholder,
         JourneyIndexDirective,
         JourneysForPersonaDirective,
-        # Persona directives
         PersonaDiagramDirective,
         PersonaDiagramPlaceholder,
         PersonaIndexDiagramDirective,
         PersonaIndexDiagramPlaceholder,
+        PersonaIndexDirective,
+        PersonaIndexPlaceholder,
         StepEpicDirective,
         StepPhaseDirective,
         StepStoryDirective,
@@ -190,10 +200,86 @@ def setup(app):
     app.add_node(IntegrationIndexPlaceholder)
 
     # Register persona directives
+    app.add_directive("define-persona", DefinePersonaDirective)
+    app.add_directive("persona-index", PersonaIndexDirective)
     app.add_directive("persona-diagram", PersonaDiagramDirective)
     app.add_directive("persona-index-diagram", PersonaIndexDiagramDirective)
+    app.add_node(PersonaIndexPlaceholder)
     app.add_node(PersonaDiagramPlaceholder)
     app.add_node(PersonaIndexDiagramPlaceholder)
+
+    # Register contrib directives
+    app.add_directive("define-contrib", DefineContribDirective)
+    app.add_directive("contrib-index", ContribIndexDirective)
+    app.add_directive("contrib-list", ContribListDirective)
+    app.add_node(ContribIndexPlaceholder)
+    app.add_node(ContribListPlaceholder)
+
+    # Register HCD cross-reference roles: :persona:, :epic:, :journey:,
+    # :story:, :accelerator:.
+    #
+    # Upstream (apps/sphinx/shared) resolved these through a
+    # DocumentationMapping that walked @semantic_relation declarations
+    # (PROJECTS/PART_OF) to discover a pattern. That registry is being
+    # redesigned and must not come back here, so these roles are wired
+    # directly to the page/anchor pattern each entity already uses -
+    # exactly what the registry would have discovered, just not
+    # discovered by introspection.
+    from julee_viewpoints.shared.directives.entity_graph import EntityGraphDirective
+    from julee_viewpoints.shared.roles import make_anchor_role
+
+    app.add_directive("entity-graph", EntityGraphDirective)
+
+    def _lookup_persona(slug, sphinx_app):
+        hcd_ctx = get_hcd_context(sphinx_app)
+        persona = hcd_ctx.persona_repo.get(slug)
+        if persona is None:
+            return None
+        config = get_config()
+        docname = persona.docname or f"{config.get_doc_path('personas')}/{slug}"
+        return (docname, "")
+
+    def _lookup_epic(slug, sphinx_app):
+        hcd_ctx = get_hcd_context(sphinx_app)
+        epic = hcd_ctx.epic_repo.get(slug)
+        if epic is None:
+            return None
+        config = get_config()
+        docname = epic.docname or f"{config.get_doc_path('epics')}/{slug}"
+        return (docname, "")
+
+    def _lookup_journey(slug, sphinx_app):
+        hcd_ctx = get_hcd_context(sphinx_app)
+        journey = hcd_ctx.journey_repo.get(slug)
+        if journey is None:
+            return None
+        config = get_config()
+        docname = journey.docname or f"{config.get_doc_path('journeys')}/{slug}"
+        return (docname, "")
+
+    def _lookup_story(slug, sphinx_app):
+        hcd_ctx = get_hcd_context(sphinx_app)
+        for story in hcd_ctx.story_repo.list_all():
+            if story.slug == slug:
+                config = get_config()
+                stories_dir = config.get_doc_path("stories")
+                return (f"{stories_dir}/{story.app_slug}", f"story-{slug}")
+        return None
+
+    def _lookup_accelerator(slug, sphinx_app):
+        hcd_ctx = get_hcd_context(sphinx_app)
+        accelerator = hcd_ctx.accelerator_repo.get(slug)
+        if accelerator is None:
+            return None
+        config = get_config()
+        docname = accelerator.docname or f"{config.get_doc_path('accelerators')}/{slug}"
+        return (docname, "")
+
+    app.add_role("persona", make_anchor_role(_lookup_persona)())
+    app.add_role("epic", make_anchor_role(_lookup_epic)())
+    app.add_role("journey", make_anchor_role(_lookup_journey)())
+    app.add_role("story", make_anchor_role(_lookup_story)())
+    app.add_role("accelerator", make_anchor_role(_lookup_accelerator)())
 
     logger.info("Loaded julee_viewpoints.sphinx_hcd extensions")
 
