@@ -152,12 +152,12 @@ class PlantUMLSerializer:
 
         # Persons
         for slug in data.person_slugs:
-            lines.append(f'Person({slug}, "{slug}")')
+            lines.append(f'Person({self._id(slug)}, "{slug}")')
 
         # External systems
         for ext_sys in data.external_systems:
             lines.append(
-                f'System_Ext({ext_sys.slug}, "{self._escape(ext_sys.name)}", '
+                f'System_Ext({self._id(ext_sys.slug)}, "{self._escape(ext_sys.name)}", '
                 f'"{self._escape(ext_sys.description)}")'
             )
 
@@ -166,7 +166,7 @@ class PlantUMLSerializer:
         # System boundary with containers
         system = data.system
         lines.append(
-            f'System_Boundary({system.slug}, "{self._escape(system.name)}") {{'
+            f'System_Boundary({self._id(system.slug)}, "{self._escape(system.name)}") {{'
         )
 
         for container in data.containers:
@@ -175,12 +175,12 @@ class PlantUMLSerializer:
 
             if container.is_data_store:
                 lines.append(
-                    f'    ContainerDb({container.slug}, "{self._escape(container.name)}", '
+                    f'    ContainerDb({self._id(container.slug)}, "{self._escape(container.name)}", '
                     f'"{tech}", "{desc}")'
                 )
             else:
                 lines.append(
-                    f'    Container({container.slug}, "{self._escape(container.name)}", '
+                    f'    Container({self._id(container.slug)}, "{self._escape(container.name)}", '
                     f'"{tech}", "{desc}")'
                 )
 
@@ -189,8 +189,8 @@ class PlantUMLSerializer:
 
         # Relationships
         for rel in data.relationships:
-            src = rel.source_slug
-            dst = rel.destination_slug
+            src = self._id(rel.source_slug)
+            dst = self._id(rel.destination_slug)
             desc = self._escape(rel.description)
             if rel.technology:
                 lines.append(f'Rel({src}, {dst}, "{desc}", "{rel.technology}")')
@@ -220,19 +220,19 @@ class PlantUMLSerializer:
 
         # Persons
         for slug in data.person_slugs:
-            lines.append(f'Person({slug}, "{slug}")')
+            lines.append(f'Person({self._id(slug)}, "{slug}")')
 
         # External systems
         for ext_sys in data.external_systems:
             lines.append(
-                f'System_Ext({ext_sys.slug}, "{self._escape(ext_sys.name)}", '
+                f'System_Ext({self._id(ext_sys.slug)}, "{self._escape(ext_sys.name)}", '
                 f'"{self._escape(ext_sys.description)}")'
             )
 
         # External containers
         for ext_cont in data.external_containers:
             lines.append(
-                f'Container({ext_cont.slug}, "{self._escape(ext_cont.name)}", '
+                f'Container({self._id(ext_cont.slug)}, "{self._escape(ext_cont.name)}", '
                 f'"{ext_cont.technology}", "{self._escape(ext_cont.description)}")'
             )
 
@@ -241,14 +241,14 @@ class PlantUMLSerializer:
         # Container boundary with components
         container = data.container
         lines.append(
-            f'Container_Boundary({container.slug}, "{self._escape(container.name)}") {{'
+            f'Container_Boundary({self._id(container.slug)}, "{self._escape(container.name)}") {{'
         )
 
         for component in data.components:
             tech = component.technology
             desc = self._escape(component.description)
             lines.append(
-                f'    Component({component.slug}, "{self._escape(component.name)}", '
+                f'    Component({self._id(component.slug)}, "{self._escape(component.name)}", '
                 f'"{tech}", "{desc}")'
             )
 
@@ -257,8 +257,8 @@ class PlantUMLSerializer:
 
         # Relationships
         for rel in data.relationships:
-            src = rel.source_slug
-            dst = rel.destination_slug
+            src = self._id(rel.source_slug)
+            dst = self._id(rel.destination_slug)
             desc = self._escape(rel.description)
             if rel.technology:
                 lines.append(f'Rel({src}, {dst}, "{desc}", "{rel.technology}")')
@@ -288,7 +288,7 @@ class PlantUMLSerializer:
 
         # Persons
         for slug in data.person_slugs:
-            lines.append(f'Person({slug}, "{slug}")')
+            lines.append(f'Person({self._id(slug)}, "{slug}")')
 
         lines.append("")
 
@@ -296,12 +296,12 @@ class PlantUMLSerializer:
         for system in data.systems:
             if system.system_type.value == "external":
                 lines.append(
-                    f'System_Ext({system.slug}, "{self._escape(system.name)}", '
+                    f'System_Ext({self._id(system.slug)}, "{self._escape(system.name)}", '
                     f'"{self._escape(system.description)}")'
                 )
             else:
                 lines.append(
-                    f'System({system.slug}, "{self._escape(system.name)}", '
+                    f'System({self._id(system.slug)}, "{self._escape(system.name)}", '
                     f'"{self._escape(system.description)}")'
                 )
 
@@ -309,8 +309,8 @@ class PlantUMLSerializer:
 
         # Relationships
         for rel in data.relationships:
-            src = rel.source_slug
-            dst = rel.destination_slug
+            src = self._id(rel.source_slug)
+            dst = self._id(rel.destination_slug)
             desc = self._escape(rel.description)
             if rel.technology:
                 lines.append(f'Rel({src}, {dst}, "{desc}", "{rel.technology}")')
@@ -348,17 +348,20 @@ class PlantUMLSerializer:
             prefix = "    " * indent
             tech = node.technology or ""
             lines.append(
-                f'{prefix}Deployment_Node({node.slug}, "{self._escape(node.name)}", '
+                f'{prefix}Deployment_Node({self._id(node.slug)}, "{self._escape(node.name)}", '
                 f'"{tech}") {{'
             )
 
             # Container instances
             for instance in node.container_instances:
                 cont_slug = instance.container_slug
-                instance_id = instance.instance_id or ""
+                # How many of a container run here is what the reader wants
+                # on the box; one is the usual case and says nothing.
+                count = instance.instance_count
+                label = f"{count} instances" if count > 1 else ""
                 lines.append(
-                    f"{prefix}    Container({cont_slug}_{instance_id or '1'}, "
-                    f'"{cont_slug}", "{instance_id}")'
+                    f"{prefix}    Container({self._id(cont_slug)}, "
+                    f'"{cont_slug}", "{label}")'
                 )
 
             # Child nodes
@@ -376,8 +379,8 @@ class PlantUMLSerializer:
 
         # Relationships
         for rel in data.relationships:
-            src = rel.source_slug
-            dst = rel.destination_slug
+            src = self._id(rel.source_slug)
+            dst = self._id(rel.destination_slug)
             desc = self._escape(rel.description)
             if rel.technology:
                 lines.append(f'Rel({src}, {dst}, "{desc}", "{rel.technology}")')
@@ -405,27 +408,29 @@ class PlantUMLSerializer:
 
         # Declare all participants
         for slug in data.person_slugs:
-            lines.append(f'Person({slug}, "{slug}")')
+            lines.append(f'Person({self._id(slug)}, "{slug}")')
 
         for system in data.systems:
-            lines.append(f'System({system.slug}, "{self._escape(system.name)}")')
+            lines.append(
+                f'System({self._id(system.slug)}, "{self._escape(system.name)}")'
+            )
 
         for container in data.containers:
             lines.append(
-                f'Container({container.slug}, "{self._escape(container.name)}")'
+                f'Container({self._id(container.slug)}, "{self._escape(container.name)}")'
             )
 
         for component in data.components:
             lines.append(
-                f'Component({component.slug}, "{self._escape(component.name)}")'
+                f'Component({self._id(component.slug)}, "{self._escape(component.name)}")'
             )
 
         lines.append("")
 
         # Numbered sequence steps
         for step in data.steps:
-            src = step.source_slug
-            dst = step.destination_slug
+            src = self._id(step.source_slug)
+            dst = self._id(step.destination_slug)
             desc = self._escape(step.description)
             step_num = step.step_number
 
