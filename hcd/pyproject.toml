@@ -17,6 +17,12 @@ keywords = ["julee", "hcd", "personas", "documentation"]
 
 dependencies = [
     "julee>=0.5.2,<0.6",
+    # The kit reads entities out of documents and writes them back, which
+    # is docutils for RST in, jinja2 for RST out, and pyyaml for the
+    # manifests apps and integrations are declared in.
+    "docutils>=0.20",
+    "jinja2>=3.1",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -42,7 +48,7 @@ where = ["src"]
 include = ["julee_hcd*"]
 
 [tool.setuptools.package-data]
-julee_hcd = ["py.typed"]
+julee_hcd = ["py.typed", "templates/*.j2"]
 
 [tool.julee]
 # The package is the bounded context, so discovery starts above it.

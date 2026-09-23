@@ -1229,7 +1229,10 @@ name = "julee-hcd"
 version = "0.1.0"
 source = { editable = "hcd" }
 dependencies = [
+    { name = "docutils" },
+    { name = "jinja2" },
     { name = "julee" },
+    { name = "pyyaml" },
 ]
 
 [package.optional-dependencies]
@@ -1248,6 +1251,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
+    { name = "docutils", specifier = ">=0.20" },
+    { name = "jinja2", specifier = ">=3.1" },
     { name = "julee", specifier = ">=0.5.2,<0.6" },
     { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5.2,<0.6" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
@@ -1256,6 +1261,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
     { name = "pytest-timeout", marker = "extra == 'dev'", specifier = ">=2.3.0" },
     { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.5.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5.0" },
 ]
 provides-extras = ["dev"]
