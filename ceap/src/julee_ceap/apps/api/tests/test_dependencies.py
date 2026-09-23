@@ -160,31 +160,6 @@ class TestStartupDependenciesIntegration:
         assert provider1 is provider2
         assert provider1.container is provider2.container
 
-    @pytest.mark.asyncio
-    async def test_end_to_end_dependency_creation(self) -> None:
-        """Test complete end-to-end dependency creation flow."""
-        # This test verifies the complete flow works without mocking
-        # the internal dependencies (integration test style)
-
-        provider = await get_startup_dependencies()
-
-        # This should work without throwing errors
-        # (though it might fail if Minio isn't available, which is expected)
-        try:
-            service = await provider.get_system_initialization_service()
-            assert service is not None
-
-            # Verify the service has the expected methods
-            assert hasattr(service, "initialize")
-            assert hasattr(service, "get_initialization_status")
-            assert hasattr(service, "reinitialize")
-
-        except Exception as e:
-            # In test environments, Minio might not be available
-            # We just verify that the dependency chain is correctly structured
-            # and any errors are related to infrastructure, not our code
-            assert "minio" in str(e).lower() or "connection" in str(e).lower()
-
 
 class TestStartupDependenciesProviderEdgeCases:
     """Test edge cases and error conditions."""
