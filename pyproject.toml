@@ -2,7 +2,7 @@
 # own distribution in its own directory.
 
 [tool.uv.workspace]
-members = ["ceap", "polling"]
+members = ["ceap", "polling", "viewpoints"]
 
 [tool.uv]
 package = false
@@ -26,7 +26,7 @@ ignore = [
 "tests/**/*.py" = ["B"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["julee_ceap", "julee_polling"]
+known-first-party = ["julee_ceap", "julee_polling", "julee_viewpoints"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -49,6 +49,16 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+# Recent Sphinx uses Python 3.12 syntax, which mypy rejects when checking
+# for 3.11; the plantuml extension ships no stubs.
+module = [
+    "sphinx.*",
+    "sphinxcontrib.*",
+]
+follow_imports = "skip"
+ignore_missing_imports = true
+
 # Same settings as julee's, so a kit is type-checked as strictly as the
 # framework: constructor calls are checked against the model's fields.
 [tool.pydantic-mypy]
@@ -57,7 +67,7 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.pytest.ini_options]
-testpaths = ["ceap/src", "polling/src"]
+testpaths = ["ceap/src", "polling/src", "viewpoints/src"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
