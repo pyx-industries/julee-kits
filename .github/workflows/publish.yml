@@ -7,6 +7,7 @@ on:
     tags:
       - 'ceap-v*'
       - 'polling-v*'
+      - 'viewpoints-v*'
 
 jobs:
   publish:
@@ -28,7 +29,7 @@ jobs:
         run: |
           kit="${GITHUB_REF_NAME%-v*}"
           case "$kit" in
-            ceap|polling) echo "package=julee-$kit" >> "$GITHUB_OUTPUT" ;;
+            ceap|polling|viewpoints) echo "package=julee-$kit" >> "$GITHUB_OUTPUT" ;;
             *) echo "Unexpected tag: ${GITHUB_REF_NAME}" >&2; exit 1 ;;
           esac
 
