@@ -5,6 +5,7 @@ name: Publish to PyPI
 on:
   push:
     tags:
+      - 'c4-v*'
       - 'ceap-v*'
       - 'polling-v*'
       - 'viewpoints-v*'
@@ -29,7 +30,7 @@ jobs:
         run: |
           kit="${GITHUB_REF_NAME%-v*}"
           case "$kit" in
-            ceap|polling|viewpoints) echo "package=julee-$kit" >> "$GITHUB_OUTPUT" ;;
+            c4|ceap|polling|viewpoints) echo "package=julee-$kit" >> "$GITHUB_OUTPUT" ;;
             *) echo "Unexpected tag: ${GITHUB_REF_NAME}" >&2; exit 1 ;;
           esac
 

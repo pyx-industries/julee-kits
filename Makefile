@@ -9,13 +9,13 @@ install:
 # Linting
 lint:
 	@echo "Linting..."
-	uv run black --check ceap/src/ polling/src/ viewpoints/src/
-	uv run ruff check ceap/src/ polling/src/ viewpoints/src/
+	uv run black --check c4/src/ ceap/src/ polling/src/ viewpoints/src/
+	uv run ruff check c4/src/ ceap/src/ polling/src/ viewpoints/src/
 
 # Type checking
 typecheck:
 	@echo "Type checking..."
-	uv run mypy ceap/src/ polling/src/ viewpoints/src/
+	uv run mypy c4/src/ ceap/src/ polling/src/ viewpoints/src/
 
 # Tests that need nothing but Python. Chosen by what is left out, so a
 # test with no marker runs rather than hides.
@@ -32,7 +32,7 @@ test-integration:
 
 # Each kit is a julee solution, and runs julee's doctrine against itself
 test-doctrine:
-	@for kit in ceap polling viewpoints; do \
+	@for kit in c4 ceap polling viewpoints; do \
 		echo "Running doctrine tests for julee-$$kit..."; \
 		JULEE_TARGET=$(CURDIR)/$$kit uv run pytest --pyargs julee.core.doctrine || exit $$?; \
 	done
@@ -42,8 +42,8 @@ check: lint typecheck test test-doctrine
 
 # Format
 format:
-	uv run black ceap/src/ polling/src/ viewpoints/src/
-	uv run ruff check --fix ceap/src/ polling/src/ viewpoints/src/
+	uv run black c4/src/ ceap/src/ polling/src/ viewpoints/src/
+	uv run ruff check --fix c4/src/ ceap/src/ polling/src/ viewpoints/src/
 
 clean:
 	rm -rf .pytest_cache .mypy_cache **/__pycache__ htmlcov .coverage
