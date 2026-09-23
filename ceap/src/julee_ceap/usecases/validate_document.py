@@ -15,6 +15,7 @@ from collections.abc import Callable, Sequence
 from datetime import datetime
 
 import multihash
+from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol
 from pydantic import BaseModel
 
@@ -39,8 +40,6 @@ from julee_ceap.domain.repositories import (
 from julee_ceap.infrastructure.services.knowledge_service import (
     KnowledgeService,
 )
-
-from .decorators import try_use_case_step
 
 logger = logging.getLogger(__name__)
 
