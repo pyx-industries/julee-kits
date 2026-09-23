@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "julee-hcd"
-version = "0.1.1"
+version = "0.1.2"
 description = "Human-centred design models for julee solutions"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -48,7 +48,7 @@ where = ["src"]
 include = ["julee_hcd*"]
 
 [tool.setuptools.package-data]
-julee_hcd = ["py.typed", "templates/*.j2"]
+julee_hcd = ["py.typed", "semantics.toml", "templates/*.j2"]
 
 [tool.julee]
 # The package is the bounded context, so discovery starts above it.
