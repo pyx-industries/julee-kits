@@ -1132,7 +1132,7 @@ temporal = [
 
 [[package]]
 name = "julee-c4"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "c4" }
 dependencies = [
     { name = "julee" },
@@ -1226,7 +1226,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-hcd"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "hcd" }
 dependencies = [
     { name = "docutils" },

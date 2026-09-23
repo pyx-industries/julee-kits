@@ -1,0 +1,17 @@
+# How this kit's terms line up with other people's.
+#
+# Claims only, and only about classes this kit owns. What a solution
+# holds true is its own business.
+
+[[claim]]
+id = "person-is-a-persona"
+source = "julee_c4.domain.models.diagrams.PersonInfo"
+kind = "is_a"
+target = "julee_hcd.domain.models.persona.Persona"
+note = """
+The people on a C4 diagram are the same people the human-centred design
+work describes. C4 knows a name and a sentence, because that is all a
+box needs; HCD knows what they are trying to do and what gets in the
+way. Saying they are the same person is what lets a diagram borrow the
+description rather than repeat it.
+"""

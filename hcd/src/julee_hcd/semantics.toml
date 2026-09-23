@@ -1,0 +1,22 @@
+# How this kit's terms line up with other people's.
+#
+# Claims only, and only about classes this kit owns. What a solution
+# holds true is its own business: it accepts these, some of these, or
+# none, in its semantics/ directory.
+#
+# Relationships between this kit's own entities are not here. An epic
+# containing stories is Epic.story_refs, and a story belonging to an app
+# is Story.app_slug — already in the models, and restating them here
+# would be a second copy to keep in step.
+
+[[claim]]
+id = "integration-part-of-accelerator"
+source = "julee_hcd.domain.models.integration.Integration"
+kind = "part_of"
+target = "julee.core.entities.accelerator.Accelerator"
+note = """
+An integration is how an accelerator reaches the world: the accelerator
+is the work, and the integration is one of the seams where it touches
+something outside. Naming the accelerator is what makes an integration
+more than a list of endpoints.
+"""

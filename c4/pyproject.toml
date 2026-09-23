@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "julee-c4"
-version = "0.1.1"
+version = "0.1.2"
 description = "C4 architecture models for julee solutions"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -42,7 +42,7 @@ where = ["src"]
 include = ["julee_c4*"]
 
 [tool.setuptools.package-data]
-julee_c4 = ["py.typed"]
+julee_c4 = ["py.typed", "semantics.toml"]
 
 [tool.julee]
 # The package is the bounded context, so discovery starts above it.
