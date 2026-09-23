@@ -10,7 +10,10 @@ than implement part of one, which is why the manifest sets
 
 Use it in a solution's ``conf.py``::
 
-    extensions = ["julee_viewpoints.sphinx_hcd"]
+    extensions = [
+        "julee_viewpoints.sphinx_hcd",
+        "julee_viewpoints.sphinx_c4",
+    ]
 """
 
 from julee.core.entities.kit import Kit
@@ -20,7 +23,10 @@ kit = Kit(
     name="Code-outward documentation",
     package="julee_viewpoints",
     viewpoint=True,
-    contributes={"sphinx.extension": "julee_viewpoints.sphinx_hcd"},
+    contributes={
+        "sphinx.extension": "julee_viewpoints.sphinx_hcd",
+        "sphinx.extension.c4": "julee_viewpoints.sphinx_c4",
+    },
 )
 
 __all__ = ["kit"]
