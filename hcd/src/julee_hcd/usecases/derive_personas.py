@@ -10,11 +10,13 @@ Defined personas are authoritative and get enriched with story data.
 Derived personas fill gaps when stories reference undefined personas.
 """
 
+from collections import defaultdict
 from typing import Any
 
 from julee.core.utils import normalize_name
 from pydantic import BaseModel
 
+from julee_hcd.domain.models.app import App
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.persona import Persona
 from julee_hcd.domain.models.story import Story
@@ -183,3 +185,95 @@ class DerivePersonasUseCase:
 
         sorted_personas = sorted(result_personas, key=lambda p: p.name)
         return DerivePersonasResponse(personas=sorted_personas)
+
+
+def get_apps_for_persona(
+    persona: Persona,
+    apps: list[App],
+) -> list[App]:
+    """Get App entities for a persona.
+
+    Args:
+        persona: Persona to get apps for
+        apps: All App entities
+
+    Returns:
+        List of App entities this persona uses
+    """
+    app_lookup = {app.slug: app for app in apps}
+    return [app_lookup[slug] for slug in persona.app_slugs if slug in app_lookup]
+
+
+def get_epics_for_persona(
+    persona: Persona,
+    epics: list[Epic],
+    stories: list[Story],
+) -> list[Epic]:
+    """Get Epic entities for a persona.
+
+    Args:
+        persona: Persona to get epics for
+        epics: All Epic entities
+        stories: All Story entities
+
+    Returns:
+        List of Epic entities containing stories for this persona
+    """
+    # Build lookup of normalized story title -> normalized persona
+    story_to_persona: dict[str, str] = {}
+    for story in stories:
+        story_to_persona[normalize_name(story.feature_title)] = story.persona_normalized
+
+    matching_epics = []
+    for epic in epics:
+        for story_ref in epic.story_refs:
+            story_normalized = normalize_name(story_ref)
+            if story_to_persona.get(story_normalized) == persona.normalized_name:
+                matching_epics.append(epic)
+                break
+
+    return sorted(matching_epics, key=lambda e: e.slug)
+
+
+def derive_personas_by_app_type(
+    stories: list[Story],
+    epics: list[Epic],
+    apps: list[App],
+) -> dict[str, list[Persona]]:
+    """Derive personas grouped by the type of apps they use.
+
+    Args:
+        stories: List of Story entities
+        epics: List of Epic entities
+        apps: List of App entities
+
+    Returns:
+        Dict mapping app type strings to lists of Persona entities
+    """
+    # First derive all personas
+    all_personas = derive_personas_from_stories(stories, epics)
+
+    # Build app slug -> app type lookup
+    app_types: dict[str, str] = {}
+    for app in apps:
+        app_types[app.slug] = app.app_type.value if app.app_type else "unknown"
+
+    # Group personas by app type
+    personas_by_type: dict[str, list[Persona]] = defaultdict(list)
+
+    for persona in all_personas:
+        # Find all app types this persona uses
+        persona_types: set[str] = set()
+        for app_slug in persona.app_slugs:
+            app_type = app_types.get(app_slug, "unknown")
+            persona_types.add(app_type)
+
+        # Add persona to each type group
+        for app_type in persona_types:
+            personas_by_type[app_type].append(persona)
+
+    # Sort personas within each group
+    return {
+        app_type: sorted(personas, key=lambda p: p.name)
+        for app_type, personas in personas_by_type.items()
+    }

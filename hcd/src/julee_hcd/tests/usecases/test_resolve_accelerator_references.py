@@ -1,20 +1,20 @@
 """Tests for resolve_accelerator_references use case."""
 
 import pytest
-
-from julee_viewpoints.sphinx_hcd.domain.models.accelerator import (
+from julee.core.entities.accelerator import (
     Accelerator,
     IntegrationReference,
 )
-from julee_viewpoints.sphinx_hcd.domain.models.app import App, AppType
-from julee_viewpoints.sphinx_hcd.domain.models.code_info import (
+from julee.core.entities.bounded_context_info import (
     BoundedContextInfo,
     ClassInfo,
 )
-from julee_viewpoints.sphinx_hcd.domain.models.integration import Direction, Integration
-from julee_viewpoints.sphinx_hcd.domain.models.journey import Journey, JourneyStep
-from julee_viewpoints.sphinx_hcd.domain.models.story import Story
-from julee_viewpoints.sphinx_hcd.usecases.resolve_accelerator_references import (
+
+from julee_hcd.domain.models.app import App, AppType
+from julee_hcd.domain.models.integration import Direction, Integration
+from julee_hcd.domain.models.journey import Journey, JourneyStep
+from julee_hcd.domain.models.story import Story
+from julee_hcd.usecases.resolve_accelerator_references import (
     ResolveAcceleratorReferencesRequest,
     ResolveAcceleratorReferencesUseCase,
     get_apps_for_accelerator,
@@ -99,7 +99,7 @@ def create_code_info(slug: str, code_dir: str | None = None) -> BoundedContextIn
     return BoundedContextInfo(
         slug=slug,
         code_dir=code_dir or slug,
-        entities=(ClassInfo(name="TestEntity", docstring="Test"),),
+        entities=[ClassInfo(name="TestEntity", docstring="Test")],
     )
 
 

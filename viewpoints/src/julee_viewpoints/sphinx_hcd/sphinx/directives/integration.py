@@ -11,7 +11,8 @@ import os
 
 from docutils import nodes
 
-from ...domain.models.integration import Direction
+from julee_hcd.domain.models.integration import Direction
+
 from .base import HCDDirective
 
 

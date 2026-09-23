@@ -1,9 +1,9 @@
 """Tests for SyncRepositoryAdapter."""
 
 import pytest
+from julee.repositories.memory import MemoryRepositoryMixin
 from pydantic import BaseModel
 
-from julee_viewpoints.sphinx_hcd.repositories.memory.base import MemoryRepositoryMixin
 from julee_viewpoints.sphinx_hcd.sphinx.adapters import SyncRepositoryAdapter
 
 
@@ -19,13 +19,40 @@ class SampleMemoryRepository(MemoryRepositoryMixin[SampleEntity]):
     """Sample repository implementation for testing."""
 
     def __init__(self) -> None:
-        self.storage: dict[str, SampleEntity] = {}
+        import logging
+
+        self.storage_dict: dict[str, SampleEntity] = {}
+        self.logger = logging.getLogger(__name__)
         self.entity_name = "SampleEntity"
         self.id_field = "id"
 
+    async def get(self, entity_id: str) -> SampleEntity | None:
+        """The entity with this id, or None."""
+        return self.get_entity(entity_id)
+
+    async def get_many(self, entity_ids: list[str]) -> dict[str, SampleEntity | None]:
+        """These ids mapped to their entities, or None where absent."""
+        return self.get_many_entities(entity_ids)
+
+    async def save(self, entity: SampleEntity) -> None:
+        """Store the entity under its id."""
+        self.save_entity(entity, self.id_field)
+
+    async def list_all(self) -> list[SampleEntity]:
+        """Every entity held."""
+        return list(self.storage_dict.values())
+
+    async def delete(self, entity_id: str) -> bool:
+        """Remove one entity, saying whether there was one."""
+        return self.storage_dict.pop(entity_id, None) is not None
+
+    async def clear(self) -> None:
+        """Forget everything."""
+        self.storage_dict.clear()
+
     async def find_by_name(self, name: str) -> list[SampleEntity]:
         """Custom query method for testing run_async."""
-        return [e for e in self.storage.values() if e.name == name]
+        return [e for e in self.storage_dict.values() if e.name == name]
 
 
 class TestSyncRepositoryAdapter:

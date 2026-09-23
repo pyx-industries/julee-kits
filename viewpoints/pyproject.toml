@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "julee-viewpoints"
-version = "0.1.2"
+version = "0.2.0"
 description = "Code-outward documentation for julee solutions"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -16,9 +16,13 @@ authors = [
 keywords = ["julee", "sphinx", "documentation", "human-centred-design"]
 
 dependencies = [
-    "julee>=0.3.0",
+    "julee>=0.5.2,<0.6",
+    # The domain this kit renders. It holds no entities of its own: hcd
+    # says what a persona is, c4 says what a container is, and this kit
+    # projects both into documentation.
+    "julee-hcd>=0.1.1,<0.2",
+    "julee-c4>=0.1,<0.2",
     "sphinx>=7.0.0",
-    "PyYAML>=6.0.0",
 ]
 
 # A kit announces itself to the framework here. Installing it does not
@@ -35,7 +39,7 @@ dev = [
     "types-PyYAML",
     "black>=24.0.0",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.3.0",
+    "julee[doctrine]>=0.5.2,<0.6",
 ]
 
 [project.entry-points."julee.kits"]
@@ -53,3 +57,10 @@ include = ["julee_viewpoints*"]
 # This kit is a julee solution in its own right, and runs its own doctrine.
 search_root = "src/julee_viewpoints"
 docs_root = "docs"
+
+# Within this workspace the two kits are the sibling directories, not
+# whatever is on PyPI. The published wheel carries the version
+# constraints above; this only decides what a checkout builds against.
+[tool.uv.sources]
+julee-hcd = { workspace = true }
+julee-c4 = { workspace = true }

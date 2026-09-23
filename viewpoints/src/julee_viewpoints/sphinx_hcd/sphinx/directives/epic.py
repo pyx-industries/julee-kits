@@ -11,11 +11,13 @@ from collections.abc import Callable
 from typing import Any
 
 from docutils import nodes
+from julee.core.utils import normalize_name
 
-from ...domain.models.epic import Epic
-from ...domain.repositories import EpicRepository
-from ...usecases import derive_personas, get_epics_for_persona
-from ...utils import normalize_name, path_to_root
+from julee_hcd.domain.models.epic import Epic
+from julee_hcd.domain.repositories import EpicRepository
+from julee_hcd.usecases import derive_personas_from_stories, get_epics_for_persona
+
+from ...utils import path_to_root
 from .base import HCDDirective
 
 
@@ -350,7 +352,7 @@ def build_epics_for_persona(env, docname: str, persona_arg: str, hcd_context):
     all_epics = hcd_context.epic_repo.list_all()
 
     # Derive personas to get their epic associations
-    personas = derive_personas(all_stories, all_epics)
+    personas = derive_personas_from_stories(all_stories, all_epics)
     persona_normalized = normalize_name(persona_arg)
 
     # Find the persona

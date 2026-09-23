@@ -9,6 +9,9 @@ import pytest
 from julee.core.entities.accelerator import Accelerator
 from julee.core.entities.bounded_context_info import BoundedContextInfo
 
+from julee_hcd.infrastructure.repositories.memory.accelerator import (
+    MemoryAcceleratorRepository,
+)
 from julee_hcd.usecases.validate_accelerators import (
     ValidateAcceleratorsRequest,
     ValidateAcceleratorsUseCase,
@@ -17,16 +20,12 @@ from julee_hcd.usecases.validate_accelerators import (
 pytestmark = pytest.mark.unit
 
 
-class FakeAcceleratorRepository:
-    """The accelerators a solution has written up."""
-
-    def __init__(self, *slugs: str) -> None:
-        """Hold one accelerator per slug."""
-        self._items = [Accelerator(slug=s, objective=f"Do {s}") for s in slugs]
-
-    async def list_all(self) -> list[Accelerator]:
-        """Every documented accelerator."""
-        return self._items
+async def _accelerators(*slugs: str) -> MemoryAcceleratorRepository:
+    """A real repository holding one accelerator per slug."""
+    repo = MemoryAcceleratorRepository()
+    for slug in slugs:
+        await repo.save(Accelerator(slug=slug, objective=f"Do {slug}"))
+    return repo
 
 
 class FakeCodeInfoRepository:
@@ -44,7 +43,7 @@ class FakeCodeInfoRepository:
 async def test_documentation_that_matches_the_code_raises_nothing() -> None:
     """The case worth having: agreement is silent."""
     use_case = ValidateAcceleratorsUseCase(
-        FakeAcceleratorRepository("traceability"),
+        await _accelerators("traceability"),
         FakeCodeInfoRepository("traceability"),
     )
 
@@ -57,7 +56,7 @@ async def test_documentation_that_matches_the_code_raises_nothing() -> None:
 async def test_code_nobody_wrote_up_is_reported_as_undocumented() -> None:
     """Someone added a bounded context and no documentation for it."""
     use_case = ValidateAcceleratorsUseCase(
-        FakeAcceleratorRepository(),
+        await _accelerators(),
         FakeCodeInfoRepository("traceability"),
     )
 
@@ -70,7 +69,7 @@ async def test_code_nobody_wrote_up_is_reported_as_undocumented() -> None:
 async def test_documentation_for_code_that_is_gone_is_reported() -> None:
     """The other direction: the write-up outlived what it described."""
     use_case = ValidateAcceleratorsUseCase(
-        FakeAcceleratorRepository("traceability"),
+        await _accelerators("traceability"),
         FakeCodeInfoRepository(),
     )
 
@@ -83,7 +82,7 @@ async def test_documentation_for_code_that_is_gone_is_reported() -> None:
 async def test_both_kinds_of_drift_are_reported_together() -> None:
     """A real project drifts both ways at once."""
     use_case = ValidateAcceleratorsUseCase(
-        FakeAcceleratorRepository("retired", "kept"),
+        await _accelerators("retired", "kept"),
         FakeCodeInfoRepository("kept", "brand-new"),
     )
 
@@ -99,7 +98,7 @@ async def test_both_kinds_of_drift_are_reported_together() -> None:
 async def test_an_issue_says_which_way_the_drift_goes() -> None:
     """The message is what a person reads, so it has to name the fix."""
     use_case = ValidateAcceleratorsUseCase(
-        FakeAcceleratorRepository(),
+        await _accelerators(),
         FakeCodeInfoRepository("traceability"),
     )
 

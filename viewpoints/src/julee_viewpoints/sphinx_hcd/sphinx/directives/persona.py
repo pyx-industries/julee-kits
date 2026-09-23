@@ -12,13 +12,14 @@ from collections.abc import Callable
 from typing import Any
 
 from docutils import nodes
+from julee.core.utils import normalize_name, slugify
 
-from ...usecases import (
-    derive_personas,
+from julee_hcd.usecases import (
     derive_personas_by_app_type,
+    derive_personas_from_stories,
     get_epics_for_persona,
 )
-from ...utils import normalize_name, slugify
+
 from .base import HCDDirective
 
 
@@ -258,7 +259,7 @@ def build_persona_diagram(persona_name: str, docname: str, hcd_context):
     all_apps = hcd_context.app_repo.list_all()
 
     # Derive personas
-    personas = derive_personas(all_stories, all_epics)
+    personas = derive_personas_from_stories(all_stories, all_epics)
     persona_normalized = normalize_name(persona_name)
 
     # Find the persona

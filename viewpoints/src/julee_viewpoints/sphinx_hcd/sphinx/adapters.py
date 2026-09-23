@@ -5,13 +5,46 @@ Sphinx directives are synchronous, but our domain repositories are async
 """
 
 import asyncio
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, Protocol, TypeVar, runtime_checkable
 
 from pydantic import BaseModel
 
-from ..domain.repositories.base import BaseRepository
-
 T = TypeVar("T", bound=BaseModel)
+
+
+@runtime_checkable
+class AsyncRepository(Protocol[T]):
+    """What this adapter needs of the repository it wraps.
+
+    Stated here rather than taken from a kit, because the adapter wraps
+    whatever a Sphinx build puts in front of it: an entity this project
+    authors, and equally a bounded context read out of the code, which is
+    nobody's authored entity.
+    """
+
+    async def get(self, entity_id: str) -> T | None:
+        """The entity with this id, or None."""
+        ...
+
+    async def get_many(self, entity_ids: list[str]) -> dict[str, T | None]:
+        """These ids mapped to their entities, or None where absent."""
+        ...
+
+    async def save(self, entity: T) -> None:
+        """Store the entity."""
+        ...
+
+    async def list_all(self) -> list[T]:
+        """Every entity held."""
+        ...
+
+    async def delete(self, entity_id: str) -> bool:
+        """Remove one entity, saying whether there was one."""
+        ...
+
+    async def clear(self) -> None:
+        """Forget everything."""
+        ...
 
 
 class SyncRepositoryAdapter(Generic[T]):
@@ -31,16 +64,16 @@ class SyncRepositoryAdapter(Generic[T]):
         repositories.
     """
 
-    def __init__(self, async_repo: BaseRepository[T]) -> None:
+    def __init__(self, async_repo: AsyncRepository[T]) -> None:
         """Initialize with an async repository.
 
         Args:
-            async_repo: An async repository implementing BaseRepository[T]
+            async_repo: An async repository implementing AsyncRepository[T]
         """
         self._repo = async_repo
 
     @property
-    def async_repo(self) -> BaseRepository[T]:
+    def async_repo(self) -> AsyncRepository[T]:
         """Access the underlying async repository."""
         return self._repo
 
@@ -100,7 +133,7 @@ class SyncRepositoryAdapter(Generic[T]):
     def run_async(self, coro: Any) -> Any:
         """Run an arbitrary async method on the underlying repository.
 
-        Useful for repository-specific methods not in BaseRepository.
+        Useful for repository-specific methods not in AsyncRepository.
 
         Args:
             coro: A coroutine to execute

@@ -4,8 +4,10 @@ A documentation build reads every document into memory, renders, and
 exits; nothing outlives the process, so there is nothing to persist.
 """
 
+from .accelerator import MemoryAcceleratorRepository
 from .app import MemoryAppRepository
 from .base import MemoryHcdRepository
+from .code_info import MemoryCodeInfoRepository
 from .contrib import MemoryContribRepository
 from .epic import MemoryEpicRepository
 from .integration import MemoryIntegrationRepository
@@ -14,7 +16,9 @@ from .persona import MemoryPersonaRepository
 from .story import MemoryStoryRepository
 
 __all__ = [
+    "MemoryAcceleratorRepository",
     "MemoryAppRepository",
+    "MemoryCodeInfoRepository",
     "MemoryContribRepository",
     "MemoryEpicRepository",
     "MemoryHcdRepository",

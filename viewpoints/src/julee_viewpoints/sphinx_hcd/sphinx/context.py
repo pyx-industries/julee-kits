@@ -8,12 +8,12 @@ with a unified, type-safe interface.
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from ..domain.repositories import (
+from julee_hcd.domain.repositories import (
     AcceleratorRepository,
     EpicRepository,
     JourneyRepository,
 )
-from ..repositories.memory import (
+from julee_hcd.infrastructure.repositories.memory import (
     MemoryAcceleratorRepository,
     MemoryAppRepository,
     MemoryCodeInfoRepository,
@@ -22,13 +22,15 @@ from ..repositories.memory import (
     MemoryJourneyRepository,
     MemoryStoryRepository,
 )
+
 from .adapters import SyncRepositoryAdapter
 
 if TYPE_CHECKING:
-    from ..domain.models import (
-        Accelerator,
+    from julee.core.entities.accelerator import Accelerator
+    from julee.core.entities.bounded_context_info import BoundedContextInfo
+
+    from julee_hcd.domain.models import (
         App,
-        BoundedContextInfo,
         Epic,
         Integration,
         Journey,

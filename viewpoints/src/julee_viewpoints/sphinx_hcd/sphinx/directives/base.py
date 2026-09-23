@@ -7,10 +7,11 @@ the HCDContext repositories.
 from typing import TYPE_CHECKING
 
 from docutils import nodes
+from julee.core.utils import slugify
 from sphinx.util.docutils import SphinxDirective
 
 from ...config import get_config
-from ...utils import path_to_root, slugify
+from ...utils import path_to_root
 from ..context import HCDContext, get_hcd_context
 
 if TYPE_CHECKING:

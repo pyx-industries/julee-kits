@@ -2,10 +2,10 @@
 
 import pytest
 
-from julee_viewpoints.sphinx_hcd.domain.models.epic import Epic
-from julee_viewpoints.sphinx_hcd.domain.models.journey import Journey, JourneyStep
-from julee_viewpoints.sphinx_hcd.domain.models.story import Story
-from julee_viewpoints.sphinx_hcd.usecases.resolve_story_references import (
+from julee_hcd.domain.models.epic import Epic
+from julee_hcd.domain.models.journey import Journey, JourneyStep
+from julee_hcd.domain.models.story import Story
+from julee_hcd.usecases.resolve_story_references import (
     ResolveStoryReferencesRequest,
     ResolveStoryReferencesUseCase,
     get_epics_for_story,
