@@ -12,6 +12,7 @@ document has been read.
 """
 
 import os
+from typing import TYPE_CHECKING
 
 from docutils import nodes
 from docutils.parsers.rst import directives
@@ -50,6 +51,9 @@ from julee_c4.usecases.diagrams.system_landscape import (
 
 from ..context import C4Context, get_c4_context
 from .base import C4Directive
+
+if TYPE_CHECKING:
+    from sphinx.application import Sphinx
 
 
 def _make_plantuml_node(puml_source: str, docname: str) -> nodes.Node:
@@ -264,9 +268,23 @@ class DynamicDiagramDirective(DiagramDirective):
 
 
 def build_system_context_diagram(
-    c4_context: C4Context, system_slug: str, title: str, docname: str
+    c4_context: C4Context,
+    system_slug: str,
+    title: str,
+    docname: str,
+    app: "Sphinx | None" = None,
 ) -> list[nodes.Node]:
-    """Compute and serialize a system context diagram."""
+    """Compute and serialize a system context diagram.
+
+    ``app`` is the Sphinx application, used - if present - to look up
+    person names and descriptions from the HCD viewpoint's defined
+    personas, via ``julee_viewpoints.c4_bridge``. A system context diagram
+    only ever has *slugs* for the persons it relates to (see
+    ``julee_c4.domain.models.relationship``); without an HCD context to
+    join against there is nothing more to say about them than that slug,
+    so the diagram falls back to that gracefully when ``app`` is omitted
+    or no HCD viewpoint is loaded.
+    """
     # SyncRepositoryAdapter.async_repo is typed as the narrow structural
     # protocol the adapter itself depends on. The concrete Memory*
     # repository behind it satisfies the fuller domain protocol a diagram
@@ -286,8 +304,16 @@ def build_system_context_diagram(
         para += nodes.emphasis(text=f"Software system '{system_slug}' not found")
         return [para]
 
+    diagram = response.diagram
+    if app is not None and diagram.person_slugs:
+        from julee_viewpoints.c4_bridge import enrich_persons_from_hcd
+
+        persons = enrich_persons_from_hcd(diagram.person_slugs, app)
+        if persons:
+            diagram = diagram.model_copy(update={"persons": persons})
+
     serializer = PlantUMLSerializer()
-    puml = serializer.serialize_system_context(response.diagram, title)
+    puml = serializer.serialize_system_context(diagram, title)
     return [_make_plantuml_node(puml, docname)]
 
 
@@ -448,7 +474,7 @@ def process_c4_diagram_placeholders(app, doctree, docname):
 
     for node in doctree.traverse(SystemContextDiagramPlaceholder):
         content = build_system_context_diagram(
-            c4_context, node["system_slug"], node["title"], docname
+            c4_context, node["system_slug"], node["title"], docname, app
         )
         node.replace_self(content)
 

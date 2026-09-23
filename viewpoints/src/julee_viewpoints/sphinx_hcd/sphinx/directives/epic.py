@@ -426,6 +426,12 @@ def process_epic_placeholders(app, doctree, docname):
                     if stories_nodes:
                         node.replace_self(stories_nodes)
                     else:
+                        # Nothing to replace it with - an epic with no
+                        # stories yet is normal while it's being written.
+                        # Clear the placeholder's own classes first: with
+                        # none left to lose, docutils drops the node
+                        # quietly instead of warning (fatal under -W).
+                        node["classes"] = []
                         node.replace_self([])
                     break
 

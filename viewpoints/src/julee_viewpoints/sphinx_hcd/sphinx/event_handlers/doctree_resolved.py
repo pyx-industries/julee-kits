@@ -6,6 +6,7 @@ Processes placeholders that need cross-document data (all documents read).
 from ..directives import (
     process_accelerator_placeholders,
     process_app_placeholders,
+    process_contrib_placeholders,
     process_dependency_graph_placeholder,
     process_epic_placeholders,
     process_integration_placeholders,
@@ -38,6 +39,9 @@ def on_doctree_resolved(app, doctree, docname):
 
     # Process persona diagram placeholders (need epic/story registries)
     process_persona_placeholders(app, doctree, docname)
+
+    # Process contrib placeholders (need contrib registry)
+    process_contrib_placeholders(app, doctree, docname)
 
     # Process journey dependency graph placeholder (needs all journeys)
     process_dependency_graph_placeholder(app, doctree, docname)

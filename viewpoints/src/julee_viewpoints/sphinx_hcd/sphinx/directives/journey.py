@@ -556,6 +556,12 @@ def process_journey_steps(app, doctree):
             if steps_node:
                 node.replace_self(steps_node)
             else:
+                # Nothing to replace it with - a journey with no steps yet
+                # is normal while it's being written. Clear the
+                # placeholder's own classes first: with none left to
+                # lose, docutils drops the node quietly instead of
+                # warning (fatal under -W).
+                node["classes"] = []
                 node.replace_self([])
             break
 
