@@ -32,9 +32,7 @@ test-integration:
 
 # Each kit is a julee solution, and runs julee's doctrine against itself
 test-doctrine:
-	@# hcd joins this list when its use cases land; doctrine requires them,
-	@# and the kit arrives domain-first.
-	@for kit in c4 ceap polling viewpoints; do \
+	@for kit in c4 ceap hcd polling viewpoints; do \
 		echo "Running doctrine tests for julee-$$kit..."; \
 		JULEE_TARGET=$(CURDIR)/$$kit uv run pytest --pyargs julee.core.doctrine || exit $$?; \
 	done
