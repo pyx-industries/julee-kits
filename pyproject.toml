@@ -2,7 +2,7 @@
 # own distribution in its own directory.
 
 [tool.uv.workspace]
-members = ["ceap", "polling", "viewpoints"]
+members = ["c4", "ceap", "polling", "viewpoints"]
 
 [tool.uv]
 package = false
@@ -26,7 +26,7 @@ ignore = [
 "tests/**/*.py" = ["B"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["julee_ceap", "julee_polling", "julee_viewpoints"]
+known-first-party = ["julee_c4", "julee_ceap", "julee_polling", "julee_viewpoints"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -67,7 +67,7 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.pytest.ini_options]
-testpaths = ["ceap/src", "polling/src", "viewpoints/src"]
+testpaths = ["c4/src", "ceap/src", "polling/src", "viewpoints/src"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]

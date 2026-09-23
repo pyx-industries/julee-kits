@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "julee-c4"
+version = "0.1.0"
+description = "C4 architecture models for julee solutions"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Pyx Industries", email = "chris@pyx.io"}
+]
+keywords = ["julee", "c4", "architecture", "documentation"]
+
+dependencies = [
+    "julee>=0.5.1,<0.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.5.0",
+    "pytest-timeout>=2.3.0",
+    "mypy>=1.7.0",
+    "black>=24.0.0",
+    "ruff>=0.5.0",
+    "julee[doctrine]>=0.5.1,<0.6",
+]
+
+# A kit announces itself here. Installing it does not activate it; a
+# solution adopts it in [tool.julee] kits.
+[project.entry-points."julee.kits"]
+c4 = "julee_c4:kit"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["julee_c4*"]
+
+[tool.setuptools.package-data]
+julee_c4 = ["py.typed"]
+
+[tool.julee]
+# The package is the bounded context, so discovery starts above it.
+search_root = "src"
