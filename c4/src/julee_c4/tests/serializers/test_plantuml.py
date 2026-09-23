@@ -7,7 +7,8 @@ fields the model does not have, and nothing exercised it.
 import pytest
 
 from julee_c4.domain.models.container import Container, ContainerType
-from julee_c4.domain.models.diagrams import DynamicDiagram
+from julee_c4.domain.models.deployment_node import DeploymentNode
+from julee_c4.domain.models.diagrams import DeploymentDiagram, DynamicDiagram
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType
 from julee_c4.serializers.plantuml import PlantUMLSerializer
@@ -91,3 +92,53 @@ def test_a_step_technology_is_carried_into_the_relationship(
     output = PlantUMLSerializer().serialize_dynamic_diagram(with_tech)
 
     assert 'Rel(api_app, database, "1. Reads the basket", "HTTPS")' in output
+
+
+# =============================================================================
+# Identifiers
+# =============================================================================
+
+
+def _deployment(instance_count: int = 1) -> DeploymentDiagram:
+    """A node with one container deployed on it."""
+    node = DeploymentNode(slug="eu-west", name="EU West").with_container_instance(
+        "api-app", instance_count=instance_count
+    )
+    return DeploymentDiagram(environment="production", nodes=(node,))
+
+
+def test_a_deployment_diagram_renders_what_is_deployed_on_a_node() -> None:
+    """The regression: this read a field ContainerInstance does not have."""
+    output = PlantUMLSerializer().serialize_deployment_diagram(_deployment())
+
+    assert "api_app" in output
+
+
+def test_a_single_instance_is_not_labelled_with_its_count() -> None:
+    """One of something is the usual case and says nothing worth saying."""
+    output = PlantUMLSerializer().serialize_deployment_diagram(_deployment(1))
+
+    assert '"1 instances"' not in output
+
+
+def test_several_instances_say_how_many() -> None:
+    """More than one is the thing a reader wants on the box."""
+    output = PlantUMLSerializer().serialize_deployment_diagram(_deployment(3))
+
+    assert "3 instances" in output
+
+
+def test_hyphenated_slugs_become_valid_plantuml_identifiers(
+    diagram: DynamicDiagram,
+) -> None:
+    """A C4 slug is hyphenated; a PlantUML identifier may not be."""
+    hyphenated = diagram.model_copy(
+        update={
+            "steps": (_step(source_slug="api-app", destination_slug="the-database"),)
+        }
+    )
+
+    output = PlantUMLSerializer().serialize_dynamic_diagram(hyphenated)
+
+    assert "Rel(api_app, the_database," in output
+    assert "Rel(api-app" not in output
