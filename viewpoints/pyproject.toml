@@ -21,7 +21,7 @@ dependencies = [
     # says what a persona is, c4 says what a container is, and this kit
     # projects both into documentation.
     "julee-hcd>=0.1.1,<0.2",
-    "julee-c4>=0.1,<0.2",
+    "julee-c4>=0.1.1,<0.2",
     "sphinx>=7.0.0",
 ]
 
