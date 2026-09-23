@@ -8,7 +8,8 @@ version = "0.1.2"
 description = "Code-outward documentation for julee solutions"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "GPL-3.0"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 authors = [
     {name = "Pyx Industries", email = "chris@pyx.io"}
 ]
