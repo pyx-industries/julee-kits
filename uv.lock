@@ -1100,14 +1100,14 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.3.0"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/32/ff/790ebd10374a7ab34f68f21ce160a8f5a37a58804b8e87fb238f5f0dc19d/julee-0.3.0.tar.gz", hash = "sha256:57150db85f3178f48c5362babbb4fbd7aa2b5c96b85c7f3e892aeeacdd215efd", size = 99887, upload-time = "2026-09-21T21:30:05.552Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/bd/683755fe905276d68a9b69acb455c1c747a0ab264c74498b37e86bf20fb1/julee-0.5.0.tar.gz", hash = "sha256:79f0c456c86d7a2825f46c0ac1bffbe7b618c47065127053091c5b24f57728a8", size = 108650, upload-time = "2026-09-23T08:33:33.139Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/87/58261dc5c7145831448345e7276cdf8fb1b4f17e357541590fe6484aa722/julee-0.3.0-py3-none-any.whl", hash = "sha256:7dbe8a06ffbce1f4be9eeabaa9be6e7824b0a5db9b018f8c7e5e7c2991ab7213", size = 126470, upload-time = "2026-09-21T21:30:04.441Z" },
+    { url = "https://files.pythonhosted.org/packages/db/b2/a3b8a322c8657fa0f9bf7669752202e6863d9d13f9cc151124bec2b16fd9/julee-0.5.0-py3-none-any.whl", hash = "sha256:6b3af30df35aabe05401100c58ead695c3ee70162926067322d77f5824c18619", size = 138347, upload-time = "2026-09-23T08:33:32.017Z" },
 ]
 
 [package.optional-dependencies]
@@ -1169,8 +1169,8 @@ requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.0.0" },
     { name = "jsonpointer", specifier = ">=3.0.0" },
     { name = "jsonschema", specifier = ">=4.0.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.3.0" },
-    { name = "julee", extras = ["temporal", "api", "minio"], specifier = ">=0.3.0" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5,<0.6" },
+    { name = "julee", extras = ["temporal", "api", "minio"], specifier = ">=0.5,<0.6" },
     { name = "multihash", specifier = ">=0.1.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
