@@ -96,14 +96,12 @@ class TestParseSoftwareSystemFile:
     def test_parse_valid_file(self, tmp_path: Path) -> None:
         """Test parsing a valid RST file."""
         file_path = tmp_path / "test-system.rst"
-        file_path.write_text(
-            """.. define-software-system:: test-system
+        file_path.write_text(""".. define-software-system:: test-system
    :name: Test System
    :type: internal
 
    A test system.
-"""
-        )
+""")
         result = parse_software_system_file(file_path)
 
         assert result is not None
@@ -202,15 +200,13 @@ class TestParseContainerFile:
     def test_parse_valid_file(self, tmp_path: Path) -> None:
         """Test parsing a valid container RST file."""
         file_path = tmp_path / "test-container.rst"
-        file_path.write_text(
-            """.. define-container:: test-container
+        file_path.write_text(""".. define-container:: test-container
    :name: Test Container
    :system: test-system
    :type: api
 
    Test container.
-"""
-        )
+""")
         result = parse_container_file(file_path)
 
         assert result is not None
