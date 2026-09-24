@@ -26,9 +26,11 @@ test:
 # Tests that need something running: a MinIO at MINIO_ENDPOINT for CEAP's
 # dependency wiring, a Temporal test server for polling's pipelines. Not
 # part of check, because CI provides neither.
+# Integration tests that need nothing but Python. Anything wanting a
+# service to talk to is marked e2e as well, and left out here.
 test-integration:
 	@echo "Running integration tests..."
-	uv run pytest -m integration -n 2
+	uv run pytest -m "integration and not e2e" -n 2
 
 # Each kit is a julee solution, and runs julee's doctrine against itself
 test-doctrine:
