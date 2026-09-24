@@ -30,6 +30,10 @@ kit = Kit(
     name="Code-outward documentation",
     package="julee_viewpoints",
     viewpoint=True,
+    # This kit documents what hcd and c4 hold, so a solution adopting it
+    # needs both. Saying so is what makes doctrine tell the solution,
+    # rather than leaving an ImportError to do it.
+    requires=("hcd", "c4"),
     contributes={
         # One point, three extensions. The order is the order Sphinx
         # loads them in: sphinx_c4 borrows a persona through c4_bridge,
