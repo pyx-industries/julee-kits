@@ -10,11 +10,17 @@ than implement part of one, which is why the manifest sets
 
 Use it in a solution's ``conf.py``::
 
-    extensions = [
-        "julee_viewpoints.sphinx_hcd",
-        "julee_viewpoints.sphinx_c4",
-        "julee_viewpoints.semantics",
-    ]
+    from pathlib import Path
+
+    from julee.core.kits import sphinx_extensions
+
+    extensions = sphinx_extensions(Path(__file__).parent.parent)
+
+which asks the kits the solution has adopted what they provide, rather
+than naming this kit's modules. Naming them still works, and is what to
+do if a solution wants only some of them::
+
+    extensions = ["julee_viewpoints.sphinx_hcd"]
 """
 
 from julee.core.entities.kit import Kit
@@ -25,9 +31,14 @@ kit = Kit(
     package="julee_viewpoints",
     viewpoint=True,
     contributes={
-        "sphinx.extension": "julee_viewpoints.sphinx_hcd",
-        "sphinx.extension.c4": "julee_viewpoints.sphinx_c4",
-        "sphinx.extension.semantics": "julee_viewpoints.semantics",
+        # One point, three extensions. The order is the order Sphinx
+        # loads them in: sphinx_c4 borrows a persona through c4_bridge,
+        # which wants the HCD side registered first.
+        "sphinx.extension": (
+            "julee_viewpoints.sphinx_hcd",
+            "julee_viewpoints.sphinx_c4",
+            "julee_viewpoints.semantics",
+        ),
     },
 )
 
