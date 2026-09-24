@@ -19,7 +19,7 @@ dependencies = [
     # [doctrine] for griffe: this kit reads a solution's code to document
     # it, which is the whole point of it, and that is where the reader
     # lives.
-    "julee[doctrine]>=0.5.10,<0.6",
+    "julee[doctrine]>=0.5.14,<0.6",
     # The domain this kit renders. It holds no entities of its own: hcd
     # says what a persona is, c4 says what a container is, and this kit
     # projects both into documentation.
@@ -42,7 +42,7 @@ dev = [
     "types-PyYAML",
     "black>=24.0.0",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.5.10,<0.6",
+    "julee[doctrine]>=0.5.14,<0.6",
 ]
 
 [project.entry-points."julee.kits"]
@@ -60,6 +60,17 @@ include = ["julee_viewpoints*"]
 # This kit is a julee solution in its own right, and runs its own doctrine.
 search_root = "src/julee_viewpoints"
 docs_root = "docs"
+
+# It is also the only kit that reads two others, so it adopts them the
+# way a solution would. Without this, doctrine sees hcd and c4 as kits
+# this codebase imports without having adopted.
+kits = ["hcd", "c4"]
+
+# Its composition roots are not called apps/. Each sphinx/context.py
+# chooses the memory repositories and wires them into adapters, attached
+# to the Sphinx application at builder-inited: a composition root by
+# every test except its name. Needs julee >= 0.5.14.
+composition_roots = ["sphinx_hcd/sphinx", "sphinx_c4/sphinx"]
 
 # Within this workspace the two kits are the sibling directories, not
 # whatever is on PyPI. The published wheel carries the version
