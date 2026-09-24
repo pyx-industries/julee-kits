@@ -13,6 +13,7 @@ Use it in a solution's ``conf.py``::
     extensions = [
         "julee_viewpoints.sphinx_hcd",
         "julee_viewpoints.sphinx_c4",
+        "julee_viewpoints.semantics",
     ]
 """
 
@@ -26,6 +27,7 @@ kit = Kit(
     contributes={
         "sphinx.extension": "julee_viewpoints.sphinx_hcd",
         "sphinx.extension.c4": "julee_viewpoints.sphinx_c4",
+        "sphinx.extension.semantics": "julee_viewpoints.semantics",
     },
 )
 
