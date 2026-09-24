@@ -42,6 +42,7 @@ from sphinx.util import logging
 from sphinx.util.docutils import SphinxDirective
 
 if TYPE_CHECKING:
+    from julee.core.entities.claim import Claim
     from sphinx.application import Sphinx
 
     from julee_c4.domain.models.diagrams import PersonInfo
@@ -74,6 +75,68 @@ def _get_hcd_context(app: Any) -> "HCDContext | None":
     return context
 
 
+PERSON_IS_A_PERSONA = (
+    "julee_c4.domain.models.diagrams.PersonInfo",
+    "is_a",
+    "julee_hcd.domain.models.persona.Persona",
+)
+"""The claim that lets a C4 diagram borrow an HCD persona's description."""
+
+_HELD_ATTR = "_julee_held_claims"
+
+
+def held_claims(app: Any) -> tuple["Claim", ...]:
+    """What the solution being documented holds true.
+
+    Read once per build and kept on the application, since every diagram
+    would otherwise ask the same question of the same files.
+
+    Args:
+        app: Sphinx application
+
+    Returns:
+        The solution's resolved claims, or nothing if it holds none
+    """
+    cached: tuple[Claim, ...] | None = getattr(app, _HELD_ATTR, None)
+    if cached is not None:
+        return cached
+
+    from julee.core.kits import adopted_kits
+    from julee.core.semantics import load_semantics
+
+    from .semantics import solution_root
+
+    claims: tuple[Claim, ...] = ()
+    root = solution_root(app.confdir)
+    if root is not None:
+        try:
+            claims = load_semantics(root, adopted_kits(root))
+        except ValueError:
+            # A solution whose semantics will not parse is told so by the
+            # semantics-index directive and by doctrine. A diagram is not
+            # the place to raise it.
+            claims = ()
+    setattr(app, _HELD_ATTR, claims)
+    return claims
+
+
+def holds(app: Any, claim: tuple[str, str, str]) -> bool:
+    """Whether the solution holds a particular claim.
+
+    Args:
+        app: Sphinx application
+        claim: The source, kind and target being asked about
+
+    Returns:
+        True if the solution has accepted or made that claim
+    """
+    source, kind, target = claim
+    return any(
+        held.source == source and str(held.kind) == kind and held.target == target
+        for held in held_claims(app)
+    )
+
+
 def enrich_persons_from_hcd(
     person_slugs: tuple[str, ...], app: Any
 ) -> tuple["PersonInfo", ...]:
@@ -85,6 +148,11 @@ def enrich_persons_from_hcd(
     viewpoint is also loaded and has a ``define-persona`` for that slug,
     this returns the richer ``PersonInfo`` the C4 PlantUML serializer uses
     to render a proper name and description instead.
+
+    Only when the solution says the two are the same thing. c4 claims it
+    in its semantics.toml, but a claim is an assertion its author is not
+    entitled to act on: a solution that has not accepted it gets bare
+    slugs, as it would if the HCD viewpoint were not loaded at all.
 
     Args:
         person_slugs: Person slugs referenced by a C4 diagram
@@ -99,6 +167,8 @@ def enrich_persons_from_hcd(
 
     hcd_context = _get_hcd_context(app)
     if hcd_context is None or not person_slugs:
+        return ()
+    if not holds(app, PERSON_IS_A_PERSONA):
         return ()
 
     persons = []
