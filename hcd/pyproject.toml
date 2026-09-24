@@ -35,7 +35,7 @@ dev = [
     "mypy>=1.7.0",
     "black>=24.0.0",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.5.2,<0.6",
+    "julee[doctrine]>=0.5.6,<0.6",
 ]
 
 # A kit announces itself here. Installing it does not activate it; a
