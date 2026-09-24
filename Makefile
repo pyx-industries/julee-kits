@@ -23,11 +23,16 @@ test:
 	@echo "Running unit tests..."
 	uv run pytest -m "not integration and not e2e"
 
-# Tests that need something running: a MinIO at MINIO_ENDPOINT for CEAP's
-# dependency wiring, a Temporal test server for polling's pipelines. Not
-# part of check, because CI provides neither.
 # Integration tests that need nothing but Python. Anything wanting a
-# service to talk to is marked e2e as well, and left out here.
+# service to talk to — a MinIO at MINIO_ENDPOINT for CEAP's dependency
+# wiring, a Temporal test server for polling's pipelines — is marked e2e
+# as well, and left out here.
+#
+# These are in check. They once were not, back when "integration" meant
+# "needs a service", and the exclusion outlived the reason: what a Sphinx
+# directive does is build a page, so almost everything covering the
+# directives is an integration test. A change to one could pass check
+# completely and still be broken.
 test-integration:
 	@echo "Running integration tests..."
 	uv run pytest -m "integration and not e2e" -n 2
@@ -40,7 +45,7 @@ test-doctrine:
 	done
 
 # The checks CI runs; run before pushing
-check: lint typecheck test test-doctrine
+check: lint typecheck test test-integration test-doctrine
 
 # Format
 format:
