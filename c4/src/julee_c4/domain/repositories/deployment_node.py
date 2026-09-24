@@ -2,13 +2,15 @@
 
 from typing import Protocol, runtime_checkable
 
-from julee.repositories.base import BaseRepository
+from julee.repositories.base import BaseRepository, Deletable
 
 from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
 
 
 @runtime_checkable
-class DeploymentNodeRepository(BaseRepository[DeploymentNode], Protocol):
+class DeploymentNodeRepository(
+    BaseRepository[DeploymentNode], Deletable[DeploymentNode], Protocol
+):
     """Repository protocol for DeploymentNode entities.
 
     Extends BaseRepository with deployment-specific queries needed

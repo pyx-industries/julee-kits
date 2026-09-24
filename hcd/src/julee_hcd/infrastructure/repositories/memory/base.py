@@ -57,10 +57,6 @@ class MemoryHcdRepository(MemoryRepositoryMixin[T], Generic[T]):
         """Every entity held, in insertion order."""
         return list(self.storage_dict.values())
 
-    async def delete(self, entity_id: str) -> bool:
-        """Remove one entity, saying whether there was one to remove."""
-        return self.storage_dict.pop(entity_id, None) is not None
-
     async def clear(self) -> None:
         """Forget everything."""
         self.storage_dict.clear()

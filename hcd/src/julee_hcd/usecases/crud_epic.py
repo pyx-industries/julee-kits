@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -148,3 +149,32 @@ class UpdateEpicUseCase(UpdateUseCase[Epic, EpicRepository]):
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateEpicResponse(epic=entity)
+
+
+class DeleteEpicRequest(BaseModel):
+    """Request for deleting a Epic by slug."""
+
+    slug: str
+
+
+class DeleteEpicResponse(BaseModel):
+    """Response for deleting a Epic."""
+
+    deleted: bool
+
+
+class DeleteEpicUseCase(DeleteUseCase[Epic, EpicRepository]):
+    """Delete a Epic by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: EpicRepository) -> None:
+        """Initialise with the epic repository."""
+        super().__init__(repo)
+
+    async def execute(self, request: DeleteEpicRequest) -> DeleteEpicResponse:
+        """Execute the delete epic use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteEpicResponse(deleted=deleted)

@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -172,3 +173,34 @@ class UpdateIntegrationUseCase(UpdateUseCase[Integration, IntegrationRepository]
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateIntegrationResponse(integration=entity)
+
+
+class DeleteIntegrationRequest(BaseModel):
+    """Request for deleting a Integration by slug."""
+
+    slug: str
+
+
+class DeleteIntegrationResponse(BaseModel):
+    """Response for deleting a Integration."""
+
+    deleted: bool
+
+
+class DeleteIntegrationUseCase(DeleteUseCase[Integration, IntegrationRepository]):
+    """Delete a Integration by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: IntegrationRepository) -> None:
+        """Initialise with the integration repository."""
+        super().__init__(repo)
+
+    async def execute(
+        self, request: DeleteIntegrationRequest
+    ) -> DeleteIntegrationResponse:
+        """Execute the delete integration use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteIntegrationResponse(deleted=deleted)

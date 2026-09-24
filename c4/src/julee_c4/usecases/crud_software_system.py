@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -165,3 +166,36 @@ class UpdateSoftwareSystemUseCase(
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateSoftwareSystemResponse(software_system=entity)
+
+
+class DeleteSoftwareSystemRequest(BaseModel):
+    """Request for deleting a SoftwareSystem by slug."""
+
+    slug: str
+
+
+class DeleteSoftwareSystemResponse(BaseModel):
+    """Response for deleting a SoftwareSystem."""
+
+    deleted: bool
+
+
+class DeleteSoftwareSystemUseCase(
+    DeleteUseCase[SoftwareSystem, SoftwareSystemRepository]
+):
+    """Delete a SoftwareSystem by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: SoftwareSystemRepository) -> None:
+        """Initialise with the software_system repository."""
+        super().__init__(repo)
+
+    async def execute(
+        self, request: DeleteSoftwareSystemRequest
+    ) -> DeleteSoftwareSystemResponse:
+        """Execute the delete software_system use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteSoftwareSystemResponse(deleted=deleted)

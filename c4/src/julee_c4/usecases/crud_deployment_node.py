@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -168,3 +169,36 @@ class UpdateDeploymentNodeUseCase(
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateDeploymentNodeResponse(deployment_node=entity)
+
+
+class DeleteDeploymentNodeRequest(BaseModel):
+    """Request for deleting a DeploymentNode by slug."""
+
+    slug: str
+
+
+class DeleteDeploymentNodeResponse(BaseModel):
+    """Response for deleting a DeploymentNode."""
+
+    deleted: bool
+
+
+class DeleteDeploymentNodeUseCase(
+    DeleteUseCase[DeploymentNode, DeploymentNodeRepository]
+):
+    """Delete a DeploymentNode by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: DeploymentNodeRepository) -> None:
+        """Initialise with the deployment_node repository."""
+        super().__init__(repo)
+
+    async def execute(
+        self, request: DeleteDeploymentNodeRequest
+    ) -> DeleteDeploymentNodeResponse:
+        """Execute the delete deployment_node use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteDeploymentNodeResponse(deleted=deleted)
