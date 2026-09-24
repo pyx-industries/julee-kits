@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -166,3 +167,32 @@ class UpdateJourneyUseCase(UpdateUseCase[Journey, JourneyRepository]):
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateJourneyResponse(journey=entity)
+
+
+class DeleteJourneyRequest(BaseModel):
+    """Request for deleting a Journey by slug."""
+
+    slug: str
+
+
+class DeleteJourneyResponse(BaseModel):
+    """Response for deleting a Journey."""
+
+    deleted: bool
+
+
+class DeleteJourneyUseCase(DeleteUseCase[Journey, JourneyRepository]):
+    """Delete a Journey by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: JourneyRepository) -> None:
+        """Initialise with the journey repository."""
+        super().__init__(repo)
+
+    async def execute(self, request: DeleteJourneyRequest) -> DeleteJourneyResponse:
+        """Execute the delete journey use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteJourneyResponse(deleted=deleted)

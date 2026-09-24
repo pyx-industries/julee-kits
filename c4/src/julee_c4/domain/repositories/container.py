@@ -2,13 +2,13 @@
 
 from typing import Protocol, runtime_checkable
 
-from julee.repositories.base import BaseRepository
+from julee.repositories.base import BaseRepository, Deletable
 
 from julee_c4.domain.models.container import Container, ContainerType
 
 
 @runtime_checkable
-class ContainerRepository(BaseRepository[Container], Protocol):
+class ContainerRepository(BaseRepository[Container], Deletable[Container], Protocol):
     """Repository protocol for Container entities.
 
     Extends BaseRepository with container-specific queries needed

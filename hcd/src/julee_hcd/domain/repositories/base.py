@@ -16,26 +16,21 @@ being written down does: a persona nobody kept is deleted, not archived.
 
 from typing import Protocol, TypeVar, runtime_checkable
 
-from julee.repositories.base import BaseRepository
+from julee.repositories.base import BaseRepository, Deletable
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
 
 
 @runtime_checkable
-class HcdRepository(BaseRepository[T], Protocol[T]):
-    """A repository of entities read out of, and written back into, documents."""
+class HcdRepository(BaseRepository[T], Deletable[T], Protocol[T]):
+    """A repository of entities read out of, and written back into, documents.
 
-    async def delete(self, entity_id: str) -> bool:
-        """Remove one entity.
-
-        Args:
-            entity_id: Identifier of the entity to remove
-
-        Returns:
-            True if an entity was removed, False if there was none
-        """
-        ...
+    Deletable because documentation that cannot forget goes stale: a
+    persona nobody kept should stop appearing in the index. The method
+    itself is declared once, in the kernel, along with the reason it
+    reports rather than raising.
+    """
 
     async def clear(self) -> None:
         """Forget everything.

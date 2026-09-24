@@ -16,6 +16,8 @@ from julee_hcd.infrastructure.repositories.memory.story import MemoryStoryReposi
 from julee_hcd.usecases.crud_persona import (
     CreatePersonaRequest,
     CreatePersonaUseCase,
+    DeletePersonaRequest,
+    DeletePersonaUseCase,
     GetPersonaRequest,
     GetPersonaUseCase,
     ListPersonasRequest,
@@ -24,7 +26,6 @@ from julee_hcd.usecases.crud_persona import (
     UpdatePersonaUseCase,
 )
 from julee_hcd.usecases.crud_story import CreateStoryRequest
-from julee_hcd.usecases.delete import DeletePersonaRequest, DeletePersonaUseCase
 
 pytestmark = pytest.mark.unit
 

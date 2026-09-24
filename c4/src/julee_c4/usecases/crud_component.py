@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -154,3 +155,32 @@ class UpdateComponentUseCase(UpdateUseCase[Component, ComponentRepository]):
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateComponentResponse(component=entity)
+
+
+class DeleteComponentRequest(BaseModel):
+    """Request for deleting a Component by slug."""
+
+    slug: str
+
+
+class DeleteComponentResponse(BaseModel):
+    """Response for deleting a Component."""
+
+    deleted: bool
+
+
+class DeleteComponentUseCase(DeleteUseCase[Component, ComponentRepository]):
+    """Delete a Component by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: ComponentRepository) -> None:
+        """Initialise with the component repository."""
+        super().__init__(repo)
+
+    async def execute(self, request: DeleteComponentRequest) -> DeleteComponentResponse:
+        """Execute the delete component use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteComponentResponse(deleted=deleted)

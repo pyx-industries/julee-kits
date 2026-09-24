@@ -14,6 +14,9 @@
 # Derived fields are left out: name_normalized, persona_normalized and
 # app_normalized are computed from the fields beside them, so accepting
 # them on the way in would let a caller contradict the entity.
+# --delete emits the fifth use case. It is opt-in in julee because two
+# of the five kits must never delete; these entities are documentation,
+# and documentation that cannot forget goes stale.
 set -e
 out=src/julee_hcd/usecases
 
@@ -26,7 +29,7 @@ gen() {
   uv run python -m julee.core.usecases.generate_crud \
     --entity "$1" --entity-module "julee_hcd.domain.models.$2" \
     --repo "$3" --repo-module "julee_hcd.domain.repositories.$2" \
-    --id-field slug --plural "$6" --out "$out" \
+    --id-field slug --plural "$6" --out "$out" --delete \
     --create-fields "$4 $authored" --update-fields "$5 $authored"
 }
 

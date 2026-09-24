@@ -2,13 +2,15 @@
 
 from typing import Protocol, runtime_checkable
 
-from julee.repositories.base import BaseRepository
+from julee.repositories.base import BaseRepository, Deletable
 
 from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
 
 
 @runtime_checkable
-class SoftwareSystemRepository(BaseRepository[SoftwareSystem], Protocol):
+class SoftwareSystemRepository(
+    BaseRepository[SoftwareSystem], Deletable[SoftwareSystem], Protocol
+):
     """Repository protocol for SoftwareSystem entities.
 
     Extends BaseRepository with system-specific queries needed

@@ -2,13 +2,13 @@
 
 from typing import Protocol, runtime_checkable
 
-from julee.repositories.base import BaseRepository
+from julee.repositories.base import BaseRepository, Deletable
 
 from julee_c4.domain.models.component import Component
 
 
 @runtime_checkable
-class ComponentRepository(BaseRepository[Component], Protocol):
+class ComponentRepository(BaseRepository[Component], Deletable[Component], Protocol):
     """Repository protocol for Component entities.
 
     Extends BaseRepository with component-specific queries needed

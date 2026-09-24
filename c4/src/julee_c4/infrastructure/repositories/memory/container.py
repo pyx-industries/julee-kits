@@ -43,10 +43,6 @@ class MemoryContainerRepository(MemoryRepositoryMixin[Container], ContainerRepos
         """List all containers."""
         return list(self.storage_dict.values())
 
-    async def delete(self, entity_id: str) -> bool:
-        """Delete a container by slug."""
-        return self.storage_dict.pop(entity_id, None) is not None
-
     async def clear(self) -> None:
         """Clear all containers."""
         self.storage_dict.clear()

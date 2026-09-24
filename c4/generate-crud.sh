@@ -10,13 +10,16 @@
 # element is identified by a slug read off its name, not by a key the
 # repository mints. The update fields are the same list without the slug;
 # the generator makes them optional itself.
+# --delete emits the fifth use case. It is opt-in in julee because two
+# of the five kits must never delete; these entities are documentation,
+# and documentation that cannot forget goes stale.
 set -e
 out=src/julee_c4/usecases
 gen() {
   uv run python -m julee.core.usecases.generate_crud \
     --entity "$1" --entity-module "julee_c4.domain.models.$2" \
     --repo "$1Repository" --repo-module "julee_c4.domain.repositories.$2" \
-    --id-field slug --out "$out" \
+    --id-field slug --out "$out" --delete \
     --create-fields "$3" --update-fields "$4"
 }
 
