@@ -15,6 +15,10 @@ pytestmark = pytest.mark.integration
 class TestStartupDependenciesIntegration:
     """The dependency chain built against what is actually running."""
 
+    # Needs a MinIO to talk to, with credentials. That is the full stack
+    # by this repo's own definition, so it is e2e as well as integration
+    # and CI leaves it alone.
+    @pytest.mark.e2e
     @pytest.mark.asyncio
     async def test_end_to_end_dependency_creation(self) -> None:
         """The dependency chain builds against real infrastructure.

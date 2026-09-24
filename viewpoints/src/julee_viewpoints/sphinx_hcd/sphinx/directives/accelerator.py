@@ -475,6 +475,56 @@ def build_accelerators_for_app(app_slug: str, docname: str, hcd_context):
     return [bullet_list]
 
 
+def build_dependent_accelerators(integration_slug: str, docname: str, hcd_context):
+    """Build a list of accelerators that draw on one integration.
+
+    An integration is a seam; this answers which work depends on it, so
+    that changing the seam shows who is affected.
+
+    Args:
+        integration_slug: The integration being asked about
+        docname: The document this is rendered into, for relative links
+        hcd_context: Where the accelerators are read from
+
+    Returns:
+        Docutils nodes: a bullet list, or a note that nothing depends on it
+    """
+    from ...config import get_config
+
+    config = get_config()
+    prefix = path_to_root(docname)
+
+    matching = [
+        accelerator
+        for accelerator in hcd_context.accelerator_repo.list_all()
+        if integration_slug
+        in {reference.slug for reference in accelerator.sources_from}
+        | {reference.slug for reference in accelerator.publishes_to}
+    ]
+
+    if not matching:
+        para = nodes.paragraph()
+        para += nodes.emphasis(
+            text=f"No accelerators depend on integration '{integration_slug}'"
+        )
+        return [para]
+
+    bullet_list = nodes.bullet_list()
+    for accelerator in sorted(matching, key=lambda a: a.slug):
+        item = nodes.list_item()
+        para = nodes.paragraph()
+        accel_path = (
+            f"{prefix}{config.get_doc_path('accelerators')}/{accelerator.slug}.html"
+        )
+        ref = nodes.reference("", "", refuri=accel_path)
+        ref += nodes.Text(accelerator.slug.replace("-", " ").title())
+        para += ref
+        item += para
+        bullet_list += item
+
+    return [bullet_list]
+
+
 def build_dependency_diagram(docname: str, hcd_context):
     """Build PlantUML diagram of accelerator dependencies."""
     try:
@@ -574,6 +624,12 @@ def process_accelerator_placeholders(app, doctree, docname):
     for node in doctree.traverse(AcceleratorsForAppPlaceholder):
         app_slug = node["app_slug"]
         content = build_accelerators_for_app(app_slug, docname, hcd_context)
+        node.replace_self(content)
+
+    for node in doctree.traverse(DependentAcceleratorsPlaceholder):
+        content = build_dependent_accelerators(
+            node["integration_slug"], docname, hcd_context
+        )
         node.replace_self(content)
 
     # Process accelerator-dependency-diagram placeholders
