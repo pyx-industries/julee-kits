@@ -7,7 +7,11 @@ from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.repositories.epic import EpicRepository
-from julee_hcd.parsers.docutils_parser import ParsedDocument, extract_story_refs
+from julee_hcd.parsers.docutils_parser import (
+    ParsedDocument,
+    content_before_nested,
+    extract_story_refs,
+)
 
 from .base import RstRepositoryMixin
 
@@ -64,7 +68,7 @@ class RstEpicRepository(RstRepositoryMixin[Epic], EpicRepository):
         story_refs = extract_story_refs(content)
 
         # Extract description (content before epic-story directives)
-        description = self._extract_description(content)
+        description = content_before_nested(content, ".. epic-story::")
 
         return Epic(
             slug=data["slug"],
@@ -75,29 +79,6 @@ class RstEpicRepository(RstRepositoryMixin[Epic], EpicRepository):
             preamble_rst=parsed.preamble,
             epilogue_rst=parsed.epilogue,
         )
-
-    def _extract_description(self, content: str) -> str:
-        """Extract description (content before epic-story directives).
-
-        Args:
-            content: Directive content
-
-        Returns:
-            Description text
-        """
-        lines = []
-        for line in content.split("\n"):
-            stripped = line.strip()
-            # Stop at first epic-story directive
-            if stripped.startswith(".. epic-story::"):
-                break
-            lines.append(line)
-
-        # Strip trailing empty lines
-        while lines and not lines[-1].strip():
-            lines.pop()
-
-        return "\n".join(lines).strip()
 
     # Query methods from EpicRepository protocol
 

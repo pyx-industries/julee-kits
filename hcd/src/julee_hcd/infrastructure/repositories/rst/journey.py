@@ -9,6 +9,7 @@ from julee_hcd.domain.models.journey import Journey, JourneyStep
 from julee_hcd.domain.repositories.journey import JourneyRepository
 from julee_hcd.parsers.docutils_parser import (
     ParsedDocument,
+    content_before_nested,
     extract_nested_directives,
     parse_comma_list,
     parse_multiline_list,
@@ -77,7 +78,7 @@ class RstJourneyRepository(RstRepositoryMixin[Journey], JourneyRepository):
                 steps.append(JourneyStep.phase(item.ref, item.description))
 
         # Extract goal (content before any step directives)
-        goal = self._extract_goal(content)
+        goal = content_before_nested(content, ".. step-")
 
         return Journey(
             slug=data["slug"],
@@ -96,29 +97,6 @@ class RstJourneyRepository(RstRepositoryMixin[Journey], JourneyRepository):
             preamble_rst=parsed.preamble,
             epilogue_rst=parsed.epilogue,
         )
-
-    def _extract_goal(self, content: str) -> str:
-        """Extract goal text (content before step directives).
-
-        Args:
-            content: Directive content
-
-        Returns:
-            Goal text
-        """
-        lines = []
-        for line in content.split("\n"):
-            stripped = line.strip()
-            # Stop at first step directive
-            if stripped.startswith(".. step-"):
-                break
-            lines.append(line)
-
-        # Strip trailing empty lines
-        while lines and not lines[-1].strip():
-            lines.pop()
-
-        return "\n".join(lines).strip()
 
     # Query methods from JourneyRepository protocol
 

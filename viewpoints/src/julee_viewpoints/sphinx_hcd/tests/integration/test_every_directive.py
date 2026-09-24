@@ -143,3 +143,47 @@ def test_a_diagram_emits_plantuml(built) -> None:
 def test_a_role_links_rather_than_printing_its_slug(built) -> None:
     """A role that cannot resolve degrades, but it should still be a link."""
     assert "knowledge-curator" in built["html"]
+
+
+# =============================================================================
+# Nested directives
+# =============================================================================
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        ".. epic-story::",
+        ".. step-epic::",
+        ".. step-story::",
+        ".. step-phase::",
+    ],
+    ids=lambda s: s.strip(". :").replace("-", "_"),
+)
+def test_a_nested_directive_is_not_rendered_as_its_own_source(
+    built, source: str
+) -> None:
+    """Docutils does not parse a directive's nested children.
+
+    So define-epic and define-journey receive them as part of their
+    content text and have to read them out. Until they did, a reader saw
+    RST source in their documentation (#26).
+    """
+    assert source not in built["text"]
+
+
+def test_an_epic_knows_the_stories_nested_under_it(built) -> None:
+    """The other half of #26: the index said "Finding (0 stories)".
+
+    The nested directives were neither rendered nor collected, so the
+    epic did not know about its own story.
+    """
+    assert "0 stories" not in built["text"]
+
+
+# A test that the journey shows its phase label is deliberately absent.
+# The steps render through a placeholder filled at doctree-read, and the
+# phase label reads the same whether it was parsed or left as source:
+# ".. step-phase:: Afterwards" contains "Afterwards" either way. Such a
+# test passes in both states, which is worse than not having one. The
+# prefix assertions above are what discriminate.

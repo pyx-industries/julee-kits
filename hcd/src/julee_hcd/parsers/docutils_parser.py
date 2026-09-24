@@ -545,3 +545,36 @@ def extract_story_refs(content: str) -> list[str]:
         List of story titles/references
     """
     return [m.group(1).strip() for m in _EPIC_STORY_PATTERN.finditer(content)]
+
+
+def content_before_nested(content: str, *prefixes: str) -> str:
+    """The prose a directive's content starts with, before its children.
+
+    ``define-epic`` and ``define-journey`` hold a description and then
+    nested ``epic-story`` or ``step-*`` directives. Docutils does not
+    parse those children, so the whole block arrives as one string and
+    the prose has to be cut from it by hand.
+
+    Both RST repositories had their own copy of this, identical but for
+    the prefix each stopped at, and the Sphinx directives had none at
+    all — which is why a nested directive appeared verbatim in the
+    rendered page (julee-kits#26).
+
+    Args:
+        content: The directive's content
+        *prefixes: Line prefixes that begin the nested part, e.g.
+            ".. step-" or ".. epic-story::"
+
+    Returns:
+        The content up to the first such line, trailing blanks removed
+    """
+    lines: list[str] = []
+    for line in content.split("\n"):
+        if any(line.strip().startswith(prefix) for prefix in prefixes):
+            break
+        lines.append(line)
+
+    while lines and not lines[-1].strip():
+        lines.pop()
+
+    return "\n".join(lines).strip()
