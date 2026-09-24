@@ -29,7 +29,15 @@ kit = Kit(
     contributes={
         "fastapi.routers": "julee_ceap.apps.api.app:app",
         "temporal.pipelines": "julee_ceap.apps.worker",
-        "temporal.activities": "julee_ceap.infrastructure.repositories.temporal.activities",
+        # The classes, not the modules holding them: a solution is told
+        # what there is rather than importing a module and guessing which
+        # of its names qualify.
+        "temporal.activities": (
+            "julee_ceap.infrastructure.repositories.temporal"
+            ".activities:ACTIVITY_CLASSES",
+            "julee_ceap.infrastructure.services.temporal"
+            ".activities:ACTIVITY_CLASSES",
+        ),
     },
 )
 

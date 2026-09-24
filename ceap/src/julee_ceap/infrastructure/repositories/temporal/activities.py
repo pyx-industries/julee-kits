@@ -114,18 +114,41 @@ class TemporalHttpRemoteSchemaRepository(HttpRemoteSchemaRepository):
     pass
 
 
-# Export the temporal repository classes for use in worker.py
+ACTIVITY_CLASSES = (
+    TemporalMinioAssemblyRepository,
+    TemporalMinioAssemblySpecificationRepository,
+    TemporalMinioDocumentRepository,
+    TemporalMinioKnowledgeServiceConfigRepository,
+    TemporalMinioKnowledgeServiceQueryRepository,
+    TemporalMinioPolicyRepository,
+    TemporalMinioDocumentPolicyValidationRepository,
+    TemporalHttpRemoteSchemaRepository,
+)
+"""The repository activities this kit offers a worker.
+
+Named in the manifest under "temporal.activities", so a solution is told
+what there is rather than reading this module to find out. A class
+decorated here and missing from this tuple is doctrine's to report.
+
+Classes, not instances: each takes its dependencies at construction, and
+which client to hand it is the composition root's decision.
+"""
+
+
 __all__ = [
+    "ACTIVITY_CLASSES",
     "TemporalMinioAssemblyRepository",
     "TemporalMinioAssemblySpecificationRepository",
     "TemporalMinioDocumentRepository",
     "TemporalMinioKnowledgeServiceConfigRepository",
     "TemporalMinioKnowledgeServiceQueryRepository",
+    "TemporalMinioPolicyRepository",
+    "TemporalMinioDocumentPolicyValidationRepository",
+    "TemporalHttpRemoteSchemaRepository",
     # Export constants for proxy consistency
     "ASSEMBLY_ACTIVITY_BASE",
     "ASSEMBLY_SPECIFICATION_ACTIVITY_BASE",
     "DOCUMENT_ACTIVITY_BASE",
     "KNOWLEDGE_SERVICE_CONFIG_ACTIVITY_BASE",
     "KNOWLEDGE_SERVICE_QUERY_ACTIVITY_BASE",
-    "TemporalHttpRemoteSchemaRepository",
 ]

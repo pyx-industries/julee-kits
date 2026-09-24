@@ -79,8 +79,17 @@ class TemporalKnowledgeService(ConfigurableKnowledgeService):
         return await super().register_file(config, document)
 
 
-# Export the temporal service classes for use in worker.py
+ACTIVITY_CLASSES = (TemporalKnowledgeService,)
+"""The service activities this kit offers a worker.
+
+Services are activities on the same terms as repositories, and a worker
+needs both, so this module is named in the manifest beside the
+repositories one.
+"""
+
+
 __all__ = [
+    "ACTIVITY_CLASSES",
     "TemporalKnowledgeService",
     "KNOWLEDGE_SERVICE_ACTIVITY_BASE",
 ]
