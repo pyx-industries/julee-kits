@@ -23,6 +23,10 @@ from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.journey import Journey, JourneyStep
 from julee_hcd.domain.repositories import JourneyRepository
+from julee_hcd.parsers.docutils_parser import (
+    content_before_nested,
+    extract_nested_directives,
+)
 
 from ...utils import (
     parse_csv_option,
@@ -80,7 +84,21 @@ class DefineJourneyDirective(HCDDirective):
         depends_on = parse_csv_option(self.options.get("depends-on", ""))
         preconditions = parse_list_option(self.options.get("preconditions", ""))
         postconditions = parse_list_option(self.options.get("postconditions", ""))
-        goal = "\n".join(self.content).strip()
+        content = "\n".join(self.content)
+
+        # Docutils does not parse a directive's nested children, so the
+        # step-* lines arrive as part of this text. Read them the way the
+        # RST repository does, rather than leaving them to render as
+        # literal source (julee-kits#26).
+        goal = content_before_nested(content, ".. step-")
+        steps = []
+        for item in extract_nested_directives(content):
+            if item.directive_type == "step-story":
+                steps.append(JourneyStep.story(item.ref))
+            elif item.directive_type == "step-epic":
+                steps.append(JourneyStep.epic(item.ref))
+            elif item.directive_type == "step-phase":
+                steps.append(JourneyStep.phase(item.ref, item.description))
 
         # Create and register journey entity
         journey = Journey(
@@ -92,7 +110,7 @@ class DefineJourneyDirective(HCDDirective):
             depends_on=tuple(depends_on),
             preconditions=tuple(preconditions),
             postconditions=tuple(postconditions),
-            steps=(),  # Will be populated by step directives
+            steps=tuple(steps),
             docname=docname,
         )
 

@@ -15,6 +15,10 @@ from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.repositories import EpicRepository
+from julee_hcd.parsers.docutils_parser import (
+    content_before_nested,
+    extract_story_refs,
+)
 from julee_hcd.usecases import derive_personas_from_stories, get_epics_for_persona
 
 from ...utils import path_to_root
@@ -51,13 +55,20 @@ class DefineEpicDirective(HCDDirective):
     def run(self):
         epic_slug = self.arguments[0]
         docname = self.env.docname
-        description = "\n".join(self.content).strip()
+        content = "\n".join(self.content)
+
+        # Docutils does not parse a directive's nested children, so the
+        # epic-story lines arrive as part of this text. Read them the way
+        # the RST repository does, rather than leaving them to render as
+        # literal source (julee-kits#26).
+        description = content_before_nested(content, ".. epic-story::")
+        story_refs = extract_story_refs(content)
 
         # Create and register the epic entity
         epic = Epic(
             slug=epic_slug,
             description=description,
-            story_refs=(),  # Will be populated by epic-story
+            story_refs=tuple(story_refs),
             docname=docname,
         )
 
