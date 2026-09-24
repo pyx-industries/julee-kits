@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -166,3 +167,32 @@ class UpdateAppUseCase(UpdateUseCase[App, AppRepository]):
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateAppResponse(app=entity)
+
+
+class DeleteAppRequest(BaseModel):
+    """Request for deleting a App by slug."""
+
+    slug: str
+
+
+class DeleteAppResponse(BaseModel):
+    """Response for deleting a App."""
+
+    deleted: bool
+
+
+class DeleteAppUseCase(DeleteUseCase[App, AppRepository]):
+    """Delete a App by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: AppRepository) -> None:
+        """Initialise with the app repository."""
+        super().__init__(repo)
+
+    async def execute(self, request: DeleteAppRequest) -> DeleteAppResponse:
+        """Execute the delete app use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteAppResponse(deleted=deleted)

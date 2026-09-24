@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -171,3 +172,34 @@ class UpdateDynamicStepUseCase(UpdateUseCase[DynamicStep, DynamicStepRepository]
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateDynamicStepResponse(dynamic_step=entity)
+
+
+class DeleteDynamicStepRequest(BaseModel):
+    """Request for deleting a DynamicStep by slug."""
+
+    slug: str
+
+
+class DeleteDynamicStepResponse(BaseModel):
+    """Response for deleting a DynamicStep."""
+
+    deleted: bool
+
+
+class DeleteDynamicStepUseCase(DeleteUseCase[DynamicStep, DynamicStepRepository]):
+    """Delete a DynamicStep by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: DynamicStepRepository) -> None:
+        """Initialise with the dynamic_step repository."""
+        super().__init__(repo)
+
+    async def execute(
+        self, request: DeleteDynamicStepRequest
+    ) -> DeleteDynamicStepResponse:
+        """Execute the delete dynamic_step use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteDynamicStepResponse(deleted=deleted)

@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -166,3 +167,34 @@ class UpdateContribModuleUseCase(UpdateUseCase[ContribModule, ContribModuleRepos
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateContribModuleResponse(contrib_module=entity)
+
+
+class DeleteContribModuleRequest(BaseModel):
+    """Request for deleting a ContribModule by slug."""
+
+    slug: str
+
+
+class DeleteContribModuleResponse(BaseModel):
+    """Response for deleting a ContribModule."""
+
+    deleted: bool
+
+
+class DeleteContribModuleUseCase(DeleteUseCase[ContribModule, ContribModuleRepository]):
+    """Delete a ContribModule by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: ContribModuleRepository) -> None:
+        """Initialise with the contrib_module repository."""
+        super().__init__(repo)
+
+    async def execute(
+        self, request: DeleteContribModuleRequest
+    ) -> DeleteContribModuleResponse:
+        """Execute the delete contrib_module use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteContribModuleResponse(deleted=deleted)

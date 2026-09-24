@@ -43,10 +43,6 @@ class MemoryComponentRepository(MemoryRepositoryMixin[Component], ComponentRepos
         """List all components."""
         return list(self.storage_dict.values())
 
-    async def delete(self, entity_id: str) -> bool:
-        """Delete a component by slug."""
-        return self.storage_dict.pop(entity_id, None) is not None
-
     async def clear(self) -> None:
         """Clear all components."""
         self.storage_dict.clear()

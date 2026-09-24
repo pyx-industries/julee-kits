@@ -45,10 +45,6 @@ class MemoryDeploymentNodeRepository(
         """List all deployment nodes."""
         return list(self.storage_dict.values())
 
-    async def delete(self, entity_id: str) -> bool:
-        """Delete a deployment node by slug."""
-        return self.storage_dict.pop(entity_id, None) is not None
-
     async def clear(self) -> None:
         """Clear all deployment nodes."""
         self.storage_dict.clear()

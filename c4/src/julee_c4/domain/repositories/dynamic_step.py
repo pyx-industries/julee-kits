@@ -2,14 +2,16 @@
 
 from typing import Protocol, runtime_checkable
 
-from julee.repositories.base import BaseRepository
+from julee.repositories.base import BaseRepository, Deletable
 
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType
 
 
 @runtime_checkable
-class DynamicStepRepository(BaseRepository[DynamicStep], Protocol):
+class DynamicStepRepository(
+    BaseRepository[DynamicStep], Deletable[DynamicStep], Protocol
+):
     """Repository protocol for DynamicStep entities.
 
     Extends BaseRepository with dynamic-diagram-specific queries

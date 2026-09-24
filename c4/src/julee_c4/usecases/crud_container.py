@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -151,3 +152,32 @@ class UpdateContainerUseCase(UpdateUseCase[Container, ContainerRepository]):
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateContainerResponse(container=entity)
+
+
+class DeleteContainerRequest(BaseModel):
+    """Request for deleting a Container by slug."""
+
+    slug: str
+
+
+class DeleteContainerResponse(BaseModel):
+    """Response for deleting a Container."""
+
+    deleted: bool
+
+
+class DeleteContainerUseCase(DeleteUseCase[Container, ContainerRepository]):
+    """Delete a Container by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: ContainerRepository) -> None:
+        """Initialise with the container repository."""
+        super().__init__(repo)
+
+    async def execute(self, request: DeleteContainerRequest) -> DeleteContainerResponse:
+        """Execute the delete container use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteContainerResponse(deleted=deleted)

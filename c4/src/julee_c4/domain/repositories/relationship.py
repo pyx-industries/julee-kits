@@ -2,13 +2,15 @@
 
 from typing import Protocol, runtime_checkable
 
-from julee.repositories.base import BaseRepository
+from julee.repositories.base import BaseRepository, Deletable
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
 
 
 @runtime_checkable
-class RelationshipRepository(BaseRepository[Relationship], Protocol):
+class RelationshipRepository(
+    BaseRepository[Relationship], Deletable[Relationship], Protocol
+):
     """Repository protocol for Relationship entities.
 
     Critical for diagram generation - provides queries to find

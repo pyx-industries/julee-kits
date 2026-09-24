@@ -7,6 +7,7 @@ from typing import Any
 
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
+    DeleteUseCase,
     GetUseCase,
     ListUseCase,
     UpdateUseCase,
@@ -162,3 +163,34 @@ class UpdateRelationshipUseCase(UpdateUseCase[Relationship, RelationshipReposito
             request.model_dump(exclude={"slug"}, exclude_unset=True),
         )
         return UpdateRelationshipResponse(relationship=entity)
+
+
+class DeleteRelationshipRequest(BaseModel):
+    """Request for deleting a Relationship by slug."""
+
+    slug: str
+
+
+class DeleteRelationshipResponse(BaseModel):
+    """Response for deleting a Relationship."""
+
+    deleted: bool
+
+
+class DeleteRelationshipUseCase(DeleteUseCase[Relationship, RelationshipRepository]):
+    """Delete a Relationship by slug.
+
+    Reports whether anything was deleted rather than raising, since
+    "it was already gone" is the outcome the caller asked for.
+    """
+
+    def __init__(self, repo: RelationshipRepository) -> None:
+        """Initialise with the relationship repository."""
+        super().__init__(repo)
+
+    async def execute(
+        self, request: DeleteRelationshipRequest
+    ) -> DeleteRelationshipResponse:
+        """Execute the delete relationship use case."""
+        deleted = await self._delete_by_id(request.slug)
+        return DeleteRelationshipResponse(deleted=deleted)

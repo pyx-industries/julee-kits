@@ -46,10 +46,6 @@ class MemorySoftwareSystemRepository(
         """List all software systems."""
         return list(self.storage_dict.values())
 
-    async def delete(self, entity_id: str) -> bool:
-        """Delete a software system by slug."""
-        return self.storage_dict.pop(entity_id, None) is not None
-
     async def clear(self) -> None:
         """Clear all software systems."""
         self.storage_dict.clear()
