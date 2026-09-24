@@ -40,7 +40,15 @@ class TemporalPollerService(HttpPollerService):
         self.logger: logging.Logger = logging.getLogger(__name__)
 
 
-# Export the temporal activity class
+ACTIVITY_CLASSES = (TemporalPollerService,)
+"""The activities this kit offers a worker.
+
+Named in the manifest under "temporal.activities", so a solution is told
+what there is rather than reading this module to find out.
+"""
+
+
 __all__ = [
+    "ACTIVITY_CLASSES",
     "TemporalPollerService",
 ]

@@ -53,7 +53,9 @@ kit = Kit(
     package="julee_polling",
     contributes={
         "temporal.pipelines": "julee_polling.apps.worker.pipelines",
-        "temporal.activities": "julee_polling.infrastructure.temporal.activities",
+        "temporal.activities": (
+            "julee_polling.infrastructure.temporal.activities:ACTIVITY_CLASSES"
+        ),
     },
 )
 
