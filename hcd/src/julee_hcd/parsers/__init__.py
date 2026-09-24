@@ -9,16 +9,15 @@ A solution is written down in several formats, and each one is read here:
   document can be turned back into the document it came from
 """
 
-from julee.core.parsers.ast import scan_bounded_contexts
-
 from .gherkin import scan_feature_directory
 from .yaml import scan_app_manifests, scan_integration_manifests
 
+# scan_bounded_contexts is deliberately not re-exported here. It lives in
+# julee.core.parsers.ast, which imports griffe, which only julee[doctrine]
+# installs — so re-exporting it made importing this package fail for
+# anyone who had not installed that extra. Whoever scans code should ask
+# the kernel for the scanner and declare the extra themselves.
 __all__ = [
-    # Re-exported from the kernel, because scanning code for bounded
-    # contexts is the same job whoever asks for it, and a caller reading
-    # a solution should not have to know which package it lives in.
-    "scan_bounded_contexts",
     "scan_app_manifests",
     "scan_feature_directory",
     "scan_integration_manifests",
