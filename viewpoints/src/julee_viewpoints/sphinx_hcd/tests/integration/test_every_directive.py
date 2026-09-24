@@ -16,9 +16,16 @@ from .conftest import registered_names
 
 pytestmark = pytest.mark.integration
 
+# The semantics directives need a project with a pyproject.toml and a
+# semantics/ directory, so they have a build of their own next door.
+SEMANTICS_DIRECTIVES = registered_names("semantics", "directive")
+
 ALL_DIRECTIVES = sorted(
-    registered_names("sphinx_hcd", "directive")
-    | registered_names("sphinx_c4", "directive")
+    (
+        registered_names("sphinx_hcd", "directive")
+        | registered_names("sphinx_c4", "directive")
+    )
+    - SEMANTICS_DIRECTIVES
 )
 ALL_ROLES = sorted(registered_names("sphinx_hcd", "role"))
 

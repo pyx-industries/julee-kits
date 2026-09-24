@@ -233,6 +233,9 @@ def registered_names(module: str, kind: str) -> set[str]:
         The names registered
     """
     here = Path(__file__).resolve()
-    package = here.parents[3] / module / "__init__.py"
+    root = here.parents[3]
+    package = root / module / "__init__.py"
+    if not package.exists():
+        package = root / f"{module}.py"
     pattern = rf"add_{kind}\(\s*[\"']([a-z0-9-]+)"
     return set(re.findall(pattern, package.read_text()))
