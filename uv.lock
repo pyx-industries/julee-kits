@@ -1332,7 +1332,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "julee", specifier = ">=0.5.2,<0.6" },
+    { name = "julee", specifier = ">=0.5.3,<0.6" },
     { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5.6,<0.6" },
     { name = "julee-c4", editable = "c4" },
     { name = "julee-hcd", editable = "hcd" },
