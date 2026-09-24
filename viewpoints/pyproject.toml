@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "julee-viewpoints"
-version = "0.3.1"
+version = "0.4.0"
 description = "Code-outward documentation for julee solutions"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -19,7 +19,7 @@ dependencies = [
     # [doctrine] for griffe: this kit reads a solution's code to document
     # it, which is the whole point of it, and that is where the reader
     # lives.
-    "julee[doctrine]>=0.5.3,<0.6",
+    "julee[doctrine]>=0.5.10,<0.6",
     # The domain this kit renders. It holds no entities of its own: hcd
     # says what a persona is, c4 says what a container is, and this kit
     # projects both into documentation.
@@ -42,7 +42,7 @@ dev = [
     "types-PyYAML",
     "black>=24.0.0",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.5.6,<0.6",
+    "julee[doctrine]>=0.5.10,<0.6",
 ]
 
 [project.entry-points."julee.kits"]

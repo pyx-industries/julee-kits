@@ -1102,14 +1102,14 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.5.6"
+version = "0.5.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cc/0e/0f23b6338cb194d6c6a337c6b8ee4a8255b92eda1b981002f06654d827f7/julee-0.5.6.tar.gz", hash = "sha256:7d8852b9b895b423fba0ed7a388ea4aac84d1cea82c59f2ff3984aceaa2814b9", size = 124964, upload-time = "2026-09-24T01:38:58.317Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/15/bb/ee25df078e4ab73cf187e01f0416879b065cb234ded5bcbd445617c2f59b/julee-0.5.10.tar.gz", hash = "sha256:ddb59f722f5b46f646264532715485989edd5236ec48863617edc5bfc8bba9ad", size = 137811, upload-time = "2026-09-24T05:32:49.782Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e9/ed/65e32f00ca345c922a248bc1935f0e4fced56c14b87e0e753dc361c09917/julee-0.5.6-py3-none-any.whl", hash = "sha256:2af4d45af8f576a4b05a20f046ef37c0227f867a920e610be15a76bbc068f3c8", size = 159279, upload-time = "2026-09-24T01:38:57.249Z" },
+    { url = "https://files.pythonhosted.org/packages/5f/24/36c335f97a6051daae87f85eadc2861f2a750af7a3115fccf165215e390f/julee-0.5.10-py3-none-any.whl", hash = "sha256:1cde7133d53e8643e00d7fa3bfeb7255f3f4b839854fc4461fe5cfe04fb97afc", size = 177322, upload-time = "2026-09-24T05:32:48.628Z" },
 ]
 
 [package.optional-dependencies]
@@ -1304,7 +1304,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-viewpoints"
-version = "0.3.1"
+version = "0.4.0"
 source = { editable = "viewpoints" }
 dependencies = [
     { name = "julee", extra = ["doctrine"] },
@@ -1332,8 +1332,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "julee", extras = ["doctrine"], specifier = ">=0.5.3,<0.6" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5.6,<0.6" },
+    { name = "julee", extras = ["doctrine"], specifier = ">=0.5.10,<0.6" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.5.10,<0.6" },
     { name = "julee-c4", editable = "c4" },
     { name = "julee-hcd", editable = "hcd" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
