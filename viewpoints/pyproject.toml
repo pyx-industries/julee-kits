@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "julee-viewpoints"
-version = "0.4.1"
+version = "0.4.2"
 description = "Code-outward documentation for julee solutions"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -23,7 +23,7 @@ dependencies = [
     # The domain this kit renders. It holds no entities of its own: hcd
     # says what a persona is, c4 says what a container is, and this kit
     # projects both into documentation.
-    "julee-hcd>=0.1.1,<0.2",
+    "julee-hcd>=0.2,<0.3",
     "julee-c4>=0.1.1,<0.2",
     "sphinx>=7.0.0",
 ]
