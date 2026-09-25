@@ -1102,14 +1102,14 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.6.0"
+version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/00/9e/02ce647159e779fbcd9ea984e1bb6a96aefdfc2e44d9470585c8669e03b4/julee-0.6.0.tar.gz", hash = "sha256:590ef6a1dcbd021ce1dc8a2afba90004d82d358cd144593c87f66338ffbdbbd7", size = 174688, upload-time = "2026-09-25T04:55:50.789Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/87/0e/5542f010d28ca1fb8cf01058c9f15990233c681bf375138bd33a27e13b36/julee-0.6.1.tar.gz", hash = "sha256:37f560edfb9bbcc30c72c589265bbe2ba2b4a484ab3e7fa91baa9d5e7013eb05", size = 176325, upload-time = "2026-09-25T05:48:48.835Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/dc/40cda9f01750a0739f34488446fbc6a94b4de8f9e833946af0b1ef4c5ad5/julee-0.6.0-py3-none-any.whl", hash = "sha256:28e90c5426e117c88d4d86651ebb0a63a4894138f12bfd5cfefbfb6104086c82", size = 227258, upload-time = "2026-09-25T04:55:49.52Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/56/5067c3767360f5fdd8b606eb8634f5c98af4a7c2ec4a83748ca0c1d3f91e/julee-0.6.1-py3-none-any.whl", hash = "sha256:faffeb5e44d0045f0adaf53882ffd562eebd9cf127ad25faaf310030deb99c2f", size = 228978, upload-time = "2026-09-25T05:48:47.46Z" },
 ]
 
 [package.optional-dependencies]

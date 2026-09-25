@@ -17,14 +17,14 @@ from julee_hcd.usecases.journey_orchestration import (
 )
 
 if TYPE_CHECKING:
-    from julee_hcd.domain.services.empty_journey_handler import EmptyJourneyHandler
-    from julee_hcd.domain.services.unknown_journey_epic_ref_handler import (
+    from julee_hcd.domain.handlers.empty_journey_handler import EmptyJourneyHandler
+    from julee_hcd.domain.handlers.unknown_journey_epic_ref_handler import (
         UnknownJourneyEpicRefHandler,
     )
-    from julee_hcd.domain.services.unknown_journey_persona_handler import (
+    from julee_hcd.domain.handlers.unknown_journey_persona_handler import (
         UnknownJourneyPersonaHandler,
     )
-    from julee_hcd.domain.services.unknown_journey_story_ref_handler import (
+    from julee_hcd.domain.handlers.unknown_journey_story_ref_handler import (
         UnknownJourneyStoryRefHandler,
     )
 
