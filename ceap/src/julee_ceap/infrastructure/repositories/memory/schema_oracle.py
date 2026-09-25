@@ -1,9 +1,9 @@
 from typing import Any
 
-from julee_ceap.domain.repositories.remote_schema import RemoteSchemaRepository
+from julee_ceap.domain.oracles.schema import SchemaOracle
 
 
-class MemoryRemoteSchemaRepository(RemoteSchemaRepository):
+class MemorySchemaOracle(SchemaOracle):
     def __init__(self, schemas: dict[str, dict] | None = None) -> None:
         self._schemas: dict[str, dict] = schemas or {}
 

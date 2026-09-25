@@ -13,7 +13,7 @@ The classes follow the naming pattern documented in systemPatterns.org:
 from julee.integrations.temporal.decorators import temporal_activity_registration
 
 from julee_ceap.infrastructure.repositories.http.schema import (
-    HttpRemoteSchemaRepository,
+    HttpSchemaOracle,
 )
 from julee_ceap.infrastructure.repositories.minio.assembly import (
     MinioAssemblyRepository,
@@ -46,7 +46,7 @@ from julee_ceap.infrastructure.repositories.temporal.activity_names import (
     KNOWLEDGE_SERVICE_CONFIG_ACTIVITY_BASE,
     KNOWLEDGE_SERVICE_QUERY_ACTIVITY_BASE,
     POLICY_ACTIVITY_BASE,
-    REMOTE_SCHEMA_ACTIVITY_BASE,
+    SCHEMA_ORACLE_ACTIVITY_BASE,
 )
 
 
@@ -107,9 +107,9 @@ class TemporalMinioDocumentPolicyValidationRepository(
     pass
 
 
-@temporal_activity_registration(REMOTE_SCHEMA_ACTIVITY_BASE)
-class TemporalHttpRemoteSchemaRepository(HttpRemoteSchemaRepository):
-    """Temporal activity wrapper for HttpRemoteSchemaRepository."""
+@temporal_activity_registration(SCHEMA_ORACLE_ACTIVITY_BASE)
+class TemporalHttpSchemaOracle(HttpSchemaOracle):
+    """Temporal activity wrapper for HttpSchemaOracle."""
 
     pass
 
@@ -122,7 +122,7 @@ ACTIVITY_CLASSES = (
     TemporalMinioKnowledgeServiceQueryRepository,
     TemporalMinioPolicyRepository,
     TemporalMinioDocumentPolicyValidationRepository,
-    TemporalHttpRemoteSchemaRepository,
+    TemporalHttpSchemaOracle,
 )
 """The repository activities this kit offers a worker.
 
@@ -144,7 +144,7 @@ __all__ = [
     "TemporalMinioKnowledgeServiceQueryRepository",
     "TemporalMinioPolicyRepository",
     "TemporalMinioDocumentPolicyValidationRepository",
-    "TemporalHttpRemoteSchemaRepository",
+    "TemporalHttpSchemaOracle",
     # Export constants for proxy consistency
     "ASSEMBLY_ACTIVITY_BASE",
     "ASSEMBLY_SPECIFICATION_ACTIVITY_BASE",

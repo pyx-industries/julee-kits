@@ -9,8 +9,8 @@ compensation for the complex document assembly process.
 import logging
 from datetime import timedelta
 
-from julee.integrations.temporal.clock import TemporalClockService
-from julee.integrations.temporal.execution import TemporalExecutionService
+from julee.integrations.temporal.clock import TemporalClockWitness
+from julee.integrations.temporal.execution import TemporalExecutionWitness
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
@@ -21,7 +21,7 @@ from julee_ceap.infrastructure.repositories.temporal.proxies import (
     WorkflowDocumentRepositoryProxy,
     WorkflowKnowledgeServiceConfigRepositoryProxy,
     WorkflowKnowledgeServiceQueryRepositoryProxy,
-    WorkflowRemoteSchemaRepositoryProxy,
+    WorkflowSchemaOracleProxy,
 )
 from julee_ceap.infrastructure.services.temporal.proxies import (
     WorkflowKnowledgeServiceProxy,
@@ -77,15 +77,15 @@ class ExtractAssembleWorkflow:
             ValueError: If required entities are not found
             RuntimeError: If assembly processing fails after retries
         """
-        execution_service = TemporalExecutionService()
-        clock_service = TemporalClockService()
+        execution_witness = TemporalExecutionWitness()
+        clock_witness = TemporalClockWitness()
 
         workflow.logger.info(
             "Starting extract assemble workflow",
             extra={
                 "document_id": document_id,
                 "assembly_specification_id": assembly_specification_id,
-                "execution_id": execution_service.get_execution_id(),
+                "execution_id": execution_witness.get_execution_id(),
             },
         )
 
@@ -128,9 +128,9 @@ class ExtractAssembleWorkflow:
                 knowledge_service_query_repo=knowledge_service_query_repo,
                 knowledge_service_config_repo=knowledge_service_config_repo,
                 knowledge_service=knowledge_service,
-                remote_schema_repo=WorkflowRemoteSchemaRepositoryProxy(),  # type: ignore[abstract]
-                clock_service=clock_service,
-                execution_service=execution_service,
+                schema_oracle=WorkflowSchemaOracleProxy(),  # type: ignore[abstract]
+                clock_witness=clock_witness,
+                execution_witness=execution_witness,
             )
 
             workflow.logger.debug(

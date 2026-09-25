@@ -2,10 +2,10 @@ from typing import Any
 
 import httpx
 
-from julee_ceap.domain.repositories.remote_schema import RemoteSchemaRepository
+from julee_ceap.domain.oracles.schema import SchemaOracle
 
 
-class HttpRemoteSchemaRepository(RemoteSchemaRepository):
+class HttpSchemaOracle(SchemaOracle):
     async def fetch(self, url: str) -> dict[str, Any]:
         async with httpx.AsyncClient() as client:
             response = await client.get(url)

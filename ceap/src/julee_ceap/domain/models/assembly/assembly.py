@@ -56,7 +56,7 @@ class Assembly(Entity):
         description="ID of the assembled document produced by this assembly",
     )
 
-    # Assembly metadata — provided by use case via ClockService (ADR 004)
+    # Assembly metadata — provided by use case via ClockWitness (ADR 004)
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
