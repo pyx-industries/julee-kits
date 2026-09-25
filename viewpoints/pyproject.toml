@@ -19,7 +19,7 @@ dependencies = [
     # [doctrine] for griffe: this kit reads a solution's code to document
     # it, which is the whole point of it, and that is where the reader
     # lives.
-    "julee[doctrine]>=0.6.1,<0.7",
+    "julee[doctrine]>=0.7,<0.8",
     # The domain this kit renders. It holds no entities of its own: hcd
     # says what a persona is, c4 says what a container is, and this kit
     # projects both into documentation.
@@ -42,7 +42,7 @@ dev = [
     "types-PyYAML",
     "black>=24.0.0",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.6.1,<0.7",
+    "julee[doctrine]>=0.7,<0.8",
 ]
 
 [project.entry-points."julee.kits"]
@@ -58,7 +58,12 @@ include = ["julee_viewpoints*"]
 
 [tool.julee]
 # This kit is a julee solution in its own right, and runs its own doctrine.
+# It has no bounded contexts of its own: WS7 moved its domain into
+# julee-hcd and julee-c4, leaving a Sphinx projection over both. Said out
+# loud, because a run with nothing to check passes every rule that
+# iterates contexts and reads exactly like one that complies (julee #240).
 search_root = "src/julee_viewpoints"
+bounded_contexts = "none"
 docs_root = "docs"
 
 # It is also the only kit that reads two others, so it adopts them the
