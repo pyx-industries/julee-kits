@@ -20,7 +20,7 @@ KNOWLEDGE_SERVICE_CONFIG_ACTIVITY_BASE = "julee.knowledge_service_config_repo.mi
 KNOWLEDGE_SERVICE_QUERY_ACTIVITY_BASE = "julee.knowledge_service_query_repo.minio"
 POLICY_ACTIVITY_BASE = "julee.policy_repo.minio"
 DOCUMENT_POLICY_VALIDATION_ACTIVITY_BASE = "julee.document_policy_validation_repo.minio"
-REMOTE_SCHEMA_ACTIVITY_BASE = "julee.remote_schema_repo.http"
+SCHEMA_ORACLE_ACTIVITY_BASE = "julee.schema_oracle.http"
 
 
 # Export all constants
@@ -32,5 +32,5 @@ __all__ = [
     "KNOWLEDGE_SERVICE_QUERY_ACTIVITY_BASE",
     "POLICY_ACTIVITY_BASE",
     "DOCUMENT_POLICY_VALIDATION_ACTIVITY_BASE",
-    "REMOTE_SCHEMA_ACTIVITY_BASE",
+    "SCHEMA_ORACLE_ACTIVITY_BASE",
 ]

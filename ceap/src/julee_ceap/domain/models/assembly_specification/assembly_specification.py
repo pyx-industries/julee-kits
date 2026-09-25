@@ -110,7 +110,7 @@ class AssemblySpecification(Entity):
 
         if len(v) == 1 and "$ref" in v:
             # Bare $ref — accept as-is. Resolution and schema validation
-            # happen at assembly time via RemoteSchemaRepository, not here.
+            # happen at assembly time via SchemaOracle, not here.
             if not isinstance(v["$ref"], str) or not v["$ref"].strip():
                 raise ValueError("$ref value must be a non-empty string")
             return v
@@ -152,7 +152,7 @@ class AssemblySpecification(Entity):
 
             # Validate JSON Pointer format; existence against the resolved
             # schema is only possible for inline schemas (not bare $refs —
-            # those are resolved at assembly time via RemoteSchemaRepository).
+            # those are resolved at assembly time via SchemaOracle).
             try:
                 if schema_pointer == "":
                     # Empty string is valid - refers to root of schema

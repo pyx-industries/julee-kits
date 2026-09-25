@@ -15,10 +15,10 @@ from typing import Any
 
 import jsonschema
 import multihash
-from julee.core.services import ClockService, ExecutionService, SystemClockService
-from julee.core.services.execution import DefaultExecutionService
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol, validate_parameter_types
+from julee.core.witnesses import ClockWitness, ExecutionWitness, SystemClockWitness
+from julee.core.witnesses.execution import DefaultExecutionWitness
 from pydantic import BaseModel
 
 from julee_ceap._schema_ref import extract_schema_from_fetched
@@ -30,13 +30,13 @@ from julee_ceap.domain.models import (
     DocumentStatus,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.oracles import SchemaOracle
 from julee_ceap.domain.repositories import (
     AssemblyRepository,
     AssemblySpecificationRepository,
     DocumentRepository,
     KnowledgeServiceConfigRepository,
     KnowledgeServiceQueryRepository,
-    RemoteSchemaRepository,
 )
 from julee_ceap.infrastructure.services.knowledge_service import (
     KnowledgeService,
@@ -92,9 +92,9 @@ class ExtractAssembleDataUseCase:
         knowledge_service_query_repo: KnowledgeServiceQueryRepository,
         knowledge_service_config_repo: KnowledgeServiceConfigRepository,
         knowledge_service: KnowledgeService,
-        remote_schema_repo: RemoteSchemaRepository,
-        clock_service: ClockService | None = None,
-        execution_service: ExecutionService | None = None,
+        schema_oracle: SchemaOracle,
+        clock_witness: ClockWitness | None = None,
+        execution_witness: ExecutionWitness | None = None,
     ) -> None:
         """Initialize extract and assemble data use case.
 
@@ -109,12 +109,14 @@ class ExtractAssembleDataUseCase:
                 configuration operations
             knowledge_service: Knowledge service instance for external
                 operations
-            clock_service: Service for obtaining the current time.
-                Defaults to SystemClockService. Inject TemporalClockService
-                inside Temporal workflows for deterministic replay.
-            execution_service: Service for obtaining the execution ID.
-                Defaults to DefaultExecutionService. Inject
-                TemporalExecutionService inside Temporal workflows.
+            schema_oracle: Oracle for fetching a JSON Schema by URL
+            clock_witness: Witness for the current time.
+                Defaults to SystemClockWitness. Inject TemporalClockWitness
+                inside Temporal workflows, where the runtime records what
+                it said so a replay is told the same thing.
+            execution_witness: Witness for the execution ID.
+                Defaults to DefaultExecutionWitness. Inject
+                TemporalExecutionWitness inside Temporal workflows.
 
         .. note::
 
@@ -133,13 +135,13 @@ class ExtractAssembleDataUseCase:
             DocumentRepository,  # type: ignore[type-abstract]
         )
         self.knowledge_service = knowledge_service
-        self.remote_schema_repo = ensure_repository_protocol(
-            remote_schema_repo,
-            RemoteSchemaRepository,  # type: ignore[type-abstract]
+        self.schema_oracle = ensure_repository_protocol(
+            schema_oracle,
+            SchemaOracle,  # type: ignore[type-abstract]
         )
-        self._clock_service: ClockService = clock_service or SystemClockService()
-        self._execution_service: ExecutionService = (
-            execution_service or DefaultExecutionService()
+        self._clock_witness: ClockWitness = clock_witness or SystemClockWitness()
+        self._execution_witness: ExecutionWitness = (
+            execution_witness or DefaultExecutionWitness()
         )
         self.assembly_repo = ensure_repository_protocol(
             assembly_repo,
@@ -200,7 +202,7 @@ class ExtractAssembleDataUseCase:
             RuntimeError: If assembly processing fails
 
         """
-        execution_id = self._execution_service.get_execution_id()
+        execution_id = self._execution_witness.get_execution_id()
         logger.debug(
             "Starting data assembly use case",
             extra={
@@ -221,7 +223,7 @@ class ExtractAssembleDataUseCase:
         )
 
         # Step 3: Store the initial assembly
-        now = self._clock_service.now()
+        now = self._clock_witness.now()
         assembly = Assembly(
             assembly_id=assembly_id,
             assembly_specification_id=assembly_specification_id,
@@ -393,14 +395,14 @@ class ExtractAssembleDataUseCase:
         """Fetch and resolve a bare $ref schema; return inline schemas unchanged.
 
         If the schema is exactly {"$ref": "url#/fragment"}, fetches the URL via
-        the injected remote_schema_repo (a Temporal activity in workflow context)
+        the injected schema_oracle (a Temporal activity in workflow context)
         and delegates fragment extraction to extract_schema_from_fetched.
         Re-fetching on every query ensures the latest published version is used.
         """
         if not (len(schema) == 1 and "$ref" in schema):
             return dict(schema)
         url, _, fragment = schema["$ref"].partition("#")
-        full_schema = await self.remote_schema_repo.fetch(url)
+        full_schema = await self.schema_oracle.fetch(url)
         return extract_schema_from_fetched(full_schema, fragment)
 
     @try_use_case_step("assembly_iteration")
@@ -604,7 +606,7 @@ class ExtractAssembleDataUseCase:
         assembled_content = json.dumps(assembled_data, indent=2)
         content_bytes = assembled_content.encode("utf-8")
 
-        now = self._clock_service.now()
+        now = self._clock_witness.now()
         assembled_document = Document(
             document_id=document_id,
             original_filename=(

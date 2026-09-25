@@ -542,7 +542,7 @@ class TestAssemblyRefSchemaValidation:
     def test_ref_to_unresolvable_url_is_accepted(self) -> None:
         """A $ref pointing at an unresolvable URL is accepted as-is.
 
-        Resolution is deferred to assembly time via RemoteSchemaRepository;
+        Resolution is deferred to assembly time via SchemaOracle;
         the domain model does not fetch remote schemas during construction.
         """
         spec = AssemblySpecification(
@@ -573,7 +573,7 @@ class TestAssemblyRefSchemaValidation:
     def test_knowledge_service_queries_format_validated_for_ref_schema(self) -> None:
         """JSON Pointer keys in knowledge_service_queries are format-validated
         for bare $ref schemas; existence against the resolved schema is deferred
-        to assembly time via RemoteSchemaRepository."""
+        to assembly time via SchemaOracle."""
         spec = AssemblySpecification(
             assembly_specification_id="ksq-ref-test",
             name="KSQ Ref Test",

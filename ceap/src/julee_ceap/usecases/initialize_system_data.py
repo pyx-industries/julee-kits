@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from julee.core.services import ClockService, SystemClockService
+from julee.core.witnesses import ClockWitness, SystemClockWitness
 from pydantic import BaseModel
 
 from julee_ceap.domain.models.assembly_specification import (
@@ -76,7 +76,7 @@ class InitializeSystemDataUseCase:
         document_repository: DocumentRepository,
         knowledge_service_query_repository: KnowledgeServiceQueryRepository,
         assembly_specification_repository: AssemblySpecificationRepository,
-        clock_service: ClockService | None = None,
+        clock_witness: ClockWitness | None = None,
     ) -> None:
         """Initialize the use case with required repositories.
 
@@ -88,14 +88,14 @@ class InitializeSystemDataUseCase:
                 service queries
             assembly_specification_repository: Repository for assembly
                 specifications
-            clock_service: Service for obtaining the current time.
-                Defaults to SystemClockService.
+            clock_witness: Service for obtaining the current time.
+                Defaults to SystemClockWitness.
         """
         self.config_repo = knowledge_service_config_repository
         self.document_repo = document_repository
         self.query_repo = knowledge_service_query_repository
         self.assembly_spec_repo = assembly_specification_repository
-        self._clock_service: ClockService = clock_service or SystemClockService()
+        self._clock_witness: ClockWitness = clock_witness or SystemClockWitness()
         self.logger = logging.getLogger("InitializeSystemDataUseCase")
 
     async def execute(
@@ -301,8 +301,8 @@ class InitializeSystemDataUseCase:
             name=config_data["name"],
             description=config_data["description"],
             service_api=service_api,
-            created_at=self._clock_service.now(),
-            updated_at=self._clock_service.now(),
+            created_at=self._clock_witness.now(),
+            updated_at=self._clock_witness.now(),
         )
 
         self.logger.debug(
@@ -471,8 +471,8 @@ class InitializeSystemDataUseCase:
             prompt=query_data["prompt"],
             assistant_prompt=query_data["assistant_prompt"],
             query_metadata=query_metadata,
-            created_at=self._clock_service.now(),
-            updated_at=self._clock_service.now(),
+            created_at=self._clock_witness.now(),
+            updated_at=self._clock_witness.now(),
         )
 
         self.logger.debug(
@@ -674,8 +674,8 @@ class InitializeSystemDataUseCase:
             knowledge_service_queries=knowledge_service_queries,
             status=status,
             version=version,
-            created_at=self._clock_service.now(),
-            updated_at=self._clock_service.now(),
+            created_at=self._clock_witness.now(),
+            updated_at=self._clock_witness.now(),
         )
 
         self.logger.debug(
@@ -894,8 +894,8 @@ class InitializeSystemDataUseCase:
             status=status,
             knowledge_service_id=knowledge_service_id,
             assembly_types=assembly_types,
-            created_at=self._clock_service.now(),
-            updated_at=self._clock_service.now(),
+            created_at=self._clock_witness.now(),
+            updated_at=self._clock_witness.now(),
             additional_metadata=additional_metadata,
             content_bytes=content_bytes,
         )

@@ -16,7 +16,7 @@ Design decisions documented:
 - All ID fields must be non-empty and non-whitespace
 - Status defaults to PENDING
 - assembled_document_id is optional and defaults to None
-- Timestamps are provided by the use case via ClockService (ADR 004)
+- Timestamps are provided by the use case via ClockWitness (ADR 004)
 """
 
 import json
@@ -163,7 +163,7 @@ class TestAssemblyDefaults:
     def test_assembly_timestamp_defaults_to_none(self) -> None:
         """Test that Assembly timestamps default to None.
 
-        Use cases are responsible for supplying timestamps via ClockService
+        Use cases are responsible for supplying timestamps via ClockWitness
         (ADR 004). The entity itself has no default for these fields.
         """
         minimal_assembly = Assembly(
