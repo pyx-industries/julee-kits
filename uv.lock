@@ -1132,7 +1132,7 @@ temporal = [
 
 [[package]]
 name = "julee-c4"
-version = "0.1.4"
+version = "0.1.5"
 source = { editable = "c4" }
 dependencies = [
     { name = "julee" },
@@ -1168,7 +1168,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-ceap"
-version = "0.1.2"
+version = "0.2.0"
 source = { editable = "ceap" }
 dependencies = [
     { name = "anthropic" },
@@ -1226,7 +1226,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-hcd"
-version = "0.1.4"
+version = "0.2.0"
 source = { editable = "hcd" }
 dependencies = [
     { name = "docutils" },
@@ -1268,7 +1268,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-polling"
-version = "0.1.2"
+version = "0.2.0"
 source = { editable = "polling" }
 dependencies = [
     { name = "httpx" },
@@ -1304,7 +1304,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "julee-viewpoints"
-version = "0.4.1"
+version = "0.4.2"
 source = { editable = "viewpoints" }
 dependencies = [
     { name = "julee", extra = ["doctrine"] },
