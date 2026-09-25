@@ -13,10 +13,10 @@ from typing import Any
 from temporalio import workflow
 
 from julee_polling.domain.calculators.new_data import NewDataCalculator
-from julee_polling.domain.models.polling_config import PollingConfig
-from julee_polling.domain.services.polling_result_handler import (
+from julee_polling.domain.handlers.polling_result_handler import (
     PollingResultHandler,
 )
+from julee_polling.domain.models.polling_config import PollingConfig
 from julee_polling.infrastructure.temporal.proxies import (
     WorkflowPollerServiceProxy,
 )

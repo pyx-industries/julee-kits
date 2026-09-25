@@ -17,8 +17,8 @@ from julee_hcd.usecases.epic_orchestration import (
 )
 
 if TYPE_CHECKING:
-    from julee_hcd.domain.services.empty_epic_handler import EmptyEpicHandler
-    from julee_hcd.domain.services.unknown_story_ref_handler import (
+    from julee_hcd.domain.handlers.empty_epic_handler import EmptyEpicHandler
+    from julee_hcd.domain.handlers.unknown_story_ref_handler import (
         UnknownStoryRefHandler,
     )
 

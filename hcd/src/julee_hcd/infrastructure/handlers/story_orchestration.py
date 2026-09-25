@@ -17,8 +17,8 @@ from julee_hcd.usecases.story_orchestration import (
 )
 
 if TYPE_CHECKING:
-    from julee_hcd.domain.services.orphan_story_handler import OrphanStoryHandler
-    from julee_hcd.domain.services.unknown_persona_handler import (
+    from julee_hcd.domain.handlers.orphan_story_handler import OrphanStoryHandler
+    from julee_hcd.domain.handlers.unknown_persona_handler import (
         UnknownPersonaHandler,
     )
 
