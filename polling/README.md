@@ -11,6 +11,6 @@ kits = ["polling"]
 The kit provides:
 
 - `PollingConfig`, the schedule and endpoint to watch.
-- `PollerService`, `NewDataAnalyzer` and `PollingResultHandler` protocols.
+- `PollerService`, `NewDataCalculator` and `PollingResultHandler` protocols.
 - `HttpPollerService`, polling a REST endpoint.
 - `PollDataUseCase`, and a Temporal pipeline that runs it durably.

@@ -11,8 +11,8 @@ import logging
 
 from pydantic import BaseModel
 
+from julee_polling.domain.calculators.new_data import NewDataCalculator
 from julee_polling.domain.models.polling_config import PollingConfig
-from julee_polling.domain.services.new_data_analyzer import NewDataAnalyzer
 from julee_polling.domain.services.poller import PollerService
 from julee_polling.domain.services.polling_result_handler import (
     PollingResultHandler,
@@ -47,7 +47,7 @@ class PollDataUseCase:
     1. Poll the endpoint via the injected PollerService
     2. Compute the SHA-256 hash of the response content
     3. Compare with the previous run's hash (from previous_completion)
-    4. If content has changed and an analyzer is set, identify new item IDs
+    4. If content has changed and an calculator is set, identify new item IDs
     5. Delegate to the optional PollingResultHandler with the item IDs
     6. Return a PollDataResponse; the pipeline builds the Temporal
        last-completion-result dict from it.
@@ -58,11 +58,11 @@ class PollDataUseCase:
         self,
         poller: PollerService,
         handler: PollingResultHandler,
-        analyzer: NewDataAnalyzer,
+        calculator: NewDataCalculator,
     ) -> None:
         self._poller = poller
         self._handler = handler
-        self._analyzer = analyzer
+        self._calculator = calculator
 
     async def execute(self, request: PollDataRequest) -> PollDataResponse:
         """
@@ -106,11 +106,11 @@ class PollDataUseCase:
         # Step 4: Detect change
         has_new_data = previous_hash != current_hash
 
-        # Step 5: Analyze and invoke handler if new data detected
+        # Step 5: Calculate what is new, and invoke the handler if anything is
         items_processed = 0
         if has_new_data:
             try:
-                item_ids = await self._analyzer.identify_new_items(
+                item_ids = await self._calculator.identify_new_items(
                     previous_data, current_content
                 )
                 items_processed = len(item_ids)
@@ -121,7 +121,7 @@ class PollDataUseCase:
                 )
             except Exception as e:
                 logger.error(
-                    "Analyzer or handler raised an exception; continuing without ack",
+                    "Calculator or handler raised an exception; continuing without ack",
                     extra={
                         "endpoint_id": endpoint_id,
                         "error": str(e),

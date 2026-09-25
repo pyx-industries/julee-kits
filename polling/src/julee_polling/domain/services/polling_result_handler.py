@@ -11,7 +11,7 @@ to the handler without knowing what the handler does - this is the
 "green-dotted-egg-handler" principle.
 
 By the time handle_new_data() is called, the NewDataDetectionPipeline has
-already translated raw bytes into item IDs via the NewDataAnalyzer. Handlers
+already translated raw bytes into item IDs via the NewDataCalculator. Handlers
 therefore work with structured identifiers, not raw content.
 """
 
@@ -37,7 +37,7 @@ class PollingResultHandler(Protocol):
     - Complex multi-step processing
 
     The handler receives item IDs (strings) rather than raw bytes because the
-    NewDataDetectionPipeline runs a NewDataAnalyzer before calling the handler.
+    NewDataDetectionPipeline runs a NewDataCalculator before calling the handler.
     This keeps use-case logic out of handlers and makes handlers pure dispatchers.
     """
 
@@ -51,14 +51,14 @@ class PollingResultHandler(Protocol):
         Handle newly detected items from a polling operation.
 
         This method is called when the polling system detects that data at
-        an endpoint has changed and the analyzer has identified the new items.
+        an endpoint has changed and the calculator has identified the new items.
         The handler decides what to do with the item IDs — whether to start
         processing workflows, queue work, send notifications, or any other
         domain-specific action.
 
         Args:
             endpoint_id: Unique identifier for the polled endpoint
-            new_item_ids: List of item IDs identified as new or changed by the analyzer
+            new_item_ids: List of item IDs identified as new or changed by the calculator
             content_hash: SHA256 hash of the new content for deduplication/tracking
 
         Returns:
