@@ -6,7 +6,7 @@ environment: the poll_endpoint activity is a stand-in, and the workflow
 orchestration around it is real.
 
 NewDataDetectionPipeline is abstract - a solution subclasses it to supply
-a handler and an analyzer - so the tests run a subclass of their own,
+a handler and an calculator - so the tests run a subclass of their own,
 whose handler records what it is given.
 
 Every workflow is started with an execution timeout. A workflow that
@@ -84,8 +84,8 @@ class FailingHandler:
         raise RuntimeError("Handler failed")
 
 
-class WholePayloadAnalyzer:
-    """A NewDataAnalyzer that treats each payload as a single item."""
+class WholePayloadCalculator:
+    """A NewDataCalculator that treats each payload as a single item."""
 
     async def identify_new_items(
         self,
@@ -107,8 +107,8 @@ class RecordingPipeline(NewDataDetectionPipeline):
     def get_handler(self) -> RecordingHandler:
         return self._handler
 
-    def get_analyzer(self) -> WholePayloadAnalyzer:
-        return WholePayloadAnalyzer()
+    def get_calculator(self) -> WholePayloadCalculator:
+        return WholePayloadCalculator()
 
     @workflow.run
     async def run(self, config: PollingConfig | dict[str, Any]) -> dict[str, Any]:
@@ -126,8 +126,8 @@ class FailingHandlerPipeline(NewDataDetectionPipeline):
     def get_handler(self) -> FailingHandler:
         return FailingHandler()
 
-    def get_analyzer(self) -> WholePayloadAnalyzer:
-        return WholePayloadAnalyzer()
+    def get_calculator(self) -> WholePayloadCalculator:
+        return WholePayloadCalculator()
 
     @workflow.run
     async def run(self, config: PollingConfig | dict[str, Any]) -> dict[str, Any]:
@@ -268,7 +268,7 @@ class TestNewDataDetectionPipelineFirstRun:
     async def test_first_run_hands_new_items_to_handler(
         self, workflow_env, sample_config
     ):
-        """The handler gets the analyzer's item IDs, not the raw bytes."""
+        """The handler gets the calculator's item IDs, not the raw bytes."""
         async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
             _, handled = await run_pipeline(workflow_env, sample_config)
 

@@ -12,8 +12,8 @@ from typing import Any
 
 from temporalio import workflow
 
+from julee_polling.domain.calculators.new_data import NewDataCalculator
 from julee_polling.domain.models.polling_config import PollingConfig
-from julee_polling.domain.services.new_data_analyzer import NewDataAnalyzer
 from julee_polling.domain.services.polling_result_handler import (
     PollingResultHandler,
 )
@@ -36,14 +36,14 @@ class NewDataDetectionPipeline:
     This workflow:
     1. Polls an endpoint using the configured polling service
     2. Compares result with previous completion to detect changes
-    3. Runs the analyzer to identify new item IDs (if provided)
+    3. Runs the calculator to identify new item IDs (if provided)
     4. Hands off to result handler when new data is detected
     5. Returns completion result for next scheduled execution
 
     The workflow uses Temporal's schedule last completion result feature
     to automatically receive the previous execution's result for comparison.
 
-    Subclasses must implement get_handler() and get_analyzer() to supply the
+    Subclasses must implement get_handler() and get_calculator() to supply the
     appropriate objects for each polling use case (credential, product, etc.).
     """
 
@@ -58,8 +58,8 @@ class NewDataDetectionPipeline:
         ...
 
     @abstractmethod
-    def get_analyzer(self) -> NewDataAnalyzer:
-        """Return the NewDataAnalyzer for this pipeline."""
+    def get_calculator(self) -> NewDataCalculator:
+        """Return the NewDataCalculator for this pipeline."""
         ...
 
     @workflow.query
@@ -126,7 +126,7 @@ class NewDataDetectionPipeline:
             use_case = PollDataUseCase(
                 poller=WorkflowPollerServiceProxy(),  # type: ignore[abstract]
                 handler=self.get_handler(),
-                analyzer=self.get_analyzer(),
+                calculator=self.get_calculator(),
             )
             response = await use_case.execute(request)
 
