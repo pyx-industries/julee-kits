@@ -18,7 +18,7 @@ keywords = ["julee", "document-processing", "temporal", "ai"]
 dependencies = [
     # The kit needs julee's entities and services, its Temporal and MinIO
     # integrations, and FastAPI for its API app.
-    "julee[temporal,api,minio]>=0.5,<0.6",
+    "julee[temporal,api,minio]>=0.6,<0.7",
     # Knowledge service
     "anthropic>=0.66.0",
     # Schemas, content addressing and fixtures
@@ -45,7 +45,7 @@ dev = [
     "types-jsonschema",
     "black>=24.0.0",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.5.6,<0.6",
+    "julee[doctrine]>=0.6,<0.7",
 ]
 
 # A kit announces itself here. Installing it does not activate it; a
