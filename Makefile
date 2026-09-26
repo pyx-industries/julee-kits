@@ -37,11 +37,14 @@ test-integration:
 	@echo "Running integration tests..."
 	uv run pytest -m "integration and not e2e" -n 2
 
-# Each kit is a julee solution, and runs julee's doctrine against itself
+# Each kit is a julee solution, and runs julee's doctrine against itself.
+# Through the command julee 0.9.0 added, which is the one a solution
+# outside this workspace would use: if it does not work here it does not
+# work for them, and nobody would find out from a green run of ours.
 test-doctrine:
 	@for kit in c4 ceap hcd polling viewpoints; do \
-		echo "Running doctrine tests for julee-$$kit..."; \
-		JULEE_TARGET=$(CURDIR)/$$kit uv run pytest --pyargs julee.core.doctrine || exit $$?; \
+		echo "Running doctrine for julee-$$kit..."; \
+		uv run julee doctrine verify --target $(CURDIR)/$$kit || exit $$?; \
 	done
 
 # The checks CI runs; run before pushing

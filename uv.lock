@@ -1102,14 +1102,14 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.7.0"
+version = "0.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/40/62/6e120c4c4c8004d9a31e4f35a3bf59af063d6a40b4dc851a816631a7925b/julee-0.7.0.tar.gz", hash = "sha256:ce6c586274b25c152853ae5f96c7c1eb86c4514dced9035baff2a46853fc77ed", size = 187621, upload-time = "2026-09-25T09:06:32.909Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/96/b4ef579209218bac035dd9cc214428608e91d4f694668764a651947a60f0/julee-0.9.0.tar.gz", hash = "sha256:6498f150fc4b84a7f0a02ee0e860cded920a13b60df39f5e041ce70419a773c5", size = 192914, upload-time = "2026-09-26T00:31:13.344Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/1d/b2cd2de0304491637929c24090d17a0e694ad11612383a7a324c8cdaba80/julee-0.7.0-py3-none-any.whl", hash = "sha256:8b508b46916da0e916a8a1ac71ccd3eea6a69e67436bec96d4258aa428352ae9", size = 243328, upload-time = "2026-09-25T09:06:31.414Z" },
+    { url = "https://files.pythonhosted.org/packages/df/a5/5888c9a3485b94a6e11b867197bf9e8379f52d9c15ccf1aa06f0bcf725c2/julee-0.9.0-py3-none-any.whl", hash = "sha256:910dc4074a2c3b12bd9c245e1136c93ca8a3e8a8405a98372bbf8f450d30014d", size = 249733, upload-time = "2026-09-26T00:31:12.089Z" },
 ]
 
 [package.optional-dependencies]
@@ -1122,6 +1122,8 @@ api = [
 doctrine = [
     { name = "griffe" },
     { name = "inflect" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
 ]
 minio = [
     { name = "minio" },
@@ -1154,8 +1156,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "julee", specifier = ">=0.7,<0.8" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.7,<0.8" },
+    { name = "julee", specifier = ">=0.9,<0.10" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.9,<0.10" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1207,8 +1209,8 @@ requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.0.0" },
     { name = "jsonpointer", specifier = ">=3.0.0" },
     { name = "jsonschema", specifier = ">=4.0.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.7,<0.8" },
-    { name = "julee", extras = ["temporal", "api", "minio"], specifier = ">=0.7,<0.8" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.9,<0.10" },
+    { name = "julee", extras = ["temporal", "api", "minio"], specifier = ">=0.9,<0.10" },
     { name = "multihash", specifier = ">=0.1.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
@@ -1253,8 +1255,8 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "docutils", specifier = ">=0.20" },
     { name = "jinja2", specifier = ">=3.1" },
-    { name = "julee", specifier = ">=0.7,<0.8" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.7,<0.8" },
+    { name = "julee", specifier = ">=0.9,<0.10" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.9,<0.10" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1291,8 +1293,8 @@ dev = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.7,<0.8" },
-    { name = "julee", extras = ["temporal"], specifier = ">=0.7,<0.8" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.9,<0.10" },
+    { name = "julee", extras = ["temporal"], specifier = ">=0.9,<0.10" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1332,8 +1334,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
-    { name = "julee", extras = ["doctrine"], specifier = ">=0.7,<0.8" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.7,<0.8" },
+    { name = "julee", extras = ["doctrine"], specifier = ">=0.9,<0.10" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.9,<0.10" },
     { name = "julee-c4", editable = "c4" },
     { name = "julee-hcd", editable = "hcd" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
