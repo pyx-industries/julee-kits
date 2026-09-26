@@ -381,8 +381,17 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
         if not document.content:
             raise ValueError(f"Document {document.document_id} has no content")
 
-        # Calculate multihash from the content stream
-        calculated_multihash = self._calculate_multihash_from_stream(document.content)
+        # Read the content once. It used to be read twice — once to
+        # hash and once to upload — with a seek(0) in between to make
+        # the second read possible.
+        #
+        # A document being transferred from another repository carries
+        # the response it was fetched over, and that cannot be rewound:
+        # the seek raised io.UnsupportedOperation and the save failed
+        # (#90). Reading once needs no rewind and works whatever the
+        # stream is.
+        content_data = document.content.read()
+        calculated_multihash = content_multihash(content_data)
         object_name = calculated_multihash
 
         try:
@@ -409,7 +418,6 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                     raise  # Re-raise if it's another S3 error
 
             # Store the content using calculated multihash
-            content_data = document.content.read()
             self.client.put_object(
                 bucket_name=self.content_bucket,
                 object_name=object_name,
@@ -465,19 +473,6 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
         raise ValueError(
             f"Document {document.document_id} has no content, content_bytes"
         )
-
-    def _calculate_multihash_from_stream(self, content_stream: ContentStream) -> str:
-        """The multihash naming this stream's content.
-
-        Reads the stream and puts it back where it found it, because the
-        caller stores the same stream immediately afterwards.
-        """
-        if not content_stream:
-            raise ValueError("Content stream is required")
-
-        content_data = content_stream.read()
-        content_stream.seek(0)
-        return content_multihash(content_data)
 
     async def _store_metadata(self, document: Document) -> None:
         """Store document metadata to Minio with idempotency check."""
