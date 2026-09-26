@@ -3,6 +3,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { get } from "lodash-es";
+
+import type { JsonSchemaNode } from "@/types/json-schema";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -41,7 +43,7 @@ interface CustomPropertyViewerProps {
   knowledgeServiceQueries?: Record<string, string>;
 }
 
-const getTypeIcon = (type: string) => {
+const getTypeIcon = (type: string | undefined) => {
   switch (type) {
     case "string":
       return <Type className="h-4 w-4" />;
@@ -59,7 +61,7 @@ const getTypeIcon = (type: string) => {
   }
 };
 
-const getTypeColor = (type: string) => {
+const getTypeColor = (type: string | undefined) => {
   switch (type) {
     case "string":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
@@ -87,7 +89,11 @@ export default function CustomPropertyViewer({
 
   const schema = useSelector((state: unknown) =>
     path
-      ? get((state as any).schemaWizard, ["current", "schema", ...path])
+      ? (get((state as any).schemaWizard, [
+          "current",
+          "schema",
+          ...path,
+        ]) as JsonSchemaNode | undefined)
       : null,
   );
 

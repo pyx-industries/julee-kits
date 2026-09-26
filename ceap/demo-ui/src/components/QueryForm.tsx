@@ -51,8 +51,14 @@ const queryFormSchema = z.object({
 
 type QueryFormValues = z.infer<typeof queryFormSchema>;
 
+/** What the API returns when a query is created. */
+export interface CreatedQuery {
+  name?: string;
+  [field: string]: unknown;
+}
+
 interface QueryFormProps {
-  onSuccess?: (query: unknown) => void;
+  onSuccess?: (query: CreatedQuery) => void;
   onCancel?: () => void;
 }
 

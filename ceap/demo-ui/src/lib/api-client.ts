@@ -3,7 +3,8 @@
  * Provides centralized HTTP client configuration and error handling utilities
  */
 
-import axios, { AxiosInstance, AxiosError, AxiosResponse } from "axios";
+import axios from "axios";
+import type { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 
 // Get base URL from environment or fallback to localhost
 const API_BASE_URL =

@@ -23,7 +23,9 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+// Partial stubs: jsdom implements neither, and the components under
+// test use only observe/unobserve/disconnect.
+globalThis.IntersectionObserver = class IntersectionObserver {
   constructor(
     _callback: IntersectionObserverCallback,
     _options?: IntersectionObserverInit,
@@ -37,10 +39,10 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {
     return null;
   }
-};
+} as unknown as typeof IntersectionObserver;
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+globalThis.ResizeObserver = class ResizeObserver {
   constructor(_callback: ResizeObserverCallback) {}
   observe() {
     return null;
@@ -51,10 +53,10 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {
     return null;
   }
-};
+} as unknown as typeof ResizeObserver;
 
 // Mock fetch
-global.fetch = () =>
+globalThis.fetch = () =>
   Promise.resolve({
     json: () => Promise.resolve({}),
     ok: true,

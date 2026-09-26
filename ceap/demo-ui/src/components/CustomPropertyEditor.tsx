@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { get } from "lodash-es";
+
+import type { JsonSchemaNode } from "@/types/json-schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Trash2, Edit3 } from "lucide-react";
@@ -31,7 +33,11 @@ const CustomPropertyEditor = ({
   );
 
   const schema = useSelector((state: unknown) =>
-    get((state as any).schemaWizard, ["current", "schema", ...path]),
+    get((state as any).schemaWizard, [
+      "current",
+      "schema",
+      ...path,
+    ]) as JsonSchemaNode | undefined,
   );
 
   // Get field title from schema

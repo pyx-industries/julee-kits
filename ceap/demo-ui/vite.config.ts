@@ -66,6 +66,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: true,
+    // Playwright specs live under src/test/e2e-browser/ and are run by
+    // `npm run test:e2e`. Vitest collected them too, could not run them,
+    // and reported three failed suites and no tests — so the unit run
+    // was red for as long as nobody looked at it.
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
@@ -80,6 +85,7 @@ export default defineConfig({
       ],
     },
     exclude: [
+      "src/test/e2e-browser/**",
       "**/node_modules/**",
       "**/build/**",
       "**/.{idea,git,cache,output,temp}/**",
