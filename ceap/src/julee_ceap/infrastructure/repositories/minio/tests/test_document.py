@@ -404,40 +404,153 @@ class TestMinioDocumentRepositoryGenerateId:
         assert len(doc_id_2) > 0
 
 
-class TestMinioDocumentRepositoryMultihash:
-    """Test multihash calculation functionality."""
+class TestMinioDocumentRepositorySavingAStreamItCannotRewind:
+    """Saving content that arrived over the network (#90).
 
-    def test_calculate_multihash_from_stream(
+    A document fetched from one repository and saved into another
+    carries the response it was fetched over. That response is consumed
+    as it is read and cannot be rewound, which is what a real transfer
+    hands the save path.
+
+    These tests replaced two that called the old private multihash
+    helper with a BytesIO. A BytesIO is seekable, so they exercised the
+    one kind of stream this could not fail on.
+    """
+
+    @pytest.fixture
+    def a_stored_document(self, repository: MinioDocumentRepository) -> bytes:
+        content = b"a document being transferred between repositories"
+        stored = multihash_of(content)
+        repository.client.put_object(
+            bucket_name=repository.content_bucket,
+            object_name=stored,
+            data=io.BytesIO(content),
+            length=len(content),
+        )
+        metadata = json.dumps(
+            {
+                "document_id": "doc-1",
+                "original_filename": "spec.pdf",
+                "content_type": "application/pdf",
+                "size_bytes": len(content),
+                "content_multihash": stored,
+                "status": "captured",
+            }
+        ).encode("utf-8")
+        repository.client.put_object(
+            bucket_name=repository.metadata_bucket,
+            object_name="doc-1",
+            data=io.BytesIO(metadata),
+            length=len(metadata),
+            content_type="application/json",
+        )
+        return content
+
+    @pytest.fixture
+    def destination(
+        self, fake_minio_client: FakeMinioClient
+    ) -> MinioDocumentRepository:
+        """Somewhere else to put it, as a transfer has."""
+        other = MinioDocumentRepository(fake_minio_client)
+        other.content_bucket = "products-content"
+        other.metadata_bucket = "products"
+        fake_minio_client.make_bucket(other.content_bucket)
+        fake_minio_client.make_bucket(other.metadata_bucket)
+        return other
+
+    @pytest.mark.asyncio
+    async def test_what_get_returns_is_not_rewindable(
+        self, repository: MinioDocumentRepository, a_stored_document: bytes
+    ) -> None:
+        """The premise. If this ever stops holding, the tests below stop
+        meaning anything and should be read again rather than trusted."""
+        document = await repository.get("doc-1")
+
+        assert document is not None and document.content is not None
+        assert not document.content.stream.seekable()
+
+    @pytest.mark.asyncio
+    async def test_a_document_can_be_transferred_to_another_repository(
+        self,
+        repository: MinioDocumentRepository,
+        destination: MinioDocumentRepository,
+        a_stored_document: bytes,
+    ) -> None:
+        """Used to raise io.UnsupportedOperation: seek. The save path
+        read the content to hash it, then rewound to read it again to
+        upload it."""
+        document = await repository.get("doc-1")
+        assert document is not None
+
+        await destination.save(document)
+
+        response = destination.client.get_object(
+            bucket_name=destination.content_bucket,
+            object_name=multihash_of(a_stored_document),
+        )
+        assert response.read() == a_stored_document
+
+    @pytest.mark.asyncio
+    async def test_the_transferred_document_is_readable_again(
+        self,
+        repository: MinioDocumentRepository,
+        destination: MinioDocumentRepository,
+        a_stored_document: bytes,
+    ) -> None:
+        """Storing the bytes is not enough if the metadata names them
+        wrongly; this reads the document back out the far end."""
+        document = await repository.get("doc-1")
+        assert document is not None
+
+        await destination.save(document)
+        transferred = await destination.get("doc-1")
+
+        assert transferred is not None and transferred.content is not None
+        assert transferred.content.read() == a_stored_document
+
+    @pytest.mark.asyncio
+    async def test_saving_a_seekable_stream_still_works(
         self, repository: MinioDocumentRepository
     ) -> None:
-        """Test multihash calculation from stream."""
-        content = b"test content for hashing"
-        stream = ContentStream(io.BytesIO(content))
+        """The case that always worked, kept so the fix is not a trade."""
+        content = b"content handed in as bytes, not fetched"
+        document = Document(
+            document_id="doc-fresh",
+            original_filename="fresh.txt",
+            content_type="text/plain",
+            size_bytes=len(content),
+            content_multihash=multihash_of(content),
+            content=ContentStream(io.BytesIO(content)),
+        )
 
-        # Act
-        multihash_result = repository._calculate_multihash_from_stream(stream)
+        await repository.save(document)
 
-        # Assert
-        assert isinstance(multihash_result, str)
-        assert len(multihash_result) > 0
+        response = repository.client.get_object(
+            bucket_name=repository.content_bucket,
+            object_name=multihash_of(content),
+        )
+        assert response.read() == content
 
-        # Test deterministic - same content should produce same hash
-        stream.seek(0)
-        multihash_result_2 = repository._calculate_multihash_from_stream(stream)
-        assert multihash_result == multihash_result_2
-
-    def test_calculate_multihash_from_empty_stream(
+    @pytest.mark.asyncio
+    async def test_empty_content_is_named_and_stored(
         self, repository: MinioDocumentRepository
     ) -> None:
-        """Test multihash calculation from empty stream."""
-        stream = ContentStream(io.BytesIO(b""))
+        """An empty document has a multihash like any other."""
+        document = Document(
+            document_id="doc-empty",
+            original_filename="empty.txt",
+            content_type="text/plain",
+            size_bytes=1,
+            content_multihash=multihash_of(b""),
+            content=ContentStream(io.BytesIO(b"")),
+        )
 
-        # Act
-        multihash_result = repository._calculate_multihash_from_stream(stream)
+        await repository.save(document)
 
-        # Assert
-        assert isinstance(multihash_result, str)
-        assert len(multihash_result) > 0
+        response = repository.client.get_object(
+            bucket_name=repository.content_bucket, object_name=multihash_of(b"")
+        )
+        assert response.read() == b""
 
 
 class TestMinioDocumentRepositoryContentBytes:
