@@ -15,8 +15,8 @@ import os
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from julee_ceap.apps.api.services.system_initialization import (
-        SystemInitializationService,
+    from julee_ceap.apps.api.startup import (
+        SystemInitializer,
     )
 
 from fastapi import Depends
@@ -217,12 +217,12 @@ class StartupDependenciesProvider:
         minio_client = await self.container.get_minio_client()
         return MinioAssemblySpecificationRepository(client=minio_client)
 
-    async def get_system_initialization_service(
+    async def get_system_initializer(
         self,
-    ) -> "SystemInitializationService":
-        """Get fully configured system initialization service."""
-        from julee_ceap.apps.api.services.system_initialization import (
-            SystemInitializationService,
+    ) -> "SystemInitializer":
+        """Get the fully configured startup initialiser."""
+        from julee_ceap.apps.api.startup import (
+            SystemInitializer,
         )
         from julee_ceap.usecases.initialize_system_data import (
             InitializeSystemDataUseCase,
@@ -240,7 +240,7 @@ class StartupDependenciesProvider:
         )
 
         # Create and return service
-        return SystemInitializationService(use_case)
+        return SystemInitializer(use_case)
 
 
 # Global startup dependencies provider

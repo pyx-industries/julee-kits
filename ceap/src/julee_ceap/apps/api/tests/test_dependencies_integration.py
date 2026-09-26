@@ -33,7 +33,7 @@ class TestStartupDependenciesIntegration:
         """
         provider = await get_startup_dependencies()
 
-        service = await provider.get_system_initialization_service()
+        service = await provider.get_system_initializer()
 
         assert service is not None
         assert hasattr(service, "initialize")

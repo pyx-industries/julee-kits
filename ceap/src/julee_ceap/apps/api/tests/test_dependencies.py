@@ -72,7 +72,7 @@ class TestStartupDependenciesProvider:
         # implementation details, but we can verify the method completed
 
     @pytest.mark.asyncio
-    async def test_get_system_initialization_service(
+    async def test_get_system_initializer(
         self,
         startup_provider: StartupDependenciesProvider,
         mock_container: AsyncMock,
@@ -83,7 +83,7 @@ class TestStartupDependenciesProvider:
         mock_container.get_minio_client.return_value = mock_minio_client
 
         # Get service
-        service = await startup_provider.get_system_initialization_service()
+        service = await startup_provider.get_system_initializer()
 
         # Verify service was created
         assert service is not None
@@ -94,7 +94,7 @@ class TestStartupDependenciesProvider:
         assert mock_container.get_minio_client.call_count >= 1
 
     @pytest.mark.asyncio
-    async def test_get_system_initialization_service_creates_full_chain(
+    async def test_get_system_initializer_creates_full_chain(
         self,
         startup_provider: StartupDependenciesProvider,
         mock_container: AsyncMock,
@@ -105,7 +105,7 @@ class TestStartupDependenciesProvider:
         mock_container.get_minio_client.return_value = mock_minio_client
 
         # Get service
-        service = await startup_provider.get_system_initialization_service()
+        service = await startup_provider.get_system_initializer()
 
         # Verify the service has the expected structure
         assert service is not None
@@ -203,7 +203,7 @@ class TestStartupDependenciesProviderEdgeCases:
         repo = await startup_provider.get_knowledge_service_config_repository()
 
         # Then get service
-        service = await startup_provider.get_system_initialization_service()
+        service = await startup_provider.get_system_initializer()
 
         # Both should be valid
         assert repo is not None
