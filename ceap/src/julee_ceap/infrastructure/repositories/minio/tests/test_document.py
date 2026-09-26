@@ -605,6 +605,18 @@ class TestMinioDocumentRepositoryErrorHandling:
         assert result is None
 
 
+def content_of(found: dict[str, Document | None], document_id: str) -> bytes:
+    """What one document of a get_many result reads.
+
+    Narrows twice on the way, and both are worth asserting: that the
+    document was found at all, and that it came back with content.
+    """
+    document = found[document_id]
+    assert document is not None, f"{document_id} was not found"
+    assert document.content is not None, f"{document_id} came back with no content"
+    return document.content.read()
+
+
 class TestMinioDocumentRepositoryGetMany:
     """Fetching several documents at once (#124).
 
@@ -653,8 +665,8 @@ class TestMinioDocumentRepositoryGetMany:
         out of it as null."""
         found = await repository.get_many(["doc-a", "doc-b"])
 
-        assert found["doc-a"].content.read() == two_documents_one_file
-        assert found["doc-b"].content.read() == two_documents_one_file
+        assert content_of(found, "doc-a") == two_documents_one_file
+        assert content_of(found, "doc-b") == two_documents_one_file
 
     @pytest.mark.asyncio
     async def test_reading_in_the_other_order_works_too(
@@ -663,8 +675,8 @@ class TestMinioDocumentRepositoryGetMany:
         """Whichever consumer gets there first, both are served."""
         found = await repository.get_many(["doc-a", "doc-b"])
 
-        assert found["doc-b"].content.read() == two_documents_one_file
-        assert found["doc-a"].content.read() == two_documents_one_file
+        assert content_of(found, "doc-b") == two_documents_one_file
+        assert content_of(found, "doc-a") == two_documents_one_file
 
     @pytest.mark.asyncio
     async def test_the_documents_do_not_share_a_stream(
@@ -674,18 +686,22 @@ class TestMinioDocumentRepositoryGetMany:
         ContentStream ever became re-readable, and that is not the
         property being relied on here."""
         found = await repository.get_many(["doc-a", "doc-b"])
+        first, second = found["doc-a"], found["doc-b"]
 
-        assert found["doc-a"].content is not found["doc-b"].content
+        assert first is not None and second is not None
+        assert first.content is not second.content
 
     @pytest.mark.asyncio
-    async def test_the_content_is_fetched_once_for_both(
+    async def test_the_content_is_still_stored_once_for_both(
         self, repository: MinioDocumentRepository, two_documents_one_file: bytes
     ) -> None:
         """The deduplication is the point of get_many and is kept: one
         object, read once, handed out as two streams."""
         found = await repository.get_many(["doc-a", "doc-b"])
+        first, second = found["doc-a"], found["doc-b"]
 
-        assert found["doc-a"].content_multihash == found["doc-b"].content_multihash
+        assert first is not None and second is not None
+        assert first.content_multihash == second.content_multihash
 
     @pytest.mark.asyncio
     async def test_documents_with_different_content_are_unaffected(
@@ -719,8 +735,8 @@ class TestMinioDocumentRepositoryGetMany:
 
         found = await repository.get_many(["doc-1", "doc-2"])
 
-        assert found["doc-1"].content.read() == b"first"
-        assert found["doc-2"].content.read() == b"second"
+        assert content_of(found, "doc-1") == b"first"
+        assert content_of(found, "doc-2") == b"second"
 
     @pytest.mark.asyncio
     async def test_a_document_that_is_not_there_is_None(
@@ -729,4 +745,4 @@ class TestMinioDocumentRepositoryGetMany:
         found = await repository.get_many(["doc-a", "doc-missing"])
 
         assert found["doc-missing"] is None
-        assert found["doc-a"].content.read() == two_documents_one_file
+        assert content_of(found, "doc-a") == two_documents_one_file
