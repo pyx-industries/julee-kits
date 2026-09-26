@@ -47,6 +47,9 @@ dev = [
 
 # A kit announces itself here. Installing it does not activate it; a
 # solution adopts it in [tool.julee] kits.
+[project.scripts]
+julee-ceap-maintenance = "julee_ceap.maintenance.__main__:main"
+
 [project.entry-points."julee.kits"]
 ceap = "julee_ceap:kit"
 
