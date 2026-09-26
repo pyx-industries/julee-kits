@@ -93,3 +93,46 @@ jobs:
 
       - name: Integration
         run: make test-integration
+
+  # CEAP's dependency wiring, built against a MinIO rather than against
+  # whatever happens to be listening. The test has existed all along and
+  # no job ran it: marked e2e, which every target excluded (#65).
+  e2e:
+    name: End to end
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: make install
+
+      # The same digest ceap/deploy/docker-compose.yml runs, so CI tests
+      # what the stack runs. minio/minio cannot be pulled by anyone any
+      # more; the comment there says why this image and what checked it.
+      - name: Start MinIO
+        run: |
+          set -euo pipefail
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin \
+            -e MINIO_ROOT_PASSWORD=minioadmin \
+            ghcr.io/coollabsio/minio@sha256:69b55a1c1c5dc285ce04db96689f5b2102317fc77a50680a1874ca6efd1c87f9 \
+            server /data
+          for _ in $(seq 1 60); do
+            if curl -sf http://localhost:9000/minio/health/live; then exit 0; fi
+            sleep 1
+          done
+          echo "MinIO did not come up"; docker logs minio; exit 1
+
+      # No guard needed against an empty selection: pytest exits 5 and
+      # the step fails, which is the behaviour this job is here to get.
+      - name: End to end
+        env:
+          MINIO_ENDPOINT: localhost:9000
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+        run: make test-e2e
