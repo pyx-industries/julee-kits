@@ -51,7 +51,6 @@ module = [
     "temporalio.*",
     # Untyped, with no published stubs
     "jsonpointer",
-    "multihash",
 ]
 ignore_missing_imports = true
 
