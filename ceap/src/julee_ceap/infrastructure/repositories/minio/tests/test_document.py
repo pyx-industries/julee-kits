@@ -7,6 +7,7 @@ testing patterns and verify idempotency, error handling, and content.
 """
 
 import io
+import json
 from typing import Any
 from unittest.mock import Mock
 
@@ -602,3 +603,130 @@ class TestMinioDocumentRepositoryErrorHandling:
 
         # Assert - should return None and not propagate exception
         assert result is None
+
+
+class TestMinioDocumentRepositoryGetMany:
+    """Fetching several documents at once (#124).
+
+    Content is deduplicated by multihash, so two documents holding the
+    same bytes are one object in the store. What they must not share is
+    the reading of it.
+    """
+
+    @pytest.fixture
+    def two_documents_one_file(self, repository: MinioDocumentRepository) -> bytes:
+        """The same file uploaded twice, as RBA did with a spec sheet."""
+        content = b"the same pdf, uploaded twice"
+        stored = multihash_of(content)
+        repository.client.put_object(
+            bucket_name=repository.content_bucket,
+            object_name=stored,
+            data=io.BytesIO(content),
+            length=len(content),
+        )
+        for document_id in ("doc-a", "doc-b"):
+            metadata = json.dumps(
+                {
+                    "document_id": document_id,
+                    "original_filename": "spec-sheet.pdf",
+                    "content_type": "application/pdf",
+                    "size_bytes": len(content),
+                    "content_multihash": stored,
+                    "status": "captured",
+                }
+            ).encode("utf-8")
+            repository.client.put_object(
+                bucket_name=repository.metadata_bucket,
+                object_name=document_id,
+                data=io.BytesIO(metadata),
+                length=len(metadata),
+                content_type="application/json",
+            )
+        return content
+
+    @pytest.mark.asyncio
+    async def test_both_documents_can_read_their_content(
+        self, repository: MinioDocumentRepository, two_documents_one_file: bytes
+    ) -> None:
+        """Reading the first used to exhaust the stream the second held,
+        so the second document came back with b"" and every field parsed
+        out of it as null."""
+        found = await repository.get_many(["doc-a", "doc-b"])
+
+        assert found["doc-a"].content.read() == two_documents_one_file
+        assert found["doc-b"].content.read() == two_documents_one_file
+
+    @pytest.mark.asyncio
+    async def test_reading_in_the_other_order_works_too(
+        self, repository: MinioDocumentRepository, two_documents_one_file: bytes
+    ) -> None:
+        """Whichever consumer gets there first, both are served."""
+        found = await repository.get_many(["doc-a", "doc-b"])
+
+        assert found["doc-b"].content.read() == two_documents_one_file
+        assert found["doc-a"].content.read() == two_documents_one_file
+
+    @pytest.mark.asyncio
+    async def test_the_documents_do_not_share_a_stream(
+        self, repository: MinioDocumentRepository, two_documents_one_file: bytes
+    ) -> None:
+        """Said directly, because the reads above would also pass if
+        ContentStream ever became re-readable, and that is not the
+        property being relied on here."""
+        found = await repository.get_many(["doc-a", "doc-b"])
+
+        assert found["doc-a"].content is not found["doc-b"].content
+
+    @pytest.mark.asyncio
+    async def test_the_content_is_fetched_once_for_both(
+        self, repository: MinioDocumentRepository, two_documents_one_file: bytes
+    ) -> None:
+        """The deduplication is the point of get_many and is kept: one
+        object, read once, handed out as two streams."""
+        found = await repository.get_many(["doc-a", "doc-b"])
+
+        assert found["doc-a"].content_multihash == found["doc-b"].content_multihash
+
+    @pytest.mark.asyncio
+    async def test_documents_with_different_content_are_unaffected(
+        self, repository: MinioDocumentRepository
+    ) -> None:
+        for document_id, content in [("doc-1", b"first"), ("doc-2", b"second")]:
+            stored = multihash_of(content)
+            repository.client.put_object(
+                bucket_name=repository.content_bucket,
+                object_name=stored,
+                data=io.BytesIO(content),
+                length=len(content),
+            )
+            metadata = json.dumps(
+                {
+                    "document_id": document_id,
+                    "original_filename": "f.txt",
+                    "content_type": "text/plain",
+                    "size_bytes": len(content),
+                    "content_multihash": stored,
+                    "status": "captured",
+                }
+            ).encode("utf-8")
+            repository.client.put_object(
+                bucket_name=repository.metadata_bucket,
+                object_name=document_id,
+                data=io.BytesIO(metadata),
+                length=len(metadata),
+                content_type="application/json",
+            )
+
+        found = await repository.get_many(["doc-1", "doc-2"])
+
+        assert found["doc-1"].content.read() == b"first"
+        assert found["doc-2"].content.read() == b"second"
+
+    @pytest.mark.asyncio
+    async def test_a_document_that_is_not_there_is_None(
+        self, repository: MinioDocumentRepository, two_documents_one_file: bytes
+    ) -> None:
+        found = await repository.get_many(["doc-a", "doc-missing"])
+
+        assert found["doc-missing"] is None
+        assert found["doc-a"].content.read() == two_documents_one_file

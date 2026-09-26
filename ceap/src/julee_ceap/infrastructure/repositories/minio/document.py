@@ -259,8 +259,15 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
             if metadata and metadata.content_multihash:
                 content_hashes.add(metadata.content_multihash)
 
-        # Step 3: Batch retrieve content streams for unique hashes
-        content_results = {}
+        # Step 3: Read each unique object's content once.
+        #
+        # Held as bytes rather than as the streams themselves. Two
+        # documents can share a content_multihash — the same file
+        # uploaded twice — and a stream is consumed by whoever reads it
+        # first, so handing one to both meant the second document read
+        # empty (#124). Deduplicating the fetch is still worth doing;
+        # what cannot be shared is the reading of it.
+        content_bytes_by_hash: dict[str, bytes] = {}
         if content_hashes:
             content_results = self.get_many_binary_objects(
                 bucket_name=self.content_bucket,
@@ -272,6 +279,11 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                     "unique_content_hashes": len(content_hashes),
                 },
             )
+            content_bytes_by_hash = {
+                multihash: stream.read()
+                for multihash, stream in content_results.items()
+                if stream is not None
+            }
 
         # Step 4: Splice metadata and content together into Documents
         result: dict[str, Document | None] = {}
@@ -281,11 +293,13 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                 result[document_id] = None
                 continue
 
-            # Get content stream using multihash
+            # A stream of this document's own, over the shared bytes.
             content_multihash = metadata.content_multihash
             content_stream = None
-            if content_multihash and content_multihash in content_results:
-                content_stream = content_results[content_multihash]
+            if content_multihash and content_multihash in content_bytes_by_hash:
+                content_stream = ContentStream(
+                    io.BytesIO(content_bytes_by_hash[content_multihash])
+                )
 
             try:
                 # Convert RawMetadata to dict and add content
