@@ -41,7 +41,21 @@ services:
       - "8001:8080"
 
   minio:
-    image: minio/minio:latest
+    # Not minio/minio. MinIO withdrew its public distribution during
+    # 2025: the Docker Hub repository is gone, quay.io answers 401 to an
+    # anonymous pull, and dl.min.io answers 410. Nobody without an
+    # account could bring this stack up.
+    #
+    # This is a community mirror, pinned by digest because a tag on
+    # someone else's registry is not a thing to take on trust. It is a
+    # rebuild from source rather than a republished official artifact —
+    # it reports commit-id=DEVELOPMENT.GOGET — so the reason to use it
+    # is evidence rather than provenance: julee's MinIO contract suite
+    # passes against this digest, all 34 assertions about what MinIO
+    # does, run with `make test-contract` in julee against it.
+    #
+    # RELEASE.2025-10-15T17-29-55Z
+    image: ghcr.io/coollabsio/minio@sha256:69b55a1c1c5dc285ce04db96689f5b2102317fc77a50680a1874ca6efd1c87f9
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
