@@ -17,6 +17,7 @@ from julee.core.entities.content_stream import (
 )
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import content_multihash
 
 
 # Helper functions to generate content bytes consistently
@@ -51,7 +52,6 @@ class DocumentFactory(Factory):
     document_id = Faker("uuid4")
     original_filename = "test_document.txt"
     content_type = "text/plain"
-    content_multihash = Faker("sha256")
 
     # Document processing state
     status = DocumentStatus.CAPTURED
@@ -66,6 +66,14 @@ class DocumentFactory(Factory):
     additional_metadata: dict[str, Any] = {}
 
     # Content - using LazyAttribute to create fresh BytesIO for each instance
+    @LazyAttribute
+    def content_multihash(self) -> str:
+        # The name of the content this factory actually builds. It was
+        # Faker("sha256") — a bare digest of nothing in particular, so a
+        # factory-built document was never internally consistent and no
+        # test running off it ever saw the format production writes (#44).
+        return content_multihash(_get_default_content_bytes())
+
     @LazyAttribute
     def size_bytes(self) -> int:
         # Calculate size from the default content

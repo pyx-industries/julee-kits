@@ -7,14 +7,12 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
-import hashlib
 import json
 import logging
 from collections.abc import Mapping
 from typing import Any
 
 import jsonschema
-import multihash
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol, validate_parameter_types
 from julee.core.witnesses import ClockWitness, ExecutionWitness, SystemClockWitness
@@ -30,6 +28,7 @@ from julee_ceap.domain.models import (
     DocumentStatus,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.document.multihash import content_multihash
 from julee_ceap.domain.oracles import SchemaOracle
 from julee_ceap.domain.repositories import (
     AssemblyRepository,
@@ -657,10 +656,5 @@ class ExtractAssembleDataUseCase:
             )
 
     def _calculate_multihash_from_content(self, content_bytes: bytes) -> str:
-        """Calculate multihash from content bytes."""
-        # Calculate SHA-256 hash
-        sha256_hash = hashlib.sha256(content_bytes).digest()
-
-        # Create multihash with SHA-256 (code 0x12)
-        mhash = multihash.encode(sha256_hash, multihash.SHA2_256)
-        return str(mhash.hex())
+        """The multihash naming this content."""
+        return content_multihash(content_bytes)

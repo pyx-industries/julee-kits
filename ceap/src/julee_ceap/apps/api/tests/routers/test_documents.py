@@ -16,6 +16,9 @@ from fastapi_pagination import add_pagination
 from julee_ceap.apps.api.dependencies import get_document_repository
 from julee_ceap.apps.api.routers.documents import router
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import (
+    content_multihash as multihash_of,
+)
 from julee_ceap.infrastructure.repositories.memory import (
     MemoryDocumentRepository,
 )
@@ -60,7 +63,7 @@ def sample_documents() -> list[Document]:
             original_filename="test-document-1.txt",
             content_type="text/plain",
             size_bytes=1024,
-            content_multihash="QmTest1",
+            content_multihash=multihash_of(b"QmTest1"),
             status=DocumentStatus.CAPTURED,
             created_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
@@ -72,7 +75,7 @@ def sample_documents() -> list[Document]:
             original_filename="test-document-2.pdf",
             content_type="application/pdf",
             size_bytes=2048,
-            content_multihash="QmTest2",
+            content_multihash=multihash_of(b"QmTest2"),
             status=DocumentStatus.REGISTERED,
             created_at=datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC),
@@ -283,7 +286,7 @@ class TestGetDocumentContent:
             original_filename="empty.txt",
             content_type="text/plain",
             size_bytes=1,
-            content_multihash="empty_hash",
+            content_multihash=multihash_of(b"empty_hash"),
             status=DocumentStatus.CAPTURED,
             additional_metadata={"type": "empty"},
             content_bytes=b"temp",

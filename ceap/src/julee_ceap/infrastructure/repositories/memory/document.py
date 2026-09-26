@@ -11,7 +11,6 @@ ideal for testing scenarios where external dependencies should be avoided.
 All operations are still async to maintain interface compatibility.
 """
 
-import hashlib
 import io
 import logging
 from typing import Any
@@ -22,6 +21,7 @@ from julee.core.entities.content_stream import (
 from julee.repositories.memory import MemoryRepositoryMixin
 
 from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.multihash import content_multihash
 from julee_ceap.domain.repositories.document import DocumentRepository
 
 logger = logging.getLogger(__name__)
@@ -82,14 +82,12 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
 
             content_stream = ContentStream(io.BytesIO(raw_bytes))
 
-            # Calculate content hash
-            content_hash = hashlib.sha256(raw_bytes).hexdigest()
-
             # Create new document with ContentStream and calculated hash
+            multihash_of_content = content_multihash(raw_bytes)
             document = document.model_copy(
                 update={
                     "content": content_stream,
-                    "content_multihash": content_hash,
+                    "content_multihash": multihash_of_content,
                     "size_bytes": len(raw_bytes),
                 }
             )
@@ -98,7 +96,7 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
                 "Converted content_bytes to ContentStream for document save",
                 extra={
                     "document_id": document.document_id,
-                    "content_hash": content_hash,
+                    "content_multihash": multihash_of_content,
                     "content_length": len(raw_bytes),
                 },
             )

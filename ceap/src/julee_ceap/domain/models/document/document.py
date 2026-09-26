@@ -19,6 +19,8 @@ from julee.core.entities.content_stream import (
 from julee.core.entities.entity import Entity
 from pydantic import Field, ValidationInfo, field_validator, model_validator
 
+from julee_ceap.domain.models.document.multihash import is_content_multihash
+
 
 def delegate_to_content(*method_names: str) -> Callable[[type], type]:
     """Decorator to delegate IO methods to the content stream property."""
@@ -117,10 +119,30 @@ class Document(Entity):
 
     @field_validator("content_multihash")
     @classmethod
-    def content_multihash_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
+    def content_multihash_must_be_a_multihash(cls, v: str) -> str:
+        """The content name MUST be one :func:`content_multihash` would write.
+
+        Not merely non-empty, which is what this checked until #44. Three
+        formats were in circulation — a real multihash, a bare sha256 hex
+        digest, and "sha256-" followed by one — so the same document was
+        named differently depending on which adapter stored it, and the
+        MinIO repository uses that name as the object key.
+
+        Checking the shape here is what stops a fourth appearing: any
+        route that builds a Document, test factories included, has to go
+        through the one implementation.
+        """
+        candidate = v.strip() if v else ""
+        if not candidate:
             raise ValueError("Content multihash cannot be empty")
-        return v.strip()
+        if not is_content_multihash(candidate):
+            raise ValueError(
+                f"Content multihash must be a hex-encoded sha256 multihash "
+                f"('1220' and 64 hex characters), not {candidate!r}. Use "
+                f"julee_ceap.domain.models.document.multihash."
+                f"content_multihash() to compute one."
+            )
+        return candidate
 
     @model_validator(mode="after")
     def validate_content_fields(self, info: ValidationInfo) -> "Document":

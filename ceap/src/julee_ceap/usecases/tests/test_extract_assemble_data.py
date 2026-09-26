@@ -24,6 +24,9 @@ from julee_ceap.domain.models import (
     KnowledgeServiceConfig,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.document.multihash import (
+    content_multihash as multihash_of,
+)
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
 from julee_ceap.infrastructure.repositories.http.schema import (
     HttpSchemaOracle,
@@ -268,7 +271,7 @@ class TestExtractAssembleDataUseCase:
             original_filename="test_transcript.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash="test-hash-123",
+            content_multihash=multihash_of(b"test-hash-123"),
             status=DocumentStatus.CAPTURED,
             content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
@@ -384,7 +387,7 @@ class TestExtractAssembleDataUseCase:
             original_filename="test_transcript.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash="test-hash-123",
+            content_multihash=multihash_of(b"test-hash-123"),
             status=DocumentStatus.CAPTURED,
             content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
@@ -558,7 +561,7 @@ class TestExtractAssembleDataUseCase:
             original_filename="test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash="test-hash",
+            content_multihash=multihash_of(b"test-hash"),
             status=DocumentStatus.CAPTURED,
             content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
@@ -606,7 +609,7 @@ class TestExtractAssembleDataUseCase:
             original_filename="test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash="test-hash",
+            content_multihash=multihash_of(b"test-hash"),
             status=DocumentStatus.CAPTURED,
             content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),

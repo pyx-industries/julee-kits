@@ -19,12 +19,16 @@ Design decisions documented:
 - Documents act as readable streams with standard methods
 """
 
+import hashlib
 import json
 
 import pytest
 from pydantic import ValidationError
 
 from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.multihash import (
+    content_multihash as multihash_of,
+)
 
 from .factories import ContentStreamFactory, DocumentFactory
 
@@ -38,13 +42,13 @@ class TestDocumentInstantiation:
         "document_id,original_filename,content_type,size_bytes,multihash,expected_success",
         [
             # Valid cases
-            ("doc-1", "test.txt", "text/plain", 100, "sha256:hash", True),
+            ("doc-1", "test.txt", "text/plain", 100, multihash_of(b"hash"), True),
             (
                 "doc-2",
                 "document.pdf",
                 "application/pdf",
                 1024,
-                "sha256:pdf-hash",
+                multihash_of(b"pdf-hash"),
                 True,
             ),
             (
@@ -52,7 +56,7 @@ class TestDocumentInstantiation:
                 "data.json",
                 "application/json",
                 50,
-                "sha256:json-hash",
+                multihash_of(b"json-hash"),
                 True,
             ),
             # Invalid cases - empty required fields
@@ -61,7 +65,7 @@ class TestDocumentInstantiation:
                 "test.txt",
                 "text/plain",
                 100,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Empty document_id
             (
@@ -69,7 +73,7 @@ class TestDocumentInstantiation:
                 "",
                 "text/plain",
                 100,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Empty filename
             (
@@ -77,7 +81,7 @@ class TestDocumentInstantiation:
                 "test.txt",
                 "",
                 100,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Empty content_type
             (
@@ -88,13 +92,29 @@ class TestDocumentInstantiation:
                 "",
                 False,
             ),  # Empty multihash
+            (
+                "doc-6b",
+                "test.txt",
+                "text/plain",
+                100,
+                hashlib.sha256(b"hash").hexdigest(),
+                False,
+            ),  # A bare sha256 is not a multihash (#44)
+            (
+                "doc-6c",
+                "test.txt",
+                "text/plain",
+                100,
+                f"sha256-{hashlib.sha256(b'hash').hexdigest()}",
+                False,
+            ),  # Nor is "sha256-" and a digest (#44)
             # Invalid cases - whitespace only
             (
                 "   ",
                 "test.txt",
                 "text/plain",
                 100,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Whitespace document_id
             (
@@ -102,7 +122,7 @@ class TestDocumentInstantiation:
                 "   ",
                 "text/plain",
                 100,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Whitespace filename
             (
@@ -110,7 +130,7 @@ class TestDocumentInstantiation:
                 "test.txt",
                 "   ",
                 100,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Whitespace content_type
             (
@@ -127,7 +147,7 @@ class TestDocumentInstantiation:
                 "test.txt",
                 "text/plain",
                 0,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Zero size
             (
@@ -135,7 +155,7 @@ class TestDocumentInstantiation:
                 "test.txt",
                 "text/plain",
                 -1,
-                "sha256:hash",
+                multihash_of(b"hash"),
                 False,
             ),  # Negative size
         ],
@@ -217,7 +237,7 @@ class TestDocumentContentValidation:
                 original_filename="empty.json",
                 content_type="application/json",
                 size_bytes=100,
-                content_multihash="test_hash",
+                content_multihash=multihash_of(b"test_hash"),
                 content=None,
                 content_bytes=None,
             )
@@ -231,7 +251,7 @@ class TestDocumentContentValidation:
             original_filename="content.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash="test_hash",
+            content_multihash=multihash_of(b"test_hash"),
             content=content_stream,
             content_bytes=None,
         )
@@ -248,7 +268,7 @@ class TestDocumentContentValidation:
             original_filename="string.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash="test_hash",
+            content_multihash=multihash_of(b"test_hash"),
             content=None,
             content_bytes=content_bytes,
         )
@@ -267,7 +287,7 @@ class TestDocumentContentValidation:
             "original_filename": "temporal.json",
             "content_type": "application/json",
             "size_bytes": 100,
-            "content_multihash": "test_hash",
+            "content_multihash": multihash_of(b"test_hash"),
             "content": None,
             "content_bytes": None,
         }
