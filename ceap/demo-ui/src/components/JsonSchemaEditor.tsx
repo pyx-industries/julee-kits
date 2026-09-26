@@ -215,9 +215,9 @@ export default function JsonSchemaEditor({
                 `[data-key="${fieldId}"]`,
               ];
 
-              let fieldElement = null;
+              let fieldElement: HTMLElement | null = null;
               for (const selector of possibleSelectors) {
-                fieldElement = document.querySelector(selector);
+                fieldElement = document.querySelector<HTMLElement>(selector);
                 if (fieldElement) {
                   break;
                 }
@@ -230,7 +230,7 @@ export default function JsonSchemaEditor({
                   ".ant-formule-container, .formule-container, .schema-preview",
                 );
                 const searchScope = schemaContainer || document;
-                const allElements = searchScope.querySelectorAll("*");
+                const allElements = searchScope.querySelectorAll<HTMLElement>("*");
                 for (const element of allElements) {
                   if (
                     element.textContent?.includes(fieldId) &&

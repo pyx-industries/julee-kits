@@ -364,7 +364,7 @@ export default function AssemblySpecificationDetailPage() {
                   Schema Type
                 </dt>
                 <dd className="mt-1 text-sm font-mono bg-muted px-2 py-1 rounded">
-                  {specification.jsonschema?.type || "object"}
+                  {String(specification.jsonschema?.type ?? "object")}
                 </dd>
               </div>
             </dl>

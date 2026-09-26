@@ -2,11 +2,12 @@
 
 import { useNavigate } from "react-router-dom";
 import QueryForm from "@/components/QueryForm";
+import type { CreatedQuery } from "@/components/QueryForm";
 
 export default function CreateQueryPage() {
   const navigate = useNavigate();
 
-  const handleSuccess = (query: unknown) => {
+  const handleSuccess = (query: CreatedQuery) => {
     console.log("Query created successfully:", query);
     // Navigate back to queries page with success message
     navigate("/queries", {

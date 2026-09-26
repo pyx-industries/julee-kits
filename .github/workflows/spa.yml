@@ -12,14 +12,14 @@ on:
       - ".github/workflows/spa.yml"
 
 env:
-  SPA_DIRECTORY: ceap/demo-ui/src
+  SPA_DIRECTORY: ceap/demo-ui
 
 permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint
+  check:
+    name: Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,11 +33,33 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Install dependencies
+        working-directory: ${{ env.SPA_DIRECTORY }}
+        run: npm ci
+
       - name: Lint
         working-directory: ${{ env.SPA_DIRECTORY }}
-        run: |
-          npm ci
-          npm run lint
+        run: npm run lint
+
+      - name: Types
+        working-directory: ${{ env.SPA_DIRECTORY }}
+        run: npm run tsc
+
+      - name: Unit tests
+        working-directory: ${{ env.SPA_DIRECTORY }}
+        run: npm run test
+
+      # npm audit warns on stdout and exits zero, so every green run used
+      # to print "37 vulnerabilities (2 critical)" and pass. A level makes
+      # it a check rather than a notice.
+      #
+      # critical, not high, because two high advisories reach us through
+      # react-formule and upstream has published no fix. Setting the bar
+      # where nothing can meet it would mean turning the step off again
+      # within the week. Raise it when react-formule moves (#53).
+      - name: Advisories
+        working-directory: ${{ env.SPA_DIRECTORY }}
+        run: npm audit --audit-level=critical
 
   e2e:
     name: E2E

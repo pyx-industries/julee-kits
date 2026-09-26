@@ -32,19 +32,10 @@ export default function JsonSchemaViewer({
     return JSON.stringify(schema, null, 2);
   };
 
-  const handleFormuleStateChange = useCallback(
-    (newState: { schema?: Record<string, unknown> }) => {
-      // Read-only component - no state changes needed
-      if (newState?.schema) {
-        try {
-          // Schema viewed - no logging in production
-        } catch (err) {
-          console.error("Error viewing schema:", err);
-        }
-      }
-    },
-    [],
-  );
+  // Read-only: this component shows a schema and changes nothing, but
+  // FormuleContext requires the prop. A no-op is assignable to whatever
+  // shape it declares, which is also the honest description.
+  const handleFormuleStateChange = useCallback(() => {}, []);
 
   // Initialize the schema in FormuleContext when component mounts
   useEffect(() => {
