@@ -188,9 +188,7 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                         "calculated_multihash": calculated_multihash,
                     },
                 )
-                document = document.model_copy(
-                    update={"content_multihash": calculated_multihash}
-                )
+                document = document.evolve(content_multihash=calculated_multihash)
 
             # Store metadata second (atomic operation)
             await self._store_metadata(document)
@@ -463,12 +461,7 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
 
             stream = ContentStream(io.BytesIO(content_bytes))
             size_bytes = len(content_bytes)
-            return document.model_copy(
-                update={
-                    "content": stream,
-                    "size_bytes": size_bytes,
-                }
-            )
+            return document.evolve(content=stream, size_bytes=size_bytes)
 
         raise ValueError(
             f"Document {document.document_id} has no content, content_bytes"
