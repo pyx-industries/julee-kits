@@ -83,7 +83,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         else:
             # Normal production initialization
             startup_deps = await resolve_dependency(app, get_startup_dependencies)
-            service = await startup_deps.get_system_initialization_service()
+            service = await startup_deps.get_system_initializer()
 
             # Execute initialization
             results = await service.initialize()

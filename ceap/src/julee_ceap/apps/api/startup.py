@@ -1,13 +1,16 @@
-"""
-System Initialization Service for the julee CEAP system.
+"""Startup initialisation for the julee CEAP API.
 
-This module provides the service layer for system initialization,
-orchestrating the use cases needed to ensure required system data
-exists on application startup.
+A facade between the API layer and the domain use cases: it orchestrates
+what has to exist before the application can serve, handles the
+application-level concerns, and leaves the business logic in the use
+cases.
 
-The service acts as a facade between the API layer and domain use cases,
-handling application-level concerns while delegating business logic
-to the appropriate use cases.
+It was called ``SystemInitializationService``, in
+``apps/api/services/``, until doctrine started checking where a driven
+port may be written (julee#236). A ``*Service`` is one of ADR 016's six
+ports — reached through an activity, bound to two or more entities of
+its context — and this is a startup facade. The name claimed a role the
+class does not have, which is exactly what the suffix is for.
 """
 
 import logging
@@ -21,31 +24,26 @@ from julee_ceap.usecases.initialize_system_data import (
 logger = logging.getLogger(__name__)
 
 
-class SystemInitializationService:
-    """
-    Service for orchestrating system initialization on application startup.
+class SystemInitializer:
+    """Orchestrates the use cases that must run before the API serves.
 
-    This service coordinates the execution of use cases needed to initialize
-    required system data, such as knowledge service configurations and
-    other essential data needed for the application to function properly.
-
-    The service provides error handling, logging, and coordination between
-    multiple initialization tasks while keeping the business logic in
-    the domain use cases.
+    Coordinates the initialisation of required system data — knowledge
+    service configurations and the rest — with error handling and
+    logging, while the business logic stays in the use cases.
     """
 
     def __init__(
         self,
         initialize_system_data_use_case: InitializeSystemDataUseCase,
     ) -> None:
-        """Initialize the service with required use cases.
+        """Take the use cases this has to run.
 
         Args:
             initialize_system_data_use_case: Use case for initializing
                 system data
         """
         self.initialize_system_data_use_case = initialize_system_data_use_case
-        self.logger = logging.getLogger("SystemInitializationService")
+        self.logger = logging.getLogger("SystemInitializer")
 
     async def initialize(self) -> dict[str, Any]:
         """
