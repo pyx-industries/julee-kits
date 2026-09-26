@@ -84,12 +84,10 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
 
             # Create new document with ContentStream and calculated hash
             multihash_of_content = content_multihash(raw_bytes)
-            document = document.model_copy(
-                update={
-                    "content": content_stream,
-                    "content_multihash": multihash_of_content,
-                    "size_bytes": len(raw_bytes),
-                }
+            document = document.evolve(
+                content=content_stream,
+                content_multihash=multihash_of_content,
+                size_bytes=len(raw_bytes),
             )
 
             self.logger.debug(
@@ -103,7 +101,7 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
 
         # Create a copy without content_string (content saved
         # in separate content-addressable storage)
-        document_for_storage = document.model_copy(update={"content_bytes": None})
+        document_for_storage = document.evolve(content_bytes=None)
         self.save_entity(document_for_storage, "document_id")
 
     async def generate_id(self) -> str:

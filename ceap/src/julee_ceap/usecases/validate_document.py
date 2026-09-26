@@ -216,8 +216,8 @@ class ValidateDocumentUseCase:
 
         try:
             # Step 4: Update status to in progress
-            validation = validation.model_copy(
-                update={"status": DocumentPolicyValidationStatus.IN_PROGRESS}
+            validation = validation.evolve(
+                status=DocumentPolicyValidationStatus.IN_PROGRESS
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -238,11 +238,9 @@ class ValidateDocumentUseCase:
             )
 
             # Step 9: Update validation with scores
-            validation = validation.model_copy(
-                update={
-                    "validation_scores": validation_scores,
-                    "status": DocumentPolicyValidationStatus.VALIDATION_COMPLETE,
-                }
+            validation = validation.evolve(
+                validation_scores=validation_scores,
+                status=DocumentPolicyValidationStatus.VALIDATION_COMPLETE,
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -291,10 +289,8 @@ class ValidateDocumentUseCase:
 
             # Step 11: Initial validation failed and transformations are
             # available
-            validation = validation.model_copy(
-                update={
-                    "status": DocumentPolicyValidationStatus.TRANSFORMATION_REQUIRED
-                }
+            validation = validation.evolve(
+                status=DocumentPolicyValidationStatus.TRANSFORMATION_REQUIRED
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -309,10 +305,8 @@ class ValidateDocumentUseCase:
             )
 
             # Step 12: Apply transformations
-            validation = validation.model_copy(
-                update={
-                    "status": DocumentPolicyValidationStatus.TRANSFORMATION_IN_PROGRESS
-                }
+            validation = validation.evolve(
+                status=DocumentPolicyValidationStatus.TRANSFORMATION_IN_PROGRESS
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -323,11 +317,9 @@ class ValidateDocumentUseCase:
                 document_registrations,
             )
 
-            validation = validation.model_copy(
-                update={
-                    "transformed_document_id": transformed_document.document_id,
-                    "status": DocumentPolicyValidationStatus.TRANSFORMATION_COMPLETE,
-                }
+            validation = validation.evolve(
+                transformed_document_id=transformed_document.document_id,
+                status=DocumentPolicyValidationStatus.TRANSFORMATION_COMPLETE,
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -339,8 +331,8 @@ class ValidateDocumentUseCase:
             )
 
             # Step 14: Re-run validation queries on transformed document
-            validation = validation.model_copy(
-                update={"status": DocumentPolicyValidationStatus.IN_PROGRESS}
+            validation = validation.evolve(
+                status=DocumentPolicyValidationStatus.IN_PROGRESS
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -396,13 +388,11 @@ class ValidateDocumentUseCase:
 
         except Exception as e:
             # Mark validation as failed due to error
-            validation = validation.model_copy(
-                update={
-                    "status": DocumentPolicyValidationStatus.ERROR,
-                    "error_message": str(e),
-                    "passed": False,
-                    "completed_at": self.now_fn(),
-                }
+            validation = validation.evolve(
+                status=DocumentPolicyValidationStatus.ERROR,
+                error_message=str(e),
+                passed=False,
+                completed_at=self.now_fn(),
             )
             await self.document_policy_validation_repo.save(validation)
 
