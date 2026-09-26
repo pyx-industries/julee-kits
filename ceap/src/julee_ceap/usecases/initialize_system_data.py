@@ -12,7 +12,6 @@ The use case follows clean architecture principles:
 - Can be tested independently of infrastructure concerns
 """
 
-import hashlib
 import json
 import logging
 from pathlib import Path
@@ -28,6 +27,7 @@ from julee_ceap.domain.models.assembly_specification import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import content_multihash
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
@@ -869,8 +869,7 @@ class InitializeSystemDataUseCase:
             self.logger.info(content_bytes)
 
         size_bytes = len(content_bytes)
-        sha256_hash = hashlib.sha256(content_bytes).hexdigest()
-        content_multihash = f"sha256-{sha256_hash}"
+        multihash_of_content = content_multihash(content_bytes)
 
         status = DocumentStatus.CAPTURED
         if "status" in doc_data:
@@ -890,7 +889,7 @@ class InitializeSystemDataUseCase:
             original_filename=doc_data["original_filename"],
             content_type=doc_data["content_type"],
             size_bytes=size_bytes,
-            content_multihash=content_multihash,
+            content_multihash=multihash_of_content,
             status=status,
             knowledge_service_id=knowledge_service_id,
             assembly_types=assembly_types,

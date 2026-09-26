@@ -14,6 +14,9 @@ from julee.core.entities.content_stream import (
 )
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import (
+    content_multihash as multihash_of,
+)
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
@@ -43,7 +46,7 @@ def test_document() -> Document:
         original_filename="test_document.txt",
         content_type="text/plain",
         size_bytes=len(content_bytes),
-        content_multihash="test-hash-123",
+        content_multihash=multihash_of(b"test-hash-123"),
         status=DocumentStatus.CAPTURED,
         content=content_stream,
         created_at=datetime.now(UTC),

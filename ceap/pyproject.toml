@@ -24,9 +24,6 @@ dependencies = [
     # Schemas, content addressing and fixtures
     "jsonschema>=4.0.0",
     "jsonpointer>=3.0.0",
-    "multihash>=0.1.1",
-    # multihash 0.1.1 imports six without declaring it
-    "six>=1.16.0",
     "PyYAML>=6.0.0",
     "httpx>=0.27.0",
 ]

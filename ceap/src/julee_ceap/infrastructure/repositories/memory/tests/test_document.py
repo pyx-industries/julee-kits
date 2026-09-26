@@ -14,6 +14,9 @@ from julee.core.entities.content_stream import (
 )
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import (
+    content_multihash as multihash_of,
+)
 from julee_ceap.infrastructure.repositories.memory.document import (
     MemoryDocumentRepository,
 )
@@ -42,7 +45,7 @@ def sample_document(sample_content: ContentStream) -> Document:
         original_filename="test.txt",
         content_type="text/plain",
         size_bytes=41,
-        content_multihash="test_hash_placeholder",
+        content_multihash=multihash_of(b"test_hash_placeholder"),
         status=DocumentStatus.CAPTURED,
         content=sample_content,
     )
@@ -63,7 +66,9 @@ class TestMemoryDocumentRepositoryContentBytes:
             original_filename="assembled.json",
             content_type="application/json",
             size_bytes=100,  # Will be updated automatically
-            content_multihash="placeholder",  # Will be updated automatically
+            content_multihash=multihash_of(
+                b"placeholder"
+            ),  # Will be updated automatically
             status=DocumentStatus.CAPTURED,
             content_bytes=content.encode("utf-8"),
         )
@@ -93,7 +98,7 @@ class TestMemoryDocumentRepositoryContentBytes:
             original_filename="unicode.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash="placeholder",
+            content_multihash=multihash_of(b"placeholder"),
             status=DocumentStatus.CAPTURED,
             content_bytes=content.encode("utf-8"),
         )
@@ -120,7 +125,7 @@ class TestMemoryDocumentRepositoryContentBytes:
             original_filename="test.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash="placeholder",
+            content_multihash=multihash_of(b"placeholder"),
             status=DocumentStatus.CAPTURED,
             content_bytes=content.encode("utf-8"),
         )
@@ -195,7 +200,7 @@ class TestMemoryDocumentRepositoryErrorHandling:
                 original_filename="test.txt",
                 content_type="text/plain",
                 size_bytes=100,
-                content_multihash="test_hash",
+                content_multihash=multihash_of(b"test_hash"),
                 status=DocumentStatus.CAPTURED,
                 content_bytes=b"test content",
             )
@@ -210,7 +215,7 @@ class TestMemoryDocumentRepositoryErrorHandling:
                 original_filename="",
                 content_type="text/plain",
                 size_bytes=100,
-                content_multihash="test_hash",
+                content_multihash=multihash_of(b"test_hash"),
                 status=DocumentStatus.CAPTURED,
                 content_bytes=b"test content",
             )

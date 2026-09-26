@@ -11,13 +11,11 @@ The implementation separates document metadata (stored as JSON) from content
 payload handling pattern from the architectural guidelines.
 """
 
-import hashlib
 import io
 import json
 import logging
 from datetime import UTC, datetime
 
-import multihash
 from julee.core.entities.content_stream import (
     ContentStream,
 )
@@ -26,6 +24,7 @@ from minio.error import S3Error
 from pydantic import BaseModel, ConfigDict
 
 from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.multihash import content_multihash
 from julee_ceap.domain.repositories.document import DocumentRepository
 
 
@@ -454,20 +453,17 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
         )
 
     def _calculate_multihash_from_stream(self, content_stream: ContentStream) -> str:
-        """Calculate multihash from content stream."""
+        """The multihash naming this stream's content.
+
+        Reads the stream and puts it back where it found it, because the
+        caller stores the same stream immediately afterwards.
+        """
         if not content_stream:
             raise ValueError("Content stream is required")
 
-        # Read content and calculate SHA-256 hash
         content_data = content_stream.read()
-        sha256_hash = hashlib.sha256(content_data).digest()
-
-        # Reset stream position for future reads
         content_stream.seek(0)
-
-        # Create multihash with SHA-256 (code 0x12)
-        mhash = multihash.encode(sha256_hash, multihash.SHA2_256)
-        return str(mhash.hex())
+        return content_multihash(content_data)
 
     async def _store_metadata(self, document: Document) -> None:
         """Store document metadata to Minio with idempotency check."""

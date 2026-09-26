@@ -7,14 +7,12 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
-import hashlib
 import io
 import json
 import logging
 from collections.abc import Callable, Sequence
 from datetime import datetime
 
-import multihash
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol
 from pydantic import BaseModel
@@ -27,6 +25,7 @@ from julee_ceap.domain.models import (
     KnowledgeServiceQuery,
     Policy,
 )
+from julee_ceap.domain.models.document.multihash import content_multihash
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidationStatus,
 )
@@ -723,12 +722,7 @@ class ValidateDocumentUseCase:
         transformed_bytes = transformed_content.encode("utf-8")
         transformed_stream = io.BytesIO(transformed_bytes)
 
-        # Calculate multihash for transformed content
-        sha256_hasher = hashlib.sha256()
-        sha256_hasher.update(transformed_bytes)
-        sha256_hash = sha256_hasher.digest()
-        mhash = multihash.encode(sha256_hash, multihash.SHA2_256)
-        proper_multihash = str(mhash.hex())
+        proper_multihash = content_multihash(transformed_bytes)
 
         transformed_document = Document(
             document_id=transformed_document_id,

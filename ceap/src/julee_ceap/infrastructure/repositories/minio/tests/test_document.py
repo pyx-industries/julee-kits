@@ -6,12 +6,10 @@ without requiring a real MinIO instance. They follow the Clean Architecture
 testing patterns and verify idempotency, error handling, and content.
 """
 
-import hashlib
 import io
 from typing import Any
 from unittest.mock import Mock
 
-import multihash
 import pytest
 from julee.core.entities.content_stream import (
     ContentStream,
@@ -20,6 +18,9 @@ from julee.integrations.minio.testing import FakeMinioClient
 from minio.error import S3Error
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import (
+    content_multihash as multihash_of,
+)
 from julee_ceap.infrastructure.repositories.minio.document import (
     MinioDocumentRepository,
 )
@@ -49,11 +50,11 @@ def sample_content() -> ContentStream:
 @pytest.fixture
 def sample_document(sample_content: ContentStream) -> Document:
     """Sample document for testing."""
-    # Calculate the actual multihash for this content
+    # The name the repository will compute for this content. Worked out
+    # by hand here until #44: the fixture reproduced the production
+    # calculation rather than checking it, so it agreed with the bug.
     content_bytes = b"This is test content for document storage"
-    sha256_hash = hashlib.sha256(content_bytes).digest()
-    mh = multihash.encode(sha256_hash, multihash.SHA2_256)
-    actual_multihash = str(mh.hex())
+    actual_multihash = multihash_of(content_bytes)
 
     return Document(
         document_id="test-doc-123",
@@ -209,7 +210,7 @@ class TestMinioDocumentRepositoryStore:
         # Deliberately set an incorrect multihash to test correction
         correct_multihash = sample_document.content_multihash
         sample_document = sample_document.model_copy(
-            update={"content_multihash": "incorrect_hash_12345"}
+            update={"content_multihash": multihash_of(b"different content")}
         )
 
         # Act
@@ -323,7 +324,9 @@ class TestMinioDocumentRepositoryGet:
         """Test that missing content returns None."""
         # Store metadata but not content
         metadata_json = (
-            '{"document_id": "test-123", "content_multihash": "missing_hash",'
+            '{"document_id": "test-123", "content_multihash": "'
+            + multihash_of(b"missing")
+            + '",'
             ' "original_filename": "test.txt", "content_type": "text/plain",'
             ' "size_bytes": 100, "status": "captured"}'
         )
@@ -451,7 +454,9 @@ class TestMinioDocumentRepositoryContentBytes:
             original_filename="assembled.json",
             content_type="application/json",
             size_bytes=100,  # Will be updated automatically
-            content_multihash="placeholder",  # Will be updated automatically
+            content_multihash=multihash_of(
+                b"placeholder"
+            ),  # Will be updated automatically
             status=DocumentStatus.CAPTURED,
             content_bytes=content.encode("utf-8"),
         )
@@ -481,7 +486,7 @@ class TestMinioDocumentRepositoryContentBytes:
             original_filename="unicode.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash="placeholder",
+            content_multihash=multihash_of(b"placeholder"),
             status=DocumentStatus.CAPTURED,
             content_bytes=content.encode("utf-8"),
         )
@@ -510,7 +515,7 @@ class TestMinioDocumentRepositoryContentBytes:
             original_filename="test.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash="placeholder",
+            content_multihash=multihash_of(b"placeholder"),
             status=DocumentStatus.CAPTURED,
             content_bytes=content.encode("utf-8"),
         )
