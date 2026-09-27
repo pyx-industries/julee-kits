@@ -1,0 +1,10 @@
+# Revisions to skip when reading git blame.
+#
+# Enable with:
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Only whole-tree reformats belong here — commits that changed how the
+# code is written and nothing about what it does.
+
+# Reformat with ruff (#78)
+12aa82c04e743100c9a55074e2465c2fe69ad0dd
