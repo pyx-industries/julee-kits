@@ -10,9 +10,7 @@ import io
 from datetime import UTC, datetime
 
 import pytest
-from julee.core.entities.content_stream import (
-    ContentStream,
-)
+from julee.core.entities.content_stream import ContentStream
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.domain.models.document.multihash import (
@@ -34,7 +32,6 @@ def test_document() -> Document:
     """Create a test Document for testing."""
     content_text = "This is test document content for knowledge service testing."
     content_bytes = content_text.encode("utf-8")
-    content_stream = ContentStream(io.BytesIO(content_bytes))
 
     return Document(
         document_id="test-doc-123",
@@ -43,7 +40,6 @@ def test_document() -> Document:
         size_bytes=len(content_bytes),
         content_multihash=multihash_of(b"test-hash-123"),
         status=DocumentStatus.CAPTURED,
-        content=content_stream,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -82,6 +78,11 @@ def sample_query_result() -> QueryResult:
     )
 
 
+def some_content() -> ContentStream:
+    """Content to hand the service, since a Document no longer carries any."""
+    return ContentStream(io.BytesIO(b"test content"))
+
+
 class TestMemoryKnowledgeService:
     """Test cases for MemoryKnowledgeService."""
 
@@ -93,7 +94,7 @@ class TestMemoryKnowledgeService:
     ) -> None:
         """Test that register_file creates a new file registration."""
         result = await memory_service.register_file(
-            knowledge_service_config, test_document
+            knowledge_service_config, test_document, some_content()
         )
 
         assert result.document_id == test_document.document_id
@@ -116,10 +117,10 @@ class TestMemoryKnowledgeService:
         """Test that registering the same document returns same result."""
         # Register twice
         result1 = await memory_service.register_file(
-            knowledge_service_config, test_document
+            knowledge_service_config, test_document, some_content()
         )
         result2 = await memory_service.register_file(
-            knowledge_service_config, test_document
+            knowledge_service_config, test_document, some_content()
         )
 
         # Should get the exact same result
@@ -134,7 +135,7 @@ class TestMemoryKnowledgeService:
     ) -> None:
         """Test that register_file stores the result in memory."""
         result = await memory_service.register_file(
-            knowledge_service_config, test_document
+            knowledge_service_config, test_document, some_content()
         )
         file_id = result.knowledge_service_file_id
 
@@ -166,7 +167,6 @@ class TestMemoryKnowledgeService:
         # Create a second test document
         content_text = "Second test document content."
         content_bytes = content_text.encode("utf-8")
-        content_stream = ContentStream(io.BytesIO(content_bytes))
 
         doc2 = Document(
             document_id="test-doc-2",
@@ -175,15 +175,16 @@ class TestMemoryKnowledgeService:
             size_bytes=len(content_bytes),
             content_multihash=multihash_of(b"test-hash-2"),
             status=DocumentStatus.CAPTURED,
-            content=content_stream,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
 
         result1 = await memory_service.register_file(
-            knowledge_service_config, test_document
+            knowledge_service_config, test_document, some_content()
         )
-        result2 = await memory_service.register_file(knowledge_service_config, doc2)
+        result2 = await memory_service.register_file(
+            knowledge_service_config, doc2, some_content()
+        )
 
         all_files = memory_service.get_all_registered_files()
 

@@ -12,22 +12,20 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from julee.core.entities.content_stream import ContentStream
 
 from julee_ceap.domain.models import (
     Assembly,
     AssemblySpecification,
     AssemblySpecificationStatus,
     AssemblyStatus,
-    ContentStream,
     Document,
     DocumentStatus,
     KnowledgeServiceConfig,
     KnowledgeServiceQuery,
 )
-from julee_ceap.domain.models.document.multihash import (
-    content_multihash as multihash_of,
-)
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
+from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.infrastructure.repositories.http.schema import (
     HttpSchemaOracle,
 )
@@ -46,6 +44,16 @@ from julee_ceap.infrastructure.services.knowledge_service.memory import (
 from julee_ceap.usecases import ExtractAssembleDataUseCase
 
 pytestmark = pytest.mark.unit
+
+
+async def stored_name(repository: DocumentRepository, content: bytes) -> str:
+    """Put content in the store and give back the name it got.
+
+    Tests used to set content_multihash to a hash of something else and
+    let save() quietly correct it. Nothing corrects it now: content is
+    addressed by what it is, so a document names what was stored.
+    """
+    return await repository.store_content(ContentStream(io.BytesIO(content)))
 
 
 class TestExtractAssembleDataUseCase:
@@ -271,9 +279,8 @@ class TestExtractAssembleDataUseCase:
             original_filename="test_transcript.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-123"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -354,11 +361,9 @@ class TestExtractAssembleDataUseCase:
         assert assembled_doc is not None
         assert assembled_doc.status == DocumentStatus.ASSEMBLED
 
-        # Check assembled content
-        if assembled_doc.content is None:
-            raise ValueError("Assembled document content is required")
-        assembled_doc.content.seek(0)
-        content = assembled_doc.content.read().decode("utf-8")
+        # Check assembled content, read through the port
+        stream = await document_repo.content_of(assembled_doc)
+        content = stream.read().decode("utf-8")
         assembled_data = json.loads(content)
 
         assert "title" in assembled_data
@@ -387,9 +392,8 @@ class TestExtractAssembleDataUseCase:
             original_filename="test_transcript.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-123"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -561,9 +565,8 @@ class TestExtractAssembleDataUseCase:
             original_filename="test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -609,9 +612,8 @@ class TestExtractAssembleDataUseCase:
             original_filename="test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

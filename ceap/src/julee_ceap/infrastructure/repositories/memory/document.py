@@ -56,12 +56,10 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
         logger.debug("Initializing MemoryDocumentRepository")
 
     async def get(self, document_id: str) -> Document | None:
-        """Retrieve a document with metadata and content.
+        """Retrieve a document's metadata.
 
-        The content is a fresh stream over the stored bytes, as MinIO's
-        is a fresh response: what is kept is the content, not a stream
-        over it, so asking twice gives two readable streams rather than
-        one spent one.
+        Metadata only: a document names its content rather than
+        carrying it, and content_of() is how a caller reads it.
 
         Args:
             document_id: Unique document identifier
@@ -69,71 +67,39 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
         Returns:
             Document object if found, None otherwise
         """
-        document = self.get_entity(document_id)
-        if document is None:
-            return None
+        return self.get_entity(document_id)
 
-        content = self.content_by_multihash.get(document.content_multihash)
-        if content is None:
-            return document
+    async def store_content(self, content: ContentStream) -> str:
+        """Keep these bytes under their own name, and say what it is.
 
-        return document.evolve(content=ContentStream(io.BytesIO(content)))
+        Args:
+            content: The bytes to store, read once from where it is
+
+        Returns:
+            The multihash the content is stored under
+        """
+        raw = content.read()
+        multihash = content_multihash(raw)
+        self.content_by_multihash[multihash] = raw
+
+        self.logger.debug(
+            "Content stored",
+            extra={"content_multihash": multihash, "content_size": len(raw)},
+        )
+
+        return multihash
 
     async def save(self, document: Document) -> None:
-        """Save a document with its content and metadata.
+        """Save a document's metadata.
 
-        If the document has content_bytes, it will be normalized to bytes
-        (encoding str as UTF-8), converted to a ContentStream and the
-        content hash will be calculated automatically.
+        The content it names is stored by ``store_content``, before
+        there is a document to name it — a multihash cannot be known
+        until the bytes have been read.
 
         Args:
             document: Document object to save
-
-        Raises:
-            ValueError: If document has no content or content_bytes
-            TypeError: If content_bytes is not bytes or str
         """
-        # Handle content_string conversion (only if no content provided)
-        if document.content_bytes is not None:
-            if isinstance(document.content_bytes, str):
-                raw_bytes = document.content_bytes.encode("utf-8")
-            elif isinstance(document.content_bytes, bytes):
-                raw_bytes = document.content_bytes
-            else:
-                raise TypeError("content_bytes must be of type 'bytes' or 'str'.")
-
-            content_stream = ContentStream(io.BytesIO(raw_bytes))
-
-            # Create new document with ContentStream and calculated hash
-            multihash_of_content = content_multihash(raw_bytes)
-            document = document.evolve(
-                content=content_stream,
-                content_multihash=multihash_of_content,
-                size_bytes=len(raw_bytes),
-            )
-
-            self.logger.debug(
-                "Converted content_bytes to ContentStream for document save",
-                extra={
-                    "document_id": document.document_id,
-                    "content_multihash": multihash_of_content,
-                    "content_length": len(raw_bytes),
-                },
-            )
-
-        # Keep the content where it can be read again, under the name
-        # the document uses for it. Whatever arrived as a stream is read
-        # here rather than kept, because keeping it would mean the next
-        # reader gets what is left of it.
-        if document.content is not None:
-            self.content_by_multihash[document.content_multihash] = (
-                document.content.read()
-            )
-
-        # Create a copy without content_string (content saved
-        # in separate content-addressable storage)
-        document_for_storage = document.evolve(content_bytes=None)
-        self.save_entity(document_for_storage, "document_id")
+        self.save_entity(document, "document_id")
 
     async def content_of(self, document: Document) -> ContentStream:
         """The content this document names, as a fresh stream.

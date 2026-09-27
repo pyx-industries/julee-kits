@@ -49,6 +49,37 @@ class DocumentRepository(BaseRepository[Document], Protocol):
     storage atomically.
     """
 
+    async def store_content(self, content: ContentStream) -> str:
+        """Put content in the store, and say what it turned out to be.
+
+        Content is stored under its own hash, so it has to be read
+        before it can be named — which is why this comes back with the
+        multihash and the size rather than taking them. A document
+        naming this content is built afterwards, from what is true.
+
+        Storing the same bytes twice is not an error and not a second
+        copy: the name is the content, so the second call finds the
+        first one's object already there.
+
+        Args:
+            content: The content to store, read once from where it is.
+                A stream from content_of goes straight back in, which
+                is what transferring a document between repositories is
+
+        Returns:
+            The multihash the content is stored under, which is the
+            name a document uses for it
+
+        Note:
+            This returns the name rather than a value object describing
+            what was stored, which would carry the size as well.
+            Doctrine reads everything under domain/models/ as an entity,
+            and a repository bound to two entities is an error — so a
+            value object there is indistinguishable from a second
+            aggregate. Tracked with the value-object work on #70.
+        """
+        ...
+
     async def content_of(self, document: Document) -> ContentStream:
         """The content this document names, as a stream to read once.
 

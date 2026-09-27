@@ -6,14 +6,10 @@ KnowledgeService protocol, verifying file registration and query
 execution functionality.
 """
 
-import io
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from julee.core.entities.content_stream import (
-    ContentStream,
-)
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.domain.models.document.multihash import (
@@ -38,7 +34,6 @@ def test_document() -> Document:
     """Create a test Document for testing."""
     content_text = "This is test document content for knowledge service testing."
     content_bytes = content_text.encode("utf-8")
-    content_stream = ContentStream(io.BytesIO(content_bytes))
 
     return Document(
         document_id="test-doc-123",
@@ -47,7 +42,6 @@ def test_document() -> Document:
         size_bytes=len(content_bytes),
         content_multihash=multihash_of(b"test-hash-123"),
         status=DocumentStatus.CAPTURED,
-        content=content_stream,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )

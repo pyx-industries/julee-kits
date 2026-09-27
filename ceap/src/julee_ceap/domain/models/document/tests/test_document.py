@@ -30,7 +30,7 @@ from julee_ceap.domain.models.document.multihash import (
     content_multihash as multihash_of,
 )
 
-from .factories import ContentStreamFactory, DocumentFactory
+from .factories import DocumentFactory
 
 pytestmark = pytest.mark.unit
 
@@ -170,7 +170,6 @@ class TestDocumentInstantiation:
         expected_success: bool,
     ) -> None:
         """Test document creation with various field validation scenarios."""
-        content_stream = ContentStreamFactory.build()
 
         if expected_success:
             # Should create successfully
@@ -180,7 +179,6 @@ class TestDocumentInstantiation:
                 content_type=content_type,
                 size_bytes=size_bytes,
                 content_multihash=multihash,
-                content=content_stream,
             )
             assert doc.document_id == document_id
             assert doc.original_filename.strip() == original_filename.strip()
@@ -196,24 +194,28 @@ class TestDocumentInstantiation:
                     content_type=content_type,
                     size_bytes=size_bytes,
                     content_multihash=multihash,
-                    content=ContentStreamFactory.build(),
                 )
 
 
 class TestDocumentSerialization:
     """Test Document JSON serialization behavior."""
 
-    def test_document_json_excludes_content(self) -> None:
-        """Test that content stream is excluded from JSON serialization."""
-        content = b"Secret content not for JSON"
-        content_stream = ContentStreamFactory.build(content=content)
-        doc = DocumentFactory.build(content=content_stream, size_bytes=len(content))
+    def test_document_json_carries_no_content(self) -> None:
+        """Content is not in the JSON because it is not in the document.
+
+        It used to be a field marked exclude=True, kept off the wire
+        because a live stream cannot go on it. The absence was a
+        property of the serialiser; it is a property of the entity now,
+        and a reader of the JSON sees the name of the content instead.
+        """
+        doc = DocumentFactory.build(size_bytes=27)
 
         json_str = doc.model_dump_json()
         json_data = json.loads(json_str)
 
-        # Content should not be in JSON
         assert "content" not in json_data
+        assert "content_bytes" not in json_data
+        assert json_data["content_multihash"] == doc.content_multihash
 
         # But all other fields should be present
         assert json_data["document_id"] == doc.document_id
@@ -224,79 +226,61 @@ class TestDocumentSerialization:
         assert json_data["status"] == doc.status.value
 
 
-class TestDocumentContentValidation:
-    """Test Document content and content_bytes validation rules."""
+class TestDocumentNeedsNoContentToBeValid:
+    """What a Document is now, and what it no longer claims.
 
-    def test_document_without_content_or_content_bytes_fails(self) -> None:
-        """Test that no content or content_bytes raises error."""
-        with pytest.raises(
-            ValueError, match="must have one of: content, or content_bytes."
-        ):
-            Document(
-                document_id="test-doc-no-content",
-                original_filename="empty.json",
-                content_type="application/json",
-                size_bytes=100,
-                content_multihash=multihash_of(b"test_hash"),
-                content=None,
-                content_bytes=None,
-            )
+    This class used to hold four tests of an invariant saying every
+    document carries content — one for content, one for content_bytes,
+    one for neither being an error, and one asserting that Temporal
+    deserialisation was allowed to skip the whole thing by passing
+    ``context={"temporal_validation": True}``.
 
-    def test_document_with_content_only_succeeds(self) -> None:
-        """Test that document with only content field succeeds."""
-        content_stream = ContentStreamFactory.build()
+    That last test was the defect written down as a requirement. The
+    invariant was false in transit by construction, since a live stream
+    cannot be serialised, and the flag existed to say so quietly. A
+    document that names its content claims nothing the transport cannot
+    honour, so there is nothing left to skip (#69).
+    """
 
+    def test_a_document_is_valid_with_no_content_attached(self) -> None:
+        """The case that used to raise, and is now ordinary."""
         doc = Document(
-            document_id="test-doc-content",
-            original_filename="content.json",
+            document_id="test-doc",
+            original_filename="spec.json",
             content_type="application/json",
             size_bytes=100,
             content_multihash=multihash_of(b"test_hash"),
-            content=content_stream,
-            content_bytes=None,
         )
 
-        assert doc.content is not None
-        assert doc.content_bytes is None
+        assert doc.document_id == "test-doc"
 
-    def test_document_with_content_bytes_only_succeeds(self) -> None:
-        """Test that document with only content_bytes field succeeds."""
-        content_bytes = b'{"type": "string"}'
-
-        doc = Document(
-            document_id="test-doc-string",
-            original_filename="string.json",
-            content_type="application/json",
-            size_bytes=100,
-            content_multihash=multihash_of(b"test_hash"),
-            content=None,
-            content_bytes=content_bytes,
-        )
-
-        assert doc.content is None
-        assert doc.content_bytes == content_bytes
-
-    def test_document_deserialization_with_empty_content_succeeds(
-        self,
-    ) -> None:
-        """Test Temporal deserialization allows empty content."""
-        # This simulates what happens when a Document comes back from Temporal
-        # activities - the ContentStream is excluded from serialization
+    def test_deserialising_needs_no_special_context(self) -> None:
+        """What comes back from a Temporal activity is an ordinary
+        Document, validated the ordinary way. It used to need a context
+        flag naming Temporal, read by the entity itself."""
         document_data = {
             "document_id": "test-temporal",
             "original_filename": "temporal.json",
             "content_type": "application/json",
             "size_bytes": 100,
             "content_multihash": multihash_of(b"test_hash"),
-            "content": None,
-            "content_bytes": None,
         }
 
-        # Should succeed with temporal_validation context
-        doc = Document.model_validate(
-            document_data, context={"temporal_validation": True}
-        )
+        doc = Document.model_validate(document_data)
 
         assert doc.document_id == "test-temporal"
-        assert doc.content is None
-        assert doc.content_bytes is None
+
+    def test_a_document_does_not_carry_content(self) -> None:
+        """Said directly: the fields are gone, not merely unused, so
+        nothing can put a stream back on an entity and have it mean
+        something."""
+        doc = Document(
+            document_id="test-doc",
+            original_filename="spec.json",
+            content_type="application/json",
+            size_bytes=100,
+            content_multihash=multihash_of(b"test_hash"),
+        )
+
+        assert not hasattr(doc, "content")
+        assert not hasattr(doc, "content_bytes")

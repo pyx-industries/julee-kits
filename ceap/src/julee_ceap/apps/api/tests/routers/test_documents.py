@@ -5,6 +5,7 @@ This module provides unit tests for the documents API endpoints,
 focusing on the core functionality of listing documents with pagination.
 """
 
+import io
 from collections.abc import Generator
 from datetime import UTC, datetime
 
@@ -12,6 +13,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from fastapi_pagination import add_pagination
+from julee.core.entities.content_stream import ContentStream
 
 from julee_ceap.apps.api.dependencies import get_document_repository
 from julee_ceap.apps.api.routers.documents import router
@@ -68,7 +70,6 @@ def sample_documents() -> list[Document]:
             created_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             additional_metadata={"type": "test"},
-            content_bytes=b"test content",
         ),
         Document(
             document_id="doc-2",
@@ -80,7 +81,6 @@ def sample_documents() -> list[Document]:
             created_at=datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC),
             additional_metadata={"type": "report"},
-            content_bytes=b"pdf content",
         ),
     ]
 
@@ -122,7 +122,7 @@ class TestListDocuments:
         doc1 = next(item for item in data["items"] if item["document_id"] == "doc-1")
         assert doc1["original_filename"] == "test-document-1.txt"
         assert doc1["content_type"] == "text/plain"
-        assert doc1["size_bytes"] == 12  # Length of "test content"
+        assert doc1["size_bytes"] == 1024  # What the document declares
         assert doc1["status"] == "captured"
         assert doc1["additional_metadata"] == {"type": "test"}
 
@@ -210,7 +210,6 @@ class TestGetDocument:
         assert data["additional_metadata"] == doc.additional_metadata
 
         # Content should NOT be included in metadata endpoint
-        assert data["content_bytes"] is None
         # Content field is excluded from JSON response
         assert "content" not in data
 
@@ -249,8 +248,14 @@ class TestGetDocumentContent:
         sample_documents: list[Document],
     ) -> None:
         """Test successful document content retrieval."""
-        # Setup - add document to repository
+        # Content first, then the document that names it. The fixture
+        # documents name a multihash of their own, so the content has
+        # to be stored under that same name to be found.
         doc = sample_documents[0]
+        stored = await memory_repo.store_content(
+            ContentStream(io.BytesIO(b"test content"))
+        )
+        doc = doc.evolve(content_multihash=stored)
         await memory_repo.save(doc)
 
         # Make request
@@ -295,7 +300,6 @@ class TestGetDocumentContent:
             content_multihash=multihash_of(b"empty_hash"),
             status=DocumentStatus.CAPTURED,
             additional_metadata={"type": "empty"},
-            content_bytes=b"temp",
         )
 
         await memory_repo.save(doc)

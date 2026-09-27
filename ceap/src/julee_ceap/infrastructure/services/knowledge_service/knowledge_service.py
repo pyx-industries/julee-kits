@@ -27,6 +27,8 @@ if TYPE_CHECKING:
         KnowledgeServiceConfig,
     )
 
+from julee.core.entities.content_stream import ContentStream
+
 from julee_ceap.domain.models.document import Document
 
 
@@ -71,13 +73,21 @@ class KnowledgeService(Protocol):
     """
 
     async def register_file(
-        self, config: "KnowledgeServiceConfig", document: Document
+        self,
+        config: "KnowledgeServiceConfig",
+        document: Document,
+        content: ContentStream,
     ) -> FileRegistrationResult:
         """Register a document file with the external knowledge service.
 
         This method registers a document with the external knowledge service,
         allowing that service to analyze and index the document content for
         future queries.
+
+        The content is handed over rather than taken off the document. A
+        Document names its content and does not carry it, so whoever
+        calls this has already asked the repository for it and knows
+        whether the stream it got can be read where it is going (#69).
 
         Args:
             config: KnowledgeServiceConfig for the service to use

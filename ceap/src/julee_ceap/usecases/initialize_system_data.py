@@ -12,12 +12,14 @@ The use case follows clean architecture principles:
 - Can be tested independently of infrastructure concerns
 """
 
+import io
 import json
 import logging
 from pathlib import Path
 from typing import Any
 
 import yaml
+from julee.core.entities.content_stream import ContentStream
 from julee.core.witnesses import ClockWitness, SystemClockWitness
 from pydantic import BaseModel
 
@@ -27,7 +29,6 @@ from julee_ceap.domain.models.assembly_specification import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.models.document.multihash import content_multihash
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
@@ -722,7 +723,7 @@ class InitializeSystemDataUseCase:
                     continue
 
                 # Create new document from fixture data
-                document = self._create_document_from_fixture_data(doc_data)
+                document = await self._create_document_from_fixture_data(doc_data)
                 await self.document_repo.save(document)
 
                 self.logger.info(
@@ -800,7 +801,9 @@ class InitializeSystemDataUseCase:
         except yaml.YAMLError as e:
             raise yaml.YAMLError(f"Invalid YAML in documents fixture file: {e}")
 
-    def _create_document_from_fixture_data(self, doc_data: dict[str, Any]) -> Document:
+    async def _create_document_from_fixture_data(
+        self, doc_data: dict[str, Any]
+    ) -> Document:
         """
         Create a Document from fixture data.
 
@@ -868,8 +871,12 @@ class InitializeSystemDataUseCase:
 
             self.logger.info(content_bytes)
 
+        # Store the content, then name it.
+        stored = await self.document_repo.store_content(
+            ContentStream(io.BytesIO(content_bytes))
+        )
         size_bytes = len(content_bytes)
-        multihash_of_content = content_multihash(content_bytes)
+        multihash_of_content = stored
 
         status = DocumentStatus.CAPTURED
         if "status" in doc_data:
@@ -896,7 +903,6 @@ class InitializeSystemDataUseCase:
             created_at=self._clock_witness.now(),
             updated_at=self._clock_witness.now(),
             additional_metadata=additional_metadata,
-            content_bytes=content_bytes,
         )
 
         self.logger.debug(

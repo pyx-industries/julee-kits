@@ -20,6 +20,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from anthropic import AsyncAnthropic
+from julee.core.entities.content_stream import ContentStream
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
@@ -82,7 +83,10 @@ class AnthropicKnowledgeService(KnowledgeService):
         )
 
     async def register_file(
-        self, config: KnowledgeServiceConfig, document: Document
+        self,
+        config: KnowledgeServiceConfig,
+        document: Document,
+        content: ContentStream,
     ) -> FileRegistrationResult:
         """Register a document file with Anthropic.
 
@@ -105,14 +109,10 @@ class AnthropicKnowledgeService(KnowledgeService):
             # Get Anthropic client for this operation
             client = self._get_client(config)
 
-            # Ensure content stream is positioned at beginning for upload
-            if document.content:
-                document.content.seek(0)
-
-            # Upload file using Anthropic beta Files API
-            # Use tuple format: (filename, file_stream, media_type)
-            if not document.content:
-                raise ValueError("Document content stream is required for upload")
+            # No seek(0) here. The content arrives as a fresh stream
+            # at its start, because it was asked for rather than taken
+            # off the document, and a response off a socket cannot be
+            # rewound anyway (julee#90).
 
             # Anthropic only supports PDF and plaintext files
             # Convert JSON content type to text/plain for compatibility
@@ -123,7 +123,7 @@ class AnthropicKnowledgeService(KnowledgeService):
             file_response = await client.beta.files.upload(
                 file=(
                     document.original_filename,
-                    document.content.stream,  # type: ignore[arg-type]
+                    content.stream,  # type: ignore[arg-type]
                     content_type,
                 )
             )

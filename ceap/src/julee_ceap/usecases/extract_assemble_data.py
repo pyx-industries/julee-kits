@@ -7,12 +7,14 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
+import io
 import json
 import logging
 from collections.abc import Mapping
 from typing import Any
 
 import jsonschema
+from julee.core.entities.content_stream import ContentStream
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol, validate_parameter_types
 from julee.core.witnesses import ClockWitness, ExecutionWitness, SystemClockWitness
@@ -332,7 +334,7 @@ class ExtractAssembleDataUseCase:
                 )
 
             registration_result = await self.knowledge_service.register_file(
-                config, document
+                config, document, await self.document_repo.content_of(document)
             )
             registrations[knowledge_service_id] = (
                 registration_result.knowledge_service_file_id
@@ -601,7 +603,13 @@ class ExtractAssembleDataUseCase:
 
         # Convert assembled data to JSON string
         assembled_content = json.dumps(assembled_data, indent=2)
+
+        # Store the content, then name it: the multihash comes back
+        # from the store rather than being computed here.
         content_bytes = assembled_content.encode("utf-8")
+        stored = await self.document_repo.store_content(
+            ContentStream(io.BytesIO(content_bytes))
+        )
 
         now = self._clock_witness.now()
         assembled_document = Document(
@@ -611,9 +619,8 @@ class ExtractAssembleDataUseCase:
             ),
             content_type="application/json",
             size_bytes=len(content_bytes),
-            content_multihash=self._calculate_multihash_from_content(content_bytes),
+            content_multihash=stored,
             status=DocumentStatus.ASSEMBLED,
-            content_bytes=content_bytes,
             created_at=now,
             updated_at=now,
         )

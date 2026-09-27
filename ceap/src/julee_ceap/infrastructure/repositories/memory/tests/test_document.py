@@ -47,7 +47,6 @@ def sample_document(sample_content: ContentStream) -> Document:
         size_bytes=41,
         content_multihash=multihash_of(b"test_hash_placeholder"),
         status=DocumentStatus.CAPTURED,
-        content=sample_content,
     )
 
 
@@ -61,16 +60,16 @@ class TestMemoryDocumentRepositoryContentBytes:
         content = '{"assembled": "document", "data": "test"}'
 
         # Create document with content_bytes
+        stored = await repository.store_content(
+            ContentStream(io.BytesIO(content.encode("utf-8")))
+        )
         document = Document(
             document_id="test-doc-content-string",
             original_filename="assembled.json",
             content_type="application/json",
-            size_bytes=100,  # Will be updated automatically
-            content_multihash=multihash_of(
-                b"placeholder"
-            ),  # Will be updated automatically
+            size_bytes=len(content.encode("utf-8")),
+            content_multihash=stored,
             status=DocumentStatus.CAPTURED,
-            content_bytes=content.encode("utf-8"),
         )
 
         # Act - save should convert content_bytes to ContentStream
@@ -82,10 +81,9 @@ class TestMemoryDocumentRepositoryContentBytes:
         assert retrieved.content_multihash != "placeholder"  # Hash was calculated
         assert retrieved.size_bytes == len(content.encode("utf-8"))
 
-        # Verify content can be read
-        assert retrieved.content is not None
-        retrieved_content = retrieved.content.read().decode("utf-8")
-        assert retrieved_content == content
+        # Content is read through the port
+        stream = await repository.content_of(retrieved)
+        assert stream.read().decode("utf-8") == content
 
     async def test_save_document_with_content_bytes_unicode(
         self, repository: MemoryDocumentRepository
@@ -93,23 +91,25 @@ class TestMemoryDocumentRepositoryContentBytes:
         """Test saving document with unicode content_bytes."""
         content = '{"title": "测试文档", "emoji": "🚀", "content": "éñ"}'
 
+        stored = await repository.store_content(
+            ContentStream(io.BytesIO(content.encode("utf-8")))
+        )
+
         document = Document(
             document_id="test-doc-unicode",
             original_filename="unicode.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash=multihash_of(b"placeholder"),
+            content_multihash=stored,
             status=DocumentStatus.CAPTURED,
-            content_bytes=content.encode("utf-8"),
         )
 
         await repository.save(document)
         retrieved = await repository.get(document.document_id)
 
         assert retrieved is not None
-        assert retrieved.content is not None
-        retrieved_content = retrieved.content.read().decode("utf-8")
-        assert retrieved_content == content
+        stream = await repository.content_of(retrieved)
+        assert stream.read().decode("utf-8") == content
 
     # Note: Empty content test removed because domain model requires
     # size_bytes > 0
@@ -120,14 +120,17 @@ class TestMemoryDocumentRepositoryContentBytes:
         """Test that content_bytes is not stored in memory storage."""
         content = '{"test": "data that should not be in storage"}'
 
+        stored = await repository.store_content(
+            ContentStream(io.BytesIO(content.encode("utf-8")))
+        )
+
         document = Document(
             document_id="test-storage-exclusion",
             original_filename="test.json",
             content_type="application/json",
             size_bytes=100,
-            content_multihash=multihash_of(b"placeholder"),
+            content_multihash=stored,
             status=DocumentStatus.CAPTURED,
-            content_bytes=content.encode("utf-8"),
         )
 
         await repository.save(document)
@@ -136,20 +139,16 @@ class TestMemoryDocumentRepositoryContentBytes:
         stored_document = repository.storage_dict.get("test-storage-exclusion")
         assert stored_document is not None
 
-        # Verify content_bytes is not in stored document
-        assert stored_document.content_bytes is None
-
         # Verify essential fields are still present
         assert stored_document.document_id == "test-storage-exclusion"
         assert stored_document.content_multihash is not None
         assert stored_document.content_multihash != "placeholder"
 
-        # Verify we can still retrieve with content
+        # And the content it names is still readable
         retrieved = await repository.get("test-storage-exclusion")
         assert retrieved is not None
-        assert retrieved.content is not None
-        retrieved_content = retrieved.content.read().decode("utf-8")
-        assert retrieved_content == content
+        stream = await repository.content_of(retrieved)
+        assert stream.read().decode("utf-8") == content
 
 
 class TestMemoryDocumentRepositoryBasicOperations:
@@ -202,7 +201,6 @@ class TestMemoryDocumentRepositoryErrorHandling:
                 size_bytes=100,
                 content_multihash=multihash_of(b"test_hash"),
                 status=DocumentStatus.CAPTURED,
-                content_bytes=b"test content",
             )
 
     async def test_save_handles_empty_filename(
@@ -217,5 +215,4 @@ class TestMemoryDocumentRepositoryErrorHandling:
                 size_bytes=100,
                 content_multihash=multihash_of(b"test_hash"),
                 status=DocumentStatus.CAPTURED,
-                content_bytes=b"test content",
             )

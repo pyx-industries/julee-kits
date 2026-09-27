@@ -15,8 +15,6 @@ from julee_ceap.domain.models.document.multihash import (
     is_content_multihash,
 )
 
-from .factories import ContentStreamFactory
-
 
 class TestComputingIt:
     def test_it_is_the_sha256_multihash_of_the_content(self) -> None:
@@ -77,7 +75,6 @@ class TestWhatADocumentAccepts:
             content_type="text/plain",
             size_bytes=5,
             content_multihash=content_multihash(b"hello"),
-            content=ContentStreamFactory.build(),
         )
 
         assert document.content_multihash == content_multihash(b"hello")
@@ -96,7 +93,6 @@ class TestWhatADocumentAccepts:
                 content_type="text/plain",
                 size_bytes=5,
                 content_multihash=value,
-                content=ContentStreamFactory.build(),
             )
 
     def test_the_factory_names_the_content_it_builds(self) -> None:
