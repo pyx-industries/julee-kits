@@ -14,6 +14,7 @@ The class follows the naming pattern documented in systemPatterns.org:
 import io
 import logging
 
+from julee.core.entities.content_stream import ContentStream
 from julee.integrations.temporal.decorators import temporal_activity_registration
 from typing_extensions import override
 
@@ -50,33 +51,27 @@ class TemporalKnowledgeService(ConfigurableKnowledgeService):
     async def register_file(
         self, config: KnowledgeServiceConfig, document: Document
     ) -> FileRegistrationResult:
-        """Register a document file, re-fetching content if needed.
+        """Register a document file, reading its content through the port.
 
-        This method checks if the document's ContentStream is None (due to
-        Temporal serialization) and re-fetches content from MinIO if needed.
+        A Document that has crossed an activity boundary carries no
+        content stream — a live stream cannot be serialised, so the
+        field is excluded from it. Content is therefore always read
+        here, rather than taken from whatever arrived.
+
+        This used to re-fetch the whole document, read its stream in
+        full, and assign the result over ``ContentStream._stream``, a
+        private attribute, so that the upload could seek. All three
+        steps were working around content being a field of the entity
+        rather than something the repository can be asked for.
         """
-        if document.content is None:
-            self.logger.info(
-                f"Document {document.document_id} has no content stream, "
-                f"re-fetching from repo"
-            )
-            # Re-fetch the document with proper content
-            fresh_document = await self.document_repo.get(document.document_id)
-            if fresh_document and fresh_document.content:
-                # Read the MinIO stream content into a seekable buffer
-                # This prevents the stream from being consumed during upload
-                content_data = fresh_document.content.read()
-                seekable_stream = io.BytesIO(content_data)
-                fresh_document.content._stream = seekable_stream
-                document = fresh_document
-            else:
-                raise ValueError(
-                    f"Could not re-fetch document {document.document_id} "
-                    f"from repository"
-                )
+        content = await self.document_repo.content_of(document)
 
-        # Now call the parent method with the document that has proper content
-        return await super().register_file(config, document)
+        # The upload seeks, and a response streamed off a socket cannot
+        # (julee#90). Buffering it is the adapter's business, and this
+        # is the adapter.
+        seekable = ContentStream(io.BytesIO(content.read()))
+
+        return await super().register_file(config, document.evolve(content=seekable))
 
 
 ACTIVITY_CLASSES = (TemporalKnowledgeService,)

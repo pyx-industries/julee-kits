@@ -43,11 +43,25 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
         self.logger = logger
         self.entity_name = "Document"
         self.storage_dict: dict[str, Document] = {}
+        self.content_by_multihash: dict[str, bytes] = {}
+        """Content kept apart from metadata, keyed by its own hash.
+
+        The shape MinIO uses, for the same reason: content has a name of
+        its own, so it can be read again. Bytes rather than the stored
+        document's ContentStream, because a stream is spent once read —
+        a double that kept one would hand the second reader an empty
+        result where the real thing hands over the content (julee#124).
+        """
 
         logger.debug("Initializing MemoryDocumentRepository")
 
     async def get(self, document_id: str) -> Document | None:
         """Retrieve a document with metadata and content.
+
+        The content is a fresh stream over the stored bytes, as MinIO's
+        is a fresh response: what is kept is the content, not a stream
+        over it, so asking twice gives two readable streams rather than
+        one spent one.
 
         Args:
             document_id: Unique document identifier
@@ -55,7 +69,15 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
         Returns:
             Document object if found, None otherwise
         """
-        return self.get_entity(document_id)
+        document = self.get_entity(document_id)
+        if document is None:
+            return None
+
+        content = self.content_by_multihash.get(document.content_multihash)
+        if content is None:
+            return document
+
+        return document.evolve(content=ContentStream(io.BytesIO(content)))
 
     async def save(self, document: Document) -> None:
         """Save a document with its content and metadata.
@@ -99,10 +121,42 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
                 },
             )
 
+        # Keep the content where it can be read again, under the name
+        # the document uses for it. Whatever arrived as a stream is read
+        # here rather than kept, because keeping it would mean the next
+        # reader gets what is left of it.
+        if document.content is not None:
+            self.content_by_multihash[document.content_multihash] = (
+                document.content.read()
+            )
+
         # Create a copy without content_string (content saved
         # in separate content-addressable storage)
         document_for_storage = document.evolve(content_bytes=None)
         self.save_entity(document_for_storage, "document_id")
+
+    async def content_of(self, document: Document) -> ContentStream:
+        """The content this document names, as a fresh stream.
+
+        A new stream over the stored bytes each call, so two callers
+        never share one and nobody has to rewind.
+
+        Args:
+            document: The document whose content to read
+
+        Returns:
+            A stream over the content, at its start
+
+        Raises:
+            ValueError: If the metadata names content that is not stored
+        """
+        content = self.content_by_multihash.get(document.content_multihash)
+        if content is None:
+            raise ValueError(
+                f"Document {document.document_id} names content "
+                f"{document.content_multihash}, which was never stored"
+            )
+        return ContentStream(io.BytesIO(content))
 
     async def generate_id(self) -> str:
         """Generate a unique document identifier.

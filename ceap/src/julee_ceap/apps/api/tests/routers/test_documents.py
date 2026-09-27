@@ -279,8 +279,14 @@ class TestGetDocumentContent:
         client: TestClient,
         memory_repo: MemoryDocumentRepository,
     ) -> None:
-        """Test content retrieval when document has no content."""
-        # Create document with content_bytes first to pass validation
+        """Metadata that names content the store does not have.
+
+        This used to build a Document with neither content nor
+        content_bytes, reaching for model_copy to get past the validator
+        that forbids exactly that. The condition is now the real one:
+        metadata pointing at content that is not in the store, which is
+        what a partial write or a reaped object actually looks like.
+        """
         doc = Document(
             document_id="doc-no-content",
             original_filename="empty.txt",
@@ -292,15 +298,11 @@ class TestGetDocumentContent:
             content_bytes=b"temp",
         )
 
-        # Save document normally, then manually remove content from storage
         await memory_repo.save(doc)
-        stored_doc = memory_repo.storage_dict[doc.document_id]
-        # Remove content from the stored document
-        memory_repo.storage_dict[doc.document_id] = stored_doc.model_copy(
-            update={"content": None, "content_bytes": None}
-        )
 
-        # Make request
+        # Reap the content, leaving the metadata that names it
+        memory_repo.content_by_multihash.clear()
+
         response = client.get(f"/documents/{doc.document_id}/content")
 
         # Assertions

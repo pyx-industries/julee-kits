@@ -149,6 +149,48 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
             )
             return None
 
+    async def content_of(self, document: Document) -> ContentStream:
+        """The content this document names, as a fresh stream.
+
+        A new ``get_object`` each call, so two callers never share one
+        response and nobody has to rewind — the two ways content reading
+        has gone wrong here (julee#124, julee#90).
+
+        The response is wrapped rather than read, so the bytes stay in
+        MinIO until somebody asks for them.
+
+        Args:
+            document: The document whose content to read
+
+        Returns:
+            A stream over the content, at its start
+
+        Raises:
+            ValueError: If the metadata names content that is not stored
+        """
+        try:
+            response = self.client.get_object(
+                bucket_name=self.content_bucket,
+                object_name=document.content_multihash,
+            )
+        except S3Error as error:
+            if getattr(error, "code", None) == "NoSuchKey":
+                self.logger.error(
+                    "Data integrity error: document names content that is not stored",
+                    extra={
+                        "document_id": document.document_id,
+                        "content_multihash": document.content_multihash,
+                    },
+                )
+                raise ValueError(
+                    f"Document {document.document_id} names content "
+                    f"{document.content_multihash}, which is not in "
+                    f"{self.content_bucket}"
+                ) from error
+            raise
+
+        return ContentStream(response)
+
     async def save(self, document: Document) -> None:
         """Save a document with its content and metadata.
 
@@ -181,7 +223,7 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
             # Verify and update multihash if needed
             if document.content_multihash != calculated_multihash:
                 self.logger.warning(
-                    "Provided multihash differs from calculated, using " "calculated",
+                    "Provided multihash differs from calculated, using calculated",
                     extra={
                         "document_id": document.document_id,
                         "provided_multihash": document.content_multihash,
