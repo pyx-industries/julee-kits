@@ -125,7 +125,7 @@ class ValidateDocumentWorkflow:
                     "Policy repository proxies not found, workflow may fail"
                 )
                 raise ValueError(
-                    "Policy repository proxies required for validation " "workflow"
+                    "Policy repository proxies required for validation workflow"
                 )
 
             # Create the use case with workflow-safe repositories

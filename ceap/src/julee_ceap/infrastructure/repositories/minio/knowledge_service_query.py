@@ -61,7 +61,7 @@ class MinioKnowledgeServiceQueryRepository(
             KnowledgeServiceQuery object if found, None otherwise
         """
         logger.debug(
-            "MinioKnowledgeServiceQueryRepository: Attempting to retrieve " "query",
+            "MinioKnowledgeServiceQueryRepository: Attempting to retrieve query",
             extra={"query_id": query_id, "bucket": self.bucket_name},
         )
 

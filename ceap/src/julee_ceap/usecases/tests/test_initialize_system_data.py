@@ -361,9 +361,9 @@ class TestYamlFixtureIntegration:
     def test_fixture_configs_have_unique_ids(self, fixture_configs: list[dict]) -> None:
         """Test that all fixture configs have unique IDs."""
         config_ids = [config["knowledge_service_id"] for config in fixture_configs]
-        assert len(config_ids) == len(
-            set(config_ids)
-        ), "Duplicate knowledge_service_id found in fixture"
+        assert len(config_ids) == len(set(config_ids)), (
+            "Duplicate knowledge_service_id found in fixture"
+        )
 
     @pytest.mark.asyncio
     async def test_load_fixture_configurations_method(

@@ -72,7 +72,7 @@ async def get_knowledge_service_queries(
         if not ids.strip():
             raise HTTPException(
                 status_code=400,
-                detail="Invalid ids parameter: must contain at least one " "valid ID",
+                detail="Invalid ids parameter: must contain at least one valid ID",
             )
 
         # Bulk retrieval mode
@@ -87,14 +87,13 @@ async def get_knowledge_service_queries(
             if not id_list:
                 raise HTTPException(
                     status_code=400,
-                    detail="Invalid ids parameter: must contain at least "
-                    "one valid ID",
+                    detail="Invalid ids parameter: must contain at least one valid ID",
                 )
 
             if len(id_list) > 100:  # Reasonable limit
                 raise HTTPException(
                     status_code=400,
-                    detail="Too many IDs requested: maximum 100 IDs per " "request",
+                    detail="Too many IDs requested: maximum 100 IDs per request",
                 )
 
             # Use repository's get_many method
@@ -262,7 +261,7 @@ async def get_knowledge_service_query(
             )
             raise HTTPException(
                 status_code=404,
-                detail=f"Knowledge service query with ID '{query_id}' " "not found",
+                detail=f"Knowledge service query with ID '{query_id}' not found",
             )
 
         logger.info(

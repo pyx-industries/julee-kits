@@ -35,8 +35,7 @@ kit = Kit(
         "temporal.activities": (
             "julee_ceap.infrastructure.repositories.temporal"
             ".activities:ACTIVITY_CLASSES",
-            "julee_ceap.infrastructure.services.temporal"
-            ".activities:ACTIVITY_CLASSES",
+            "julee_ceap.infrastructure.services.temporal.activities:ACTIVITY_CLASSES",
         ),
     },
 )
