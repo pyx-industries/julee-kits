@@ -135,15 +135,12 @@ async def get_document_content(
                 detail=f"Document with ID '{document_id}' not found",
             )
 
-        if not document.content:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Document '{document_id}' has no content",
-            )
-
         try:
-            # Read content
-            content_bytes = document.content.read()
+            # Read content through the port. A document names its
+            # content rather than carrying it, so this asks the
+            # repository for it instead of checking whether it happens
+            # to be attached to what came back.
+            content_bytes = (await repository.content_of(document)).read()
 
             logger.info(
                 "Retrieved document content: %s (%d bytes)",
@@ -161,6 +158,21 @@ async def get_document_content(
                     )
                 },
             )
+
+        except ValueError as missing:
+            # The metadata is there and names content that is not. That
+            # is a fact about this document, not a fault in the request
+            # or the server, so it keeps the 422 this used to give when
+            # the entity arrived with no content attached.
+            logger.error(
+                "Document %s names content that is not stored: %s",
+                document_id,
+                missing,
+            )
+            raise HTTPException(
+                status_code=422,
+                detail=f"Document '{document_id}' has no content",
+            ) from missing
 
         except Exception as content_error:
             logger.error(

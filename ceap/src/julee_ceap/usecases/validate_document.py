@@ -654,13 +654,13 @@ class ValidateDocumentUseCase:
             },
         )
 
-        # Apply transformations sequentially
-        current_content = document.content
-        if current_content is None:
-            raise ValueError("Document content stream is required for transformation")
-        current_content.seek(0)
+        # Apply transformations sequentially. Content is read through
+        # the repository rather than off the document: a fresh stream at
+        # its start, so there is nothing to rewind. This used to seek(0)
+        # either side of the read, which works on a BytesIO and raises
+        # on a response streamed off a socket (julee#90).
+        current_content = await self.document_repo.content_of(document)
         transformed_content = current_content.read().decode("utf-8")
-        current_content.seek(0)
 
         for query_id in policy.transformation_queries:
             query = all_queries[query_id]
