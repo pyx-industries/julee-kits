@@ -19,6 +19,7 @@ from typing import Any
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.journey import Journey, JourneyStep
@@ -107,7 +108,7 @@ class DefineJourneyDirective(HCDDirective):
             intent=intent,
             outcome=outcome,
             goal=goal,
-            depends_on=tuple(depends_on),
+            depends_on=tuple(Slug(s) for s in depends_on if s.strip()),
             preconditions=tuple(preconditions),
             postconditions=tuple(postconditions),
             steps=tuple(steps),

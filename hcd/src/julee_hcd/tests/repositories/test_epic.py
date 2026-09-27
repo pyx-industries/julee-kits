@@ -2,6 +2,7 @@
 
 import pytest
 import pytest_asyncio
+from julee.core.entities.text import Slug
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.infrastructure.repositories.memory.epic import MemoryEpicRepository
@@ -15,7 +16,7 @@ def create_epic(
 ) -> Epic:
     """Helper to create test epics."""
     return Epic(
-        slug=slug,
+        slug=Slug(slug),
         description=description,
         docname=docname,
         story_refs=tuple(story_refs or []),

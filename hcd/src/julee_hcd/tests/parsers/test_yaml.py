@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from julee.core.entities.text import Slug
 
 from julee_hcd.domain.models.app import AppType
 from julee_hcd.domain.models.integration import Direction
@@ -192,9 +193,9 @@ type: member-tool
         apps = scan_app_manifests(apps_dir)
 
         types_by_slug = {a.slug: a.app_type for a in apps}
-        assert types_by_slug["staff-portal"] == AppType.STAFF
-        assert types_by_slug["customer-portal"] == AppType.EXTERNAL
-        assert types_by_slug["member-tool"] == AppType.MEMBER_TOOL
+        assert types_by_slug[Slug("staff-portal")] == AppType.STAFF
+        assert types_by_slug[Slug("customer-portal")] == AppType.EXTERNAL
+        assert types_by_slug[Slug("member-tool")] == AppType.MEMBER_TOOL
 
     def test_scan_nonexistent_directory(self, tmp_path: Path) -> None:
         """Test scanning nonexistent directory returns empty list."""
@@ -410,9 +411,9 @@ direction: bidirectional
         integrations = scan_integration_manifests(integrations_dir)
 
         directions_by_slug = {i.slug: i.direction for i in integrations}
-        assert directions_by_slug["pilot-data"] == Direction.INBOUND
-        assert directions_by_slug["analytics-export"] == Direction.OUTBOUND
-        assert directions_by_slug["data-sync"] == Direction.BIDIRECTIONAL
+        assert directions_by_slug[Slug("pilot-data")] == Direction.INBOUND
+        assert directions_by_slug[Slug("analytics-export")] == Direction.OUTBOUND
+        assert directions_by_slug[Slug("data-sync")] == Direction.BIDIRECTIONAL
 
     def test_scan_nonexistent_directory(self, tmp_path: Path) -> None:
         """Test scanning nonexistent directory returns empty list."""

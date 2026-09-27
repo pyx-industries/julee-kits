@@ -8,8 +8,9 @@ through the system to achieve a goal.
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import NonEmptyText, Slug
 from julee.core.utils import normalize_name
-from pydantic import Field, field_validator
+from pydantic import Field, computed_field
 
 from .base import Authored
 
@@ -38,20 +39,12 @@ class JourneyStep(Entity):
     """
 
     step_type: StepType = Field(description="The type of step (story, epic, phase)")
-    ref: str = Field(
+    ref: NonEmptyText = Field(
         description="Reference identifier (story title, epic slug, or phase title)"
     )
     description: str = Field(
         default="", description="Optional description (primarily for phases)"
     )
-
-    @field_validator("ref", mode="before")
-    @classmethod
-    def validate_ref(cls, v: str) -> str:
-        """Validate ref is not empty."""
-        if not v or not v.strip():
-            raise ValueError("ref cannot be empty")
-        return v.strip()
 
     @classmethod
     def story(cls, title: str) -> "JourneyStep":
@@ -63,7 +56,7 @@ class JourneyStep(Entity):
         Returns:
             JourneyStep with type STORY
         """
-        return cls(step_type=StepType.STORY, ref=title)
+        return cls(step_type=StepType.STORY, ref=NonEmptyText(title))
 
     @classmethod
     def epic(cls, slug: str) -> "JourneyStep":
@@ -75,7 +68,7 @@ class JourneyStep(Entity):
         Returns:
             JourneyStep with type EPIC
         """
-        return cls(step_type=StepType.EPIC, ref=slug)
+        return cls(step_type=StepType.EPIC, ref=NonEmptyText(slug))
 
     @classmethod
     def phase(cls, title: str, description: str = "") -> "JourneyStep":
@@ -88,7 +81,9 @@ class JourneyStep(Entity):
         Returns:
             JourneyStep with type PHASE
         """
-        return cls(step_type=StepType.PHASE, ref=title, description=description)
+        return cls(
+            step_type=StepType.PHASE, ref=NonEmptyText(title), description=description
+        )
 
     @property
     def is_story(self) -> bool:
@@ -114,11 +109,8 @@ class Journey(Authored):
     the sequence of steps they follow.
     """
 
-    slug: str = Field(description='URL-safe identifier (e.g., "build-vocabulary")')
+    slug: Slug = Field(description='URL-safe identifier (e.g., "build-vocabulary")')
     persona: str = Field(default="", description="The persona undertaking this journey")
-    persona_normalized: str = Field(
-        default="", description="Lowercase persona for matching"
-    )
     intent: str = Field(
         default="", description="What the persona wants (their motivation)"
     )
@@ -126,7 +118,7 @@ class Journey(Authored):
         default="", description="What success looks like (business value)"
     )
     goal: str = Field(default="", description="Activity description (what they do)")
-    depends_on: tuple[str, ...] = Field(
+    depends_on: tuple[Slug, ...] = Field(
         default_factory=tuple, description="Journey slugs that must be completed first"
     )
     steps: tuple[JourneyStep, ...] = Field(
@@ -141,27 +133,21 @@ class Journey(Authored):
         description="Conditions that will be true after completion",
     )
 
-    @field_validator("slug", mode="before")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Validate slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("slug cannot be empty")
-        return v.strip()
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def persona_normalized(self) -> str:
+        """Lowercase persona for matching.
 
-    @field_validator("persona_normalized", mode="before")
-    @classmethod
-    def compute_persona_normalized(cls, v: str, info) -> str:
-        """Compute normalized persona from persona if not provided."""
-        if v:
-            return v
-        persona = info.data.get("persona", "")
-        return normalize_name(persona) if persona else ""
+        A stored field until #71, filled by a validator that returned
+        any value it was given and recomputed in ``model_post_init`` in
+        case the validator had not run — so a caller could write one
+        that disagreed with ``persona``, which is what matching reads.
 
-    def model_post_init(self, __context) -> None:
-        """Ensure normalized fields are computed after init."""
-        if not self.persona_normalized and self.persona:
-            object.__setattr__(self, "persona_normalized", normalize_name(self.persona))
+        ``persona`` stays a plain str because a journey may legitimately
+        have none, and Name refuses empty. What is derived from it is
+        derived either way.
+        """
+        return normalize_name(self.persona)
 
     def matches_persona(self, persona_name: str) -> bool:
         """Check if this journey matches the given persona (case-insensitive).

@@ -7,8 +7,9 @@ Integrations are defined via YAML manifests in integrations/*/integration.yaml.
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.utils import normalize_name
-from pydantic import Field, field_validator
+from pydantic import Field, computed_field
 
 from .base import Authored
 
@@ -42,19 +43,11 @@ class Direction(StrEnum):
 class ExternalDependency(Entity):
     """External system that an integration depends on."""
 
-    name: str = Field(description="Display name of the external system")
+    name: Name = Field(description="Display name of the external system")
     url: str | None = Field(
         default=None, description="Optional URL for documentation or reference"
     )
     description: str = Field(default="", description="Optional brief description")
-
-    @field_validator("name", mode="before")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        """Validate name is not empty."""
-        if not v or not v.strip():
-            raise ValueError("name cannot be empty")
-        return v.strip()
 
     @classmethod
     def from_dict(cls, data: dict) -> "ExternalDependency":
@@ -80,11 +73,13 @@ class Integration(Authored):
     data flow direction and external dependencies.
     """
 
-    slug: str = Field(description='URL-safe identifier (e.g., "pilot-data-collection")')
-    module: str = Field(
+    slug: Slug = Field(
+        description='URL-safe identifier (e.g., "pilot-data-collection")'
+    )
+    module: NonEmptyText = Field(
         description='Python module name (e.g., "pilot_data_collection")'
     )
-    name: str = Field(description="Display name")
+    name: Name = Field(description="Display name")
     description: str = Field(default="", description="Human-readable description")
     direction: Direction = Field(
         default=Direction.BIDIRECTIONAL, description="Data flow direction"
@@ -95,45 +90,22 @@ class Integration(Authored):
     manifest_path: str = Field(
         default="", description="Path to the integration.yaml file"
     )
-    name_normalized: str = Field(default="", description="Lowercase name for matching")
 
-    @field_validator("slug", mode="before")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Validate slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("slug cannot be empty")
-        return v.strip()
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def name_normalized(self) -> str:
+        """Lowercase name for matching, which is what Name.normalized is.
 
-    @field_validator("module", mode="before")
-    @classmethod
-    def validate_module(cls, v: str) -> str:
-        """Validate module is not empty."""
-        if not v or not v.strip():
-            raise ValueError("module cannot be empty")
-        return v.strip()
+        A stored field until #71, filled by a validator that returned
+        any value it was given and recomputed in ``model_post_init`` in
+        case the validator had not run. A caller could write one that
+        disagreed with the name, and the repositories match on it.
 
-    @field_validator("name", mode="before")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        """Validate name is not empty."""
-        if not v or not v.strip():
-            raise ValueError("name cannot be empty")
-        return v.strip()
-
-    @field_validator("name_normalized", mode="before")
-    @classmethod
-    def compute_name_normalized(cls, v: str, info) -> str:
-        """Compute normalized name from name if not provided."""
-        if v:
-            return v
-        name = info.data.get("name", "")
-        return normalize_name(name) if name else ""
-
-    def model_post_init(self, __context) -> None:
-        """Ensure normalized fields are computed after init."""
-        if not self.name_normalized and self.name:
-            object.__setattr__(self, "name_normalized", normalize_name(self.name))
+        ``module`` is NonEmptyText rather than Slug deliberately: it is
+        a Python import path, and slugifying one would take the dots
+        out.
+        """
+        return self.name.normalized
 
     @classmethod
     def from_manifest(
@@ -162,15 +134,15 @@ class Integration(Authored):
             (
                 ExternalDependency.from_dict(dep)
                 if isinstance(dep, dict)
-                else ExternalDependency(name=str(dep))
+                else ExternalDependency(name=Name(str(dep)))
             )
             for dep in depends_on_raw
         ]
 
         return cls(
-            slug=slug,
-            module=module_name,
-            name=name,
+            slug=Slug(slug),
+            module=NonEmptyText(module_name),
+            name=Name(name),
             description=manifest.get("description", "").strip(),
             direction=direction,
             depends_on=tuple(depends_on),

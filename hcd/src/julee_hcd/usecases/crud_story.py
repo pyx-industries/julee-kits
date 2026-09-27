@@ -5,6 +5,7 @@ Do not edit — regenerate with make generate-crud.
 
 from typing import Any
 
+from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -101,7 +102,7 @@ class CreateStoryUseCase(CreateUseCase[Story, StoryRepository]):
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Story:
         """Construct a Story from a generated ID and request fields."""
-        return Story(slug=entity_id, **kwargs)
+        return Story(slug=NonEmptyText(entity_id), **kwargs)
 
     async def execute(self, request: CreateStoryRequest) -> CreateStoryResponse:
         """Execute the create story use case."""

@@ -5,6 +5,7 @@ Do not edit — regenerate with make generate-crud.
 
 from typing import Any
 
+from julee.core.entities.text import Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -107,7 +108,7 @@ class CreateIntegrationUseCase(CreateUseCase[Integration, IntegrationRepository]
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Integration:
         """Construct a Integration from a generated ID and request fields."""
-        return Integration(slug=entity_id, **kwargs)
+        return Integration(slug=Slug(entity_id), **kwargs)
 
     async def execute(
         self, request: CreateIntegrationRequest

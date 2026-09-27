@@ -2,6 +2,7 @@
 
 import pytest
 from julee.core.entities.accelerator import Accelerator
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models import (
     App,
@@ -46,12 +47,12 @@ class TestHCDContextCreation:
 
         # Add to context1
         story = Story(
-            slug="test-story",
-            feature_title="Test Story",
-            persona="Tester",
+            slug=NonEmptyText("test-story"),
+            feature_title=Name("Test Story"),
+            persona=Name("Tester"),
             i_want="test",
             so_that="verify",
-            app_slug="test-app",
+            app_slug=Slug("test-app"),
             file_path="test.feature",
         )
         context1.story_repo.save(story)
@@ -72,19 +73,19 @@ class TestHCDContextOperations:
         # Add some entities
         ctx.story_repo.save(
             Story(
-                slug="upload-document",
-                feature_title="Upload Document",
-                persona="Curator",
+                slug=NonEmptyText("upload-document"),
+                feature_title=Name("Upload Document"),
+                persona=Name("Curator"),
                 i_want="upload",
                 so_that="share",
-                app_slug="vocab-tool",
+                app_slug=Slug("vocab-tool"),
                 file_path="test.feature",
             )
         )
 
         ctx.journey_repo.save(
             Journey(
-                slug="build-vocabulary",
+                slug=Slug("build-vocabulary"),
                 persona="Curator",
                 docname="journeys/build-vocabulary",
             )
@@ -92,7 +93,7 @@ class TestHCDContextOperations:
 
         ctx.epic_repo.save(
             Epic(
-                slug="vocabulary-management",
+                slug=Slug("vocabulary-management"),
                 description="Manage vocabularies",
                 docname="epics/vocabulary-management",
             )
@@ -100,8 +101,8 @@ class TestHCDContextOperations:
 
         ctx.app_repo.save(
             App(
-                slug="vocab-tool",
-                name="Vocabulary Tool",
+                slug=Slug("vocab-tool"),
+                name=Name("Vocabulary Tool"),
                 app_type=AppType.STAFF,
                 manifest_path="apps/vocab-tool/app.yaml",
             )
@@ -141,7 +142,7 @@ class TestHCDContextOperations:
         # Add another journey with different docname
         context.journey_repo.save(
             Journey(
-                slug="other-journey",
+                slug=Slug("other-journey"),
                 persona="User",
                 docname="journeys/other",
             )
@@ -166,14 +167,14 @@ class TestHCDContextOperations:
         # Add entities with same docname
         context.journey_repo.save(
             Journey(
-                slug="shared-journey",
+                slug=Slug("shared-journey"),
                 persona="User",
                 docname="shared/doc",
             )
         )
         context.epic_repo.save(
             Epic(
-                slug="shared-epic",
+                slug=Slug("shared-epic"),
                 docname="shared/doc",
             )
         )
@@ -240,12 +241,12 @@ class TestContextAccessFunctions:
         # Add data through context
         context.story_repo.save(
             Story(
-                slug="test",
-                feature_title="Test",
-                persona="User",
+                slug=NonEmptyText("test"),
+                feature_title=Name("Test"),
+                persona=Name("User"),
                 i_want="test",
                 so_that="verify",
-                app_slug="app",
+                app_slug=Slug("app"),
                 file_path="test.feature",
             )
         )

@@ -1,7 +1,7 @@
 """Tests for Epic domain model."""
 
 import pytest
-from pydantic import ValidationError
+from julee.core.entities.text import Slug
 
 from julee_hcd.domain.models.epic import Epic
 
@@ -11,7 +11,7 @@ class TestEpicCreation:
 
     def test_create_epic_minimal(self) -> None:
         """Test creating an epic with minimum fields."""
-        epic = Epic(slug="vocabulary-management")
+        epic = Epic(slug=Slug("vocabulary-management"))
         assert epic.slug == "vocabulary-management"
         assert epic.description == ""
         assert epic.story_refs == ()
@@ -20,7 +20,7 @@ class TestEpicCreation:
     def test_create_epic_complete(self) -> None:
         """Test creating an epic with all fields."""
         epic = Epic(
-            slug="vocabulary-management",
+            slug=Slug("vocabulary-management"),
             description="Manage terminology and vocabulary catalogs",
             story_refs=(
                 "Upload Document",
@@ -37,17 +37,17 @@ class TestEpicCreation:
 
     def test_empty_slug_raises_error(self) -> None:
         """Test that empty slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
-            Epic(slug="")
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
+            Epic(slug=Slug(""))
 
     def test_whitespace_slug_raises_error(self) -> None:
         """Test that whitespace-only slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
-            Epic(slug="   ")
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
+            Epic(slug=Slug("   "))
 
     def test_slug_stripped(self) -> None:
         """Test that slug is stripped of whitespace."""
-        epic = Epic(slug="  vocabulary-management  ")
+        epic = Epic(slug=Slug("  vocabulary-management  "))
         assert epic.slug == "vocabulary-management"
 
 
@@ -58,7 +58,7 @@ class TestEpicStoryOperations:
     def sample_epic(self) -> Epic:
         """Create a sample epic for testing."""
         return Epic(
-            slug="vocabulary-management",
+            slug=Slug("vocabulary-management"),
             description="Manage terminology",
             story_refs=(
                 "Upload Document",
@@ -69,7 +69,7 @@ class TestEpicStoryOperations:
 
     def test_add_story(self) -> None:
         """Test adding a story to an epic."""
-        epic = Epic(slug="test-epic")
+        epic = Epic(slug=Slug("test-epic"))
         assert epic.story_count == 0
 
         epic = epic.with_story("New Story")
@@ -102,23 +102,23 @@ class TestEpicProperties:
 
     def test_display_title(self) -> None:
         """Test display_title property."""
-        epic = Epic(slug="vocabulary-management")
+        epic = Epic(slug=Slug("vocabulary-management"))
         assert epic.display_title == "Vocabulary Management"
 
     def test_display_title_multiple_words(self) -> None:
         """Test display_title with multiple hyphens."""
-        epic = Epic(slug="credential-creation-workflow")
+        epic = Epic(slug=Slug("credential-creation-workflow"))
         assert epic.display_title == "Credential Creation Workflow"
 
     def test_story_count_empty(self) -> None:
         """Test story_count with no stories."""
-        epic = Epic(slug="test")
+        epic = Epic(slug=Slug("test"))
         assert epic.story_count == 0
 
     def test_story_count_with_stories(self) -> None:
         """Test story_count with stories."""
         epic = Epic(
-            slug="test",
+            slug=Slug("test"),
             story_refs=(
                 "Story 1",
                 "Story 2",
@@ -129,12 +129,12 @@ class TestEpicProperties:
 
     def test_has_stories_empty(self) -> None:
         """Test has_stories with no stories."""
-        epic = Epic(slug="test")
+        epic = Epic(slug=Slug("test"))
         assert epic.has_stories is False
 
     def test_has_stories_with_stories(self) -> None:
         """Test has_stories with stories."""
-        epic = Epic(slug="test", story_refs=("Story 1",))
+        epic = Epic(slug=Slug("test"), story_refs=("Story 1",))
         assert epic.has_stories is True
 
 
@@ -144,7 +144,7 @@ class TestEpicSerialization:
     def test_epic_to_dict(self) -> None:
         """Test epic can be serialized to dict."""
         epic = Epic(
-            slug="test",
+            slug=Slug("test"),
             description="Test description",
             story_refs=("Story 1",),
             docname="test/doc",
@@ -158,7 +158,7 @@ class TestEpicSerialization:
 
     def test_epic_to_json(self) -> None:
         """Test epic can be serialized to JSON."""
-        epic = Epic(slug="test", description="Test")
+        epic = Epic(slug=Slug("test"), description="Test")
         json_str = epic.model_dump_json()
         assert '"slug":"test"' in json_str
         assert '"description":"Test"' in json_str

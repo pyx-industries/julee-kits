@@ -1,7 +1,7 @@
 """Tests for Integration domain model."""
 
 import pytest
-from pydantic import ValidationError
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.integration import (
     Direction,
@@ -47,7 +47,7 @@ class TestExternalDependency:
 
     def test_create_with_name_only(self) -> None:
         """Test creating with just name."""
-        dep = ExternalDependency(name="External API")
+        dep = ExternalDependency(name=Name("External API"))
         assert dep.name == "External API"
         assert dep.url is None
         assert dep.description == ""
@@ -55,7 +55,7 @@ class TestExternalDependency:
     def test_create_with_all_fields(self) -> None:
         """Test creating with all fields."""
         dep = ExternalDependency(
-            name="External API",
+            name=Name("External API"),
             url="https://api.example.com",
             description="Third party API",
         )
@@ -65,8 +65,8 @@ class TestExternalDependency:
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises validation error."""
-        with pytest.raises(ValidationError, match="name cannot be empty"):
-            ExternalDependency(name="")
+        with pytest.raises(ValueError, match="a name cannot be empty"):
+            ExternalDependency(name=Name(""))
 
     def test_from_dict_complete(self) -> None:
         """Test from_dict with complete data."""
@@ -93,9 +93,9 @@ class TestIntegrationCreation:
     def test_create_with_required_fields(self) -> None:
         """Test creating with minimum required fields."""
         integration = Integration(
-            slug="data-sync",
-            module="data_sync",
-            name="Data Sync",
+            slug=Slug("data-sync"),
+            module=NonEmptyText("data_sync"),
+            name=Name("Data Sync"),
         )
 
         assert integration.slug == "data-sync"
@@ -106,11 +106,13 @@ class TestIntegrationCreation:
 
     def test_create_with_all_fields(self) -> None:
         """Test creating with all fields."""
-        deps = [ExternalDependency(name="AWS S3", url="https://aws.amazon.com/s3")]
+        deps = [
+            ExternalDependency(name=Name("AWS S3"), url="https://aws.amazon.com/s3")
+        ]
         integration = Integration(
-            slug="data-sync",
-            module="data_sync",
-            name="Data Sync",
+            slug=Slug("data-sync"),
+            module=NonEmptyText("data_sync"),
+            name=Name("Data Sync"),
             description="Synchronizes data with external systems",
             direction=Direction.OUTBOUND,
             depends_on=tuple(deps),
@@ -125,26 +127,26 @@ class TestIntegrationCreation:
     def test_name_normalized_computed(self) -> None:
         """Test that name_normalized is computed."""
         integration = Integration(
-            slug="data-sync",
-            module="data_sync",
-            name="Data Sync Service",
+            slug=Slug("data-sync"),
+            module=NonEmptyText("data_sync"),
+            name=Name("Data Sync Service"),
         )
         assert integration.name_normalized == "data sync service"
 
     def test_empty_slug_raises_error(self) -> None:
         """Test that empty slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
-            Integration(slug="", module="test", name="Test")
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
+            Integration(slug=Slug(""), module=NonEmptyText("test"), name=Name("Test"))
 
     def test_empty_module_raises_error(self) -> None:
         """Test that empty module raises validation error."""
-        with pytest.raises(ValidationError, match="module cannot be empty"):
-            Integration(slug="test", module="", name="Test")
+        with pytest.raises(ValueError, match="cannot be empty"):
+            Integration(slug=Slug("test"), module=NonEmptyText(""), name=Name("Test"))
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises validation error."""
-        with pytest.raises(ValidationError, match="name cannot be empty"):
-            Integration(slug="test", module="test", name="")
+        with pytest.raises(ValueError, match="a name cannot be empty"):
+            Integration(slug=Slug("test"), module=NonEmptyText("test"), name=Name(""))
 
 
 class TestIntegrationFromManifest:
@@ -237,13 +239,13 @@ class TestIntegrationMatching:
     def sample_integration(self) -> Integration:
         """Create a sample integration for testing."""
         return Integration(
-            slug="data-sync",
-            module="data_sync",
-            name="Data Sync Service",
+            slug=Slug("data-sync"),
+            module=NonEmptyText("data_sync"),
+            name=Name("Data Sync Service"),
             direction=Direction.OUTBOUND,
             depends_on=(
-                ExternalDependency(name="AWS S3"),
-                ExternalDependency(name="External API"),
+                ExternalDependency(name=Name("AWS S3")),
+                ExternalDependency(name=Name("External API")),
             ),
         )
 
@@ -282,9 +284,9 @@ class TestIntegrationProperties:
     def test_direction_label(self) -> None:
         """Test direction_label property."""
         integration = Integration(
-            slug="test",
-            module="test",
-            name="Test",
+            slug=Slug("test"),
+            module=NonEmptyText("test"),
+            name=Name("Test"),
             direction=Direction.INBOUND,
         )
         assert integration.direction_label == "Inbound (data source)"
@@ -292,9 +294,9 @@ class TestIntegrationProperties:
     def test_module_path(self) -> None:
         """Test module_path property."""
         integration = Integration(
-            slug="test",
-            module="my_module",
-            name="Test",
+            slug=Slug("test"),
+            module=NonEmptyText("my_module"),
+            name=Name("Test"),
         )
         assert integration.module_path == "integrations.my_module"
 
@@ -305,9 +307,9 @@ class TestIntegrationSerialization:
     def test_integration_to_dict(self) -> None:
         """Test integration can be serialized to dict."""
         integration = Integration(
-            slug="test",
-            module="test",
-            name="Test",
+            slug=Slug("test"),
+            module=NonEmptyText("test"),
+            name=Name("Test"),
             direction=Direction.INBOUND,
         )
 
@@ -318,9 +320,9 @@ class TestIntegrationSerialization:
     def test_integration_to_json(self) -> None:
         """Test integration can be serialized to JSON."""
         integration = Integration(
-            slug="test",
-            module="test",
-            name="Test",
+            slug=Slug("test"),
+            module=NonEmptyText("test"),
+            name=Name("Test"),
         )
 
         json_str = integration.model_dump_json()

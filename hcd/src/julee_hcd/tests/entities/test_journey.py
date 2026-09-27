@@ -1,7 +1,7 @@
 """Tests for Journey domain model."""
 
 import pytest
-from pydantic import ValidationError
+from julee.core.entities.text import NonEmptyText, Slug
 
 from julee_hcd.domain.models.journey import (
     Journey,
@@ -41,7 +41,9 @@ class TestJourneyStep:
 
     def test_create_story_step(self) -> None:
         """Test creating a story step."""
-        step = JourneyStep(step_type=StepType.STORY, ref="Upload Document")
+        step = JourneyStep(
+            step_type=StepType.STORY, ref=NonEmptyText("Upload Document")
+        )
         assert step.step_type == StepType.STORY
         assert step.ref == "Upload Document"
         assert step.is_story is True
@@ -50,7 +52,9 @@ class TestJourneyStep:
 
     def test_create_epic_step(self) -> None:
         """Test creating an epic step."""
-        step = JourneyStep(step_type=StepType.EPIC, ref="vocabulary-management")
+        step = JourneyStep(
+            step_type=StepType.EPIC, ref=NonEmptyText("vocabulary-management")
+        )
         assert step.step_type == StepType.EPIC
         assert step.ref == "vocabulary-management"
         assert step.is_epic is True
@@ -59,7 +63,7 @@ class TestJourneyStep:
         """Test creating a phase step with description."""
         step = JourneyStep(
             step_type=StepType.PHASE,
-            ref="Upload Sources",
+            ref=NonEmptyText("Upload Sources"),
             description="Add reference materials to the knowledge base.",
         )
         assert step.step_type == StepType.PHASE
@@ -69,8 +73,8 @@ class TestJourneyStep:
 
     def test_empty_ref_raises_error(self) -> None:
         """Test that empty ref raises validation error."""
-        with pytest.raises(ValidationError, match="ref cannot be empty"):
-            JourneyStep(step_type=StepType.STORY, ref="")
+        with pytest.raises(ValueError, match="cannot be empty"):
+            JourneyStep(step_type=StepType.STORY, ref=NonEmptyText(""))
 
     def test_story_factory(self) -> None:
         """Test story factory method."""
@@ -102,7 +106,7 @@ class TestJourneyCreation:
 
     def test_create_journey_minimal(self) -> None:
         """Test creating a journey with minimum fields."""
-        journey = Journey(slug="build-vocabulary")
+        journey = Journey(slug=Slug("build-vocabulary"))
         assert journey.slug == "build-vocabulary"
         assert journey.persona == ""
         assert journey.steps == ()
@@ -115,14 +119,14 @@ class TestJourneyCreation:
             JourneyStep.epic("vocabulary-management"),
         ]
         journey = Journey(
-            slug="build-vocabulary",
+            slug=Slug("build-vocabulary"),
             persona="Knowledge Curator",
             intent="Ensure consistent terminology across programs",
             outcome="Semantic interoperability enabling compliance mapping",
             goal="Create a Sustainable Vocabulary Catalog",
             depends_on=(
-                "operate-pipelines",
-                "setup-system",
+                Slug("operate-pipelines"),
+                Slug("setup-system"),
             ),
             steps=tuple(steps),
             preconditions=(
@@ -143,13 +147,13 @@ class TestJourneyCreation:
 
     def test_persona_normalized_computed(self) -> None:
         """Test that persona_normalized is computed."""
-        journey = Journey(slug="test", persona="Knowledge Curator")
+        journey = Journey(slug=Slug("test"), persona="Knowledge Curator")
         assert journey.persona_normalized == "knowledge curator"
 
     def test_empty_slug_raises_error(self) -> None:
         """Test that empty slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
-            Journey(slug="")
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
+            Journey(slug=Slug(""))
 
 
 class TestJourneyMatching:
@@ -159,11 +163,11 @@ class TestJourneyMatching:
     def sample_journey(self) -> Journey:
         """Create a sample journey for testing."""
         return Journey(
-            slug="build-vocabulary",
+            slug=Slug("build-vocabulary"),
             persona="Knowledge Curator",
             depends_on=(
-                "operate-pipelines",
-                "setup-system",
+                Slug("operate-pipelines"),
+                Slug("setup-system"),
             ),
             steps=(
                 JourneyStep.story("Upload Document"),
@@ -207,7 +211,7 @@ class TestJourneySteps:
 
     def test_add_step(self) -> None:
         """Test adding a step."""
-        journey = Journey(slug="test")
+        journey = Journey(slug=Slug("test"))
         assert journey.step_count == 0
 
         journey = journey.with_step(JourneyStep.story("Test Story"))
@@ -216,7 +220,7 @@ class TestJourneySteps:
 
     def test_has_steps_empty(self) -> None:
         """Test has_steps with empty journey."""
-        journey = Journey(slug="test")
+        journey = Journey(slug=Slug("test"))
         assert journey.has_steps is False
 
 
@@ -225,12 +229,12 @@ class TestJourneyProperties:
 
     def test_display_title(self) -> None:
         """Test display_title property."""
-        journey = Journey(slug="build-vocabulary")
+        journey = Journey(slug=Slug("build-vocabulary"))
         assert journey.display_title == "Build Vocabulary"
 
     def test_display_title_multiple_words(self) -> None:
         """Test display_title with multiple hyphens."""
-        journey = Journey(slug="operate-data-pipelines")
+        journey = Journey(slug=Slug("operate-data-pipelines"))
         assert journey.display_title == "Operate Data Pipelines"
 
 
@@ -240,7 +244,7 @@ class TestJourneySerialization:
     def test_journey_to_dict(self) -> None:
         """Test journey can be serialized to dict."""
         journey = Journey(
-            slug="test",
+            slug=Slug("test"),
             persona="User",
             steps=(JourneyStep.story("Test Story"),),
         )
@@ -253,6 +257,6 @@ class TestJourneySerialization:
 
     def test_journey_to_json(self) -> None:
         """Test journey can be serialized to JSON."""
-        journey = Journey(slug="test", persona="User")
+        journey = Journey(slug=Slug("test"), persona="User")
         json_str = journey.model_dump_json()
         assert '"slug":"test"' in json_str

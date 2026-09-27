@@ -4,8 +4,9 @@ Represents an epic in the HCD documentation system.
 Epics are defined via RST directives and group related stories together.
 """
 
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
-from pydantic import Field, field_validator
+from pydantic import Field
 
 from .base import Authored
 
@@ -17,21 +18,13 @@ class Epic(Authored):
     deliver a larger piece of functionality or business value.
     """
 
-    slug: str = Field(description='URL-safe identifier (e.g., "credential-creation")')
+    slug: Slug = Field(description='URL-safe identifier (e.g., "credential-creation")')
     description: str = Field(
         default="", description="Human-readable description of the epic"
     )
     story_refs: tuple[str, ...] = Field(
         default_factory=tuple, description="List of story feature titles in this epic"
     )
-
-    @field_validator("slug", mode="before")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Validate slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("slug cannot be empty")
-        return v.strip()
 
     def with_story(self, story_title: str) -> "Epic":
         """The epic with a story reference added.

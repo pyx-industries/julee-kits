@@ -1,6 +1,7 @@
 """Tests for resolve_story_references use case."""
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.journey import Journey, JourneyStep
@@ -17,25 +18,25 @@ from julee_hcd.usecases.resolve_story_references import (
 def create_story(feature_title: str, app_slug: str = "test-app") -> Story:
     """Helper to create test stories."""
     return Story(
-        slug=feature_title.lower().replace(" ", "-"),
-        feature_title=feature_title,
-        persona="Test User",
+        slug=NonEmptyText(feature_title.lower().replace(" ", "-")),
+        feature_title=Name(feature_title),
+        persona=Name("Test User"),
         i_want="test",
         so_that="verify",
-        app_slug=app_slug,
+        app_slug=Slug(app_slug),
         file_path="test.feature",
     )
 
 
 def create_epic(slug: str, story_refs: list[str]) -> Epic:
     """Helper to create test epics."""
-    return Epic(slug=slug, story_refs=tuple(story_refs))
+    return Epic(slug=Slug(slug), story_refs=tuple(story_refs))
 
 
 def create_journey(slug: str, story_refs: list[str]) -> Journey:
     """Helper to create test journeys."""
     steps = [JourneyStep.story(ref) for ref in story_refs]
-    return Journey(slug=slug, persona="User", steps=tuple(steps))
+    return Journey(slug=Slug(slug), persona="User", steps=tuple(steps))
 
 
 class TestGetEpicsForStory:

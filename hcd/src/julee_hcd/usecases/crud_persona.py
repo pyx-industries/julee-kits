@@ -5,6 +5,7 @@ Do not edit — regenerate with make generate-crud.
 
 from typing import Any
 
+from julee.core.entities.text import Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -101,8 +102,15 @@ class CreatePersonaUseCase(CreateUseCase[Persona, PersonaRepository]):
         super().__init__(repo)
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Persona:
-        """Construct a Persona from a generated ID and request fields."""
-        return Persona(slug=entity_id, **kwargs)
+        """Construct a Persona from a generated ID and request fields.
+
+        A request that names no slug leaves the persona to derive one
+        from its name, so the field is left out rather than passed
+        empty.
+        """
+        if not entity_id:
+            return Persona(**kwargs)
+        return Persona(slug=Slug(entity_id), **kwargs)
 
     async def execute(self, request: CreatePersonaRequest) -> CreatePersonaResponse:
         """Execute the create persona use case."""

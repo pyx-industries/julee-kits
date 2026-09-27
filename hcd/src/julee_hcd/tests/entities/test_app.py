@@ -1,7 +1,7 @@
 """Tests for App domain model."""
 
 import pytest
-from pydantic import ValidationError
+from julee.core.entities.text import Name, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 
@@ -39,8 +39,8 @@ class TestAppCreation:
     def test_create_app_with_required_fields(self) -> None:
         """Test creating an app with minimum required fields."""
         app = App(
-            slug="staff-portal",
-            name="Staff Portal",
+            slug=Slug("staff-portal"),
+            name=Name("Staff Portal"),
         )
 
         assert app.slug == "staff-portal"
@@ -53,8 +53,8 @@ class TestAppCreation:
     def test_create_app_with_all_fields(self) -> None:
         """Test creating an app with all fields."""
         app = App(
-            slug="staff-portal",
-            name="Staff Portal",
+            slug=Slug("staff-portal"),
+            name=Name("Staff Portal"),
             app_type=AppType.STAFF,
             status="live",
             description="Portal for staff members",
@@ -76,34 +76,34 @@ class TestAppCreation:
     def test_name_normalized_computed_automatically(self) -> None:
         """Test that name_normalized is computed from name."""
         app = App(
-            slug="staff-portal",
-            name="Staff Portal",
+            slug=Slug("staff-portal"),
+            name=Name("Staff Portal"),
         )
 
         assert app.name_normalized == "staff portal"
 
     def test_empty_slug_raises_error(self) -> None:
         """Test that empty slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             App(
-                slug="",
-                name="Test App",
+                slug=Slug(""),
+                name=Name("Test App"),
             )
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises validation error."""
-        with pytest.raises(ValidationError, match="name cannot be empty"):
+        with pytest.raises(ValueError, match="a name cannot be empty"):
             App(
-                slug="test-app",
-                name="",
+                slug=Slug("test-app"),
+                name=Name(""),
             )
 
     def test_whitespace_only_slug_raises_error(self) -> None:
         """Test that whitespace-only slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             App(
-                slug="   ",
-                name="Test App",
+                slug=Slug("   "),
+                name=Name("Test App"),
             )
 
 
@@ -181,8 +181,8 @@ class TestAppMatching:
     def sample_app(self) -> App:
         """Create a sample app for testing."""
         return App(
-            slug="staff-portal",
-            name="Staff Portal",
+            slug=Slug("staff-portal"),
+            name=Name("Staff Portal"),
             app_type=AppType.STAFF,
         )
 
@@ -215,22 +215,22 @@ class TestAppTypeLabel:
 
     def test_type_label_staff(self) -> None:
         """Test type label for staff app."""
-        app = App(slug="test", name="Test", app_type=AppType.STAFF)
+        app = App(slug=Slug("test"), name=Name("Test"), app_type=AppType.STAFF)
         assert app.type_label == "Staff Application"
 
     def test_type_label_external(self) -> None:
         """Test type label for external app."""
-        app = App(slug="test", name="Test", app_type=AppType.EXTERNAL)
+        app = App(slug=Slug("test"), name=Name("Test"), app_type=AppType.EXTERNAL)
         assert app.type_label == "External Application"
 
     def test_type_label_member_tool(self) -> None:
         """Test type label for member tool."""
-        app = App(slug="test", name="Test", app_type=AppType.MEMBER_TOOL)
+        app = App(slug=Slug("test"), name=Name("Test"), app_type=AppType.MEMBER_TOOL)
         assert app.type_label == "Member Tool"
 
     def test_type_label_unknown(self) -> None:
         """Test type label for unknown type."""
-        app = App(slug="test", name="Test", app_type=AppType.UNKNOWN)
+        app = App(slug=Slug("test"), name=Name("Test"), app_type=AppType.UNKNOWN)
         assert app.type_label == "Unknown"
 
 
@@ -240,8 +240,8 @@ class TestAppSerialization:
     def test_app_to_dict(self) -> None:
         """Test app can be serialized to dict."""
         app = App(
-            slug="test-app",
-            name="Test App",
+            slug=Slug("test-app"),
+            name=Name("Test App"),
             app_type=AppType.STAFF,
         )
 
@@ -253,8 +253,8 @@ class TestAppSerialization:
     def test_app_to_json(self) -> None:
         """Test app can be serialized to JSON."""
         app = App(
-            slug="test-app",
-            name="Test App",
+            slug=Slug("test-app"),
+            name=Name("Test App"),
         )
 
         json_str = app.model_dump_json()

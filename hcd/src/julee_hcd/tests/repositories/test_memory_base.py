@@ -5,6 +5,7 @@ it, because the base is not a repository anyone instantiates alone.
 """
 
 import pytest
+from julee.core.entities.text import Slug
 
 from julee_hcd.domain.models.contrib import ContribModule
 from julee_hcd.infrastructure.repositories.memory.contrib import (
@@ -24,7 +25,7 @@ async def test_a_saved_entity_comes_back_by_slug(
     repo: MemoryContribRepository,
 ) -> None:
     """The plainest thing a repository does."""
-    await repo.save(ContribModule(slug="polling"))
+    await repo.save(ContribModule(slug=Slug("polling")))
 
     found = await repo.get("polling")
 
@@ -43,8 +44,8 @@ async def test_saving_the_same_slug_twice_replaces_rather_than_duplicates(
     repo: MemoryContribRepository,
 ) -> None:
     """A document re-read should not leave two of everything."""
-    await repo.save(ContribModule(slug="polling", name="Old"))
-    await repo.save(ContribModule(slug="polling", name="New"))
+    await repo.save(ContribModule(slug=Slug("polling"), name="Old"))
+    await repo.save(ContribModule(slug=Slug("polling"), name="New"))
 
     everything = await repo.list_all()
 
@@ -56,7 +57,7 @@ async def test_get_many_reports_the_ones_it_could_not_find(
     repo: MemoryContribRepository,
 ) -> None:
     """A caller asking for several wants to know which are missing."""
-    await repo.save(ContribModule(slug="polling"))
+    await repo.save(ContribModule(slug=Slug("polling")))
 
     found = await repo.get_many(["polling", "missing"])
 
@@ -68,7 +69,7 @@ async def test_deleting_says_whether_there_was_anything_to_delete(
     repo: MemoryContribRepository,
 ) -> None:
     """Deleting twice is not an error, but it is not the same answer."""
-    await repo.save(ContribModule(slug="polling"))
+    await repo.save(ContribModule(slug=Slug("polling")))
 
     assert await repo.delete("polling") is True
     assert await repo.delete("polling") is False
@@ -78,8 +79,8 @@ async def test_clearing_empties_the_repository(
     repo: MemoryContribRepository,
 ) -> None:
     """A full build starts from nothing, not from the last build."""
-    await repo.save(ContribModule(slug="polling"))
-    await repo.save(ContribModule(slug="auth"))
+    await repo.save(ContribModule(slug=Slug("polling")))
+    await repo.save(ContribModule(slug=Slug("auth")))
 
     await repo.clear()
 
@@ -90,9 +91,9 @@ async def test_entities_are_found_by_the_document_they_came_from(
     repo: MemoryContribRepository,
 ) -> None:
     """An incremental build works a document at a time."""
-    await repo.save(ContribModule(slug="polling", docname="contrib/index"))
-    await repo.save(ContribModule(slug="auth", docname="contrib/index"))
-    await repo.save(ContribModule(slug="other", docname="elsewhere"))
+    await repo.save(ContribModule(slug=Slug("polling"), docname="contrib/index"))
+    await repo.save(ContribModule(slug=Slug("auth"), docname="contrib/index"))
+    await repo.save(ContribModule(slug=Slug("other"), docname="elsewhere"))
 
     found = await repo.get_by_docname("contrib/index")
 
@@ -103,8 +104,8 @@ async def test_clearing_a_document_leaves_the_other_documents_alone(
     repo: MemoryContribRepository,
 ) -> None:
     """Re-reading one file must not forget what the others said."""
-    await repo.save(ContribModule(slug="polling", docname="contrib/index"))
-    await repo.save(ContribModule(slug="other", docname="elsewhere"))
+    await repo.save(ContribModule(slug=Slug("polling"), docname="contrib/index"))
+    await repo.save(ContribModule(slug=Slug("other"), docname="elsewhere"))
 
     removed = await repo.clear_by_docname("contrib/index")
 
@@ -116,7 +117,7 @@ async def test_clearing_a_document_that_defined_nothing_removes_nothing(
     repo: MemoryContribRepository,
 ) -> None:
     """Sphinx re-reads documents that have no HCD content in them."""
-    await repo.save(ContribModule(slug="polling", docname="contrib/index"))
+    await repo.save(ContribModule(slug=Slug("polling"), docname="contrib/index"))
 
     assert await repo.clear_by_docname("untouched") == 0
     assert len(await repo.list_all()) == 1

@@ -2,6 +2,7 @@
 
 import pytest
 import pytest_asyncio
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.story import Story
 from julee_hcd.infrastructure.repositories.memory.story import MemoryStoryRepository
@@ -15,10 +16,10 @@ def create_story(
 ) -> Story:
     """Helper to create test stories."""
     return Story(
-        slug=slug,
-        feature_title=feature_title,
-        persona=persona,
-        app_slug=app_slug,
+        slug=NonEmptyText(slug),
+        feature_title=Name(feature_title),
+        persona=Name(persona),
+        app_slug=Slug(app_slug),
         file_path=f"tests/e2e/{app_slug}/features/{slug}.feature",
     )
 
@@ -222,10 +223,10 @@ class TestMemoryStoryRepositoryQueries:
         """Test that 'unknown' persona is excluded from results."""
         await repo.save(
             Story(
-                slug="test",
-                feature_title="Test",
-                persona="unknown",
-                app_slug="app",
+                slug=NonEmptyText("test"),
+                feature_title=Name("Test"),
+                persona=Name("unknown"),
+                app_slug=Slug("app"),
                 file_path="test.feature",
             )
         )
