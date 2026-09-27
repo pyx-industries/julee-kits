@@ -7,6 +7,7 @@ from julee_c4.domain.models.container import (
     Container,
     ContainerType,
 )
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.container import (
     MemoryContainerRepository,
 )
@@ -100,9 +101,9 @@ class TestGetContainerUseCase:
         """Create repository with sample data."""
         await repo.save(
             Container(
-                slug="api-app",
-                name="API Application",
-                system_slug="banking-system",
+                slug=Slug("api-app"),
+                name=Name("API Application"),
+                system_slug=Slug("banking-system"),
                 container_type=ContainerType.API,
             )
         )
@@ -151,9 +152,21 @@ class TestListContainersUseCase:
     ) -> MemoryContainerRepository:
         """Create repository with sample data."""
         containers = [
-            Container(slug="container-1", name="Container 1", system_slug="sys"),
-            Container(slug="container-2", name="Container 2", system_slug="sys"),
-            Container(slug="container-3", name="Container 3", system_slug="sys"),
+            Container(
+                slug=Slug("container-1"),
+                name=Name("Container 1"),
+                system_slug=Slug("sys"),
+            ),
+            Container(
+                slug=Slug("container-2"),
+                name=Name("Container 2"),
+                system_slug=Slug("sys"),
+            ),
+            Container(
+                slug=Slug("container-3"),
+                name=Name("Container 3"),
+                system_slug=Slug("sys"),
+            ),
         ]
         for c in containers:
             await repo.save(c)
@@ -203,9 +216,9 @@ class TestUpdateContainerUseCase:
         """Create repository with sample data."""
         await repo.save(
             Container(
-                slug="api-app",
-                name="API Application",
-                system_slug="banking-system",
+                slug=Slug("api-app"),
+                name=Name("API Application"),
+                system_slug=Slug("banking-system"),
                 description="Original description",
                 container_type=ContainerType.API,
                 technology="Python",
@@ -286,7 +299,9 @@ class TestDeleteContainerUseCase:
     ) -> MemoryContainerRepository:
         """Create repository with sample data."""
         await repo.save(
-            Container(slug="to-delete", name="To Delete", system_slug="sys")
+            Container(
+                slug=Slug("to-delete"), name=Name("To Delete"), system_slug=Slug("sys")
+            )
         )
         return repo
 

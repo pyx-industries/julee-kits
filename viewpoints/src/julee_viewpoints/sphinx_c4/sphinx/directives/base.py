@@ -8,6 +8,7 @@ from docutils import nodes
 from sphinx.util.docutils import SphinxDirective
 
 from julee_c4.domain.models.relationship import ElementType
+from julee_c4.domain.models.text import Slug
 
 from ..context import C4Context, get_c4_context
 
@@ -19,8 +20,14 @@ _ELEMENT_TYPE_PREFIXES = {
 }
 
 
-def parse_element_ref(ref: str) -> tuple[ElementType, str]:
+def parse_element_ref(ref: str) -> tuple[ElementType, Slug]:
     """Split an element reference like ``container:api-app`` into its parts.
+
+    The slug comes back as a :class:`~julee_c4.domain.models.text.Slug`,
+    which is what makes a reference written in a document match the
+    element it names however the author spelled it. This is the
+    boundary: text a person typed becomes a value the domain can use
+    (julee-kits#70).
 
     Args:
         ref: Element reference, e.g. ``person:customer`` or ``system:banking``
@@ -33,9 +40,9 @@ def parse_element_ref(ref: str) -> tuple[ElementType, str]:
         type_str, slug = ref.split(":", 1)
         return (
             _ELEMENT_TYPE_PREFIXES.get(type_str.lower(), ElementType.SOFTWARE_SYSTEM),
-            slug,
+            Slug(slug),
         )
-    return ElementType.SOFTWARE_SYSTEM, ref
+    return ElementType.SOFTWARE_SYSTEM, Slug(ref)
 
 
 class C4Directive(SphinxDirective):

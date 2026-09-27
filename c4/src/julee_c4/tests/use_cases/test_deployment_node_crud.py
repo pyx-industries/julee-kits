@@ -7,6 +7,7 @@ from julee_c4.domain.models.deployment_node import (
     DeploymentNode,
     NodeType,
 )
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.deployment_node import (
     MemoryDeploymentNodeRepository,
 )
@@ -123,8 +124,8 @@ class TestGetDeploymentNodeUseCase:
         """Create repository with sample data."""
         await repo.save(
             DeploymentNode(
-                slug="web-server",
-                name="Web Server",
+                slug=Slug("web-server"),
+                name=Name("Web Server"),
                 environment="production",
                 node_type=NodeType.PHYSICAL_SERVER,
             )
@@ -176,9 +177,9 @@ class TestListDeploymentNodesUseCase:
     ) -> MemoryDeploymentNodeRepository:
         """Create repository with sample data."""
         nodes = [
-            DeploymentNode(slug="node-1", name="Node 1"),
-            DeploymentNode(slug="node-2", name="Node 2"),
-            DeploymentNode(slug="node-3", name="Node 3"),
+            DeploymentNode(slug=Slug("node-1"), name=Name("Node 1")),
+            DeploymentNode(slug=Slug("node-2"), name=Name("Node 2")),
+            DeploymentNode(slug=Slug("node-3"), name=Name("Node 3")),
         ]
         for n in nodes:
             await repo.save(n)
@@ -230,8 +231,8 @@ class TestUpdateDeploymentNodeUseCase:
         """Create repository with sample data."""
         await repo.save(
             DeploymentNode(
-                slug="web-server",
-                name="Web Server",
+                slug=Slug("web-server"),
+                name=Name("Web Server"),
                 environment="production",
                 node_type=NodeType.PHYSICAL_SERVER,
                 description="Original description",
@@ -327,7 +328,7 @@ class TestDeleteDeploymentNodeUseCase:
         self, repo: MemoryDeploymentNodeRepository
     ) -> MemoryDeploymentNodeRepository:
         """Create repository with sample data."""
-        await repo.save(DeploymentNode(slug="to-delete", name="To Delete"))
+        await repo.save(DeploymentNode(slug=Slug("to-delete"), name=Name("To Delete")))
         return repo
 
     @pytest.fixture

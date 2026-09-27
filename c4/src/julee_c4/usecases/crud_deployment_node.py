@@ -15,6 +15,7 @@ from julee.core.usecases.generic_crud import (
 from pydantic import BaseModel
 
 from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
+from julee_c4.domain.models.text import Slug
 from julee_c4.domain.repositories.deployment_node import DeploymentNodeRepository
 
 
@@ -105,7 +106,7 @@ class CreateDeploymentNodeUseCase(
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> DeploymentNode:
         """Construct a DeploymentNode from a generated ID and request fields."""
-        return DeploymentNode(slug=entity_id, **kwargs)
+        return DeploymentNode(slug=Slug(entity_id), **kwargs)
 
     async def execute(
         self, request: CreateDeploymentNodeRequest

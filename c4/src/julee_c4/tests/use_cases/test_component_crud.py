@@ -4,6 +4,7 @@ import pytest
 from julee.core.usecases.generic_crud import EntityNotFoundError
 
 from julee_c4.domain.models.component import Component
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.component import (
     MemoryComponentRepository,
 )
@@ -100,10 +101,10 @@ class TestGetComponentUseCase:
         """Create repository with sample data."""
         await repo.save(
             Component(
-                slug="auth-controller",
-                name="Auth Controller",
-                container_slug="api-app",
-                system_slug="banking-system",
+                slug=Slug("auth-controller"),
+                name=Name("Auth Controller"),
+                container_slug=Slug("api-app"),
+                system_slug=Slug("banking-system"),
             )
         )
         return repo
@@ -152,22 +153,22 @@ class TestListComponentsUseCase:
         """Create repository with sample data."""
         components = [
             Component(
-                slug="comp-1",
-                name="Component 1",
-                container_slug="container",
-                system_slug="system",
+                slug=Slug("comp-1"),
+                name=Name("Component 1"),
+                container_slug=Slug("container"),
+                system_slug=Slug("system"),
             ),
             Component(
-                slug="comp-2",
-                name="Component 2",
-                container_slug="container",
-                system_slug="system",
+                slug=Slug("comp-2"),
+                name=Name("Component 2"),
+                container_slug=Slug("container"),
+                system_slug=Slug("system"),
             ),
             Component(
-                slug="comp-3",
-                name="Component 3",
-                container_slug="container",
-                system_slug="system",
+                slug=Slug("comp-3"),
+                name=Name("Component 3"),
+                container_slug=Slug("container"),
+                system_slug=Slug("system"),
             ),
         ]
         for c in components:
@@ -218,10 +219,10 @@ class TestUpdateComponentUseCase:
         """Create repository with sample data."""
         await repo.save(
             Component(
-                slug="auth-controller",
-                name="Auth Controller",
-                container_slug="api-app",
-                system_slug="banking-system",
+                slug=Slug("auth-controller"),
+                name=Name("Auth Controller"),
+                container_slug=Slug("api-app"),
+                system_slug=Slug("banking-system"),
                 description="Original description",
                 technology="Python",
             )
@@ -302,10 +303,10 @@ class TestDeleteComponentUseCase:
         """Create repository with sample data."""
         await repo.save(
             Component(
-                slug="to-delete",
-                name="To Delete",
-                container_slug="container",
-                system_slug="system",
+                slug=Slug("to-delete"),
+                name=Name("To Delete"),
+                container_slug=Slug("container"),
+                system_slug=Slug("system"),
             )
         )
         return repo

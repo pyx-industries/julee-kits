@@ -15,6 +15,7 @@ from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.component import (
     MemoryComponentRepository,
 )
@@ -80,22 +81,22 @@ class TestGetSystemContextDiagramUseCase:
         # Systems
         await system_repo.save(
             SoftwareSystem(
-                slug="banking-system",
-                name="Banking System",
+                slug=Slug("banking-system"),
+                name=Name("Banking System"),
                 system_type=SystemType.INTERNAL,
             )
         )
         await system_repo.save(
             SoftwareSystem(
-                slug="email-system",
-                name="Email System",
+                slug=Slug("email-system"),
+                name=Name("Email System"),
                 system_type=SystemType.EXTERNAL,
             )
         )
         await system_repo.save(
             SoftwareSystem(
-                slug="crm-system",
-                name="CRM System",
+                slug=Slug("crm-system"),
+                name=Name("CRM System"),
                 system_type=SystemType.EXTERNAL,
             )
         )
@@ -103,31 +104,31 @@ class TestGetSystemContextDiagramUseCase:
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug="customer-to-banking",
+                slug=Slug("customer-to-banking"),
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="banking-system",
+                destination_slug=Slug("banking-system"),
                 description="Uses",
             )
         )
         await relationship_repo.save(
             Relationship(
-                slug="banking-to-email",
+                slug=Slug("banking-to-email"),
                 source_type=ElementType.SOFTWARE_SYSTEM,
-                source_slug="banking-system",
+                source_slug=Slug("banking-system"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="email-system",
+                destination_slug=Slug("email-system"),
                 description="Sends emails using",
             )
         )
         await relationship_repo.save(
             Relationship(
-                slug="banking-to-crm",
+                slug=Slug("banking-to-crm"),
                 source_type=ElementType.SOFTWARE_SYSTEM,
-                source_slug="banking-system",
+                source_slug=Slug("banking-system"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="crm-system",
+                destination_slug=Slug("crm-system"),
                 description="Gets customer data from",
             )
         )
@@ -190,15 +191,15 @@ class TestGetContainerDiagramUseCase:
         # System
         await system_repo.save(
             SoftwareSystem(
-                slug="banking-system",
-                name="Banking System",
+                slug=Slug("banking-system"),
+                name=Name("Banking System"),
                 system_type=SystemType.INTERNAL,
             )
         )
         await system_repo.save(
             SoftwareSystem(
-                slug="email-system",
-                name="Email System",
+                slug=Slug("email-system"),
+                name=Name("Email System"),
                 system_type=SystemType.EXTERNAL,
             )
         )
@@ -206,25 +207,25 @@ class TestGetContainerDiagramUseCase:
         # Containers
         await container_repo.save(
             Container(
-                slug="web-app",
-                name="Web Application",
-                system_slug="banking-system",
+                slug=Slug("web-app"),
+                name=Name("Web Application"),
+                system_slug=Slug("banking-system"),
                 container_type=ContainerType.WEB_APPLICATION,
             )
         )
         await container_repo.save(
             Container(
-                slug="api-app",
-                name="API Application",
-                system_slug="banking-system",
+                slug=Slug("api-app"),
+                name=Name("API Application"),
+                system_slug=Slug("banking-system"),
                 container_type=ContainerType.API,
             )
         )
         await container_repo.save(
             Container(
-                slug="database",
-                name="Database",
-                system_slug="banking-system",
+                slug=Slug("database"),
+                name=Name("Database"),
+                system_slug=Slug("banking-system"),
                 container_type=ContainerType.DATABASE,
             )
         )
@@ -232,41 +233,41 @@ class TestGetContainerDiagramUseCase:
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug="customer-to-web",
+                slug=Slug("customer-to-web"),
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="web-app",
+                destination_slug=Slug("web-app"),
                 description="Uses",
             )
         )
         await relationship_repo.save(
             Relationship(
-                slug="web-to-api",
+                slug=Slug("web-to-api"),
                 source_type=ElementType.CONTAINER,
-                source_slug="web-app",
+                source_slug=Slug("web-app"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="api-app",
+                destination_slug=Slug("api-app"),
                 description="Calls",
             )
         )
         await relationship_repo.save(
             Relationship(
-                slug="api-to-db",
+                slug=Slug("api-to-db"),
                 source_type=ElementType.CONTAINER,
-                source_slug="api-app",
+                source_slug=Slug("api-app"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="database",
+                destination_slug=Slug("database"),
                 description="Reads/writes",
             )
         )
         await relationship_repo.save(
             Relationship(
-                slug="api-to-email",
+                slug=Slug("api-to-email"),
                 source_type=ElementType.CONTAINER,
-                source_slug="api-app",
+                source_slug=Slug("api-app"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="email-system",
+                destination_slug=Slug("email-system"),
                 description="Sends emails via",
             )
         )
@@ -337,8 +338,8 @@ class TestGetComponentDiagramUseCase:
         # System
         await system_repo.save(
             SoftwareSystem(
-                slug="banking-system",
-                name="Banking System",
+                slug=Slug("banking-system"),
+                name=Name("Banking System"),
                 system_type=SystemType.INTERNAL,
             )
         )
@@ -346,9 +347,9 @@ class TestGetComponentDiagramUseCase:
         # Container
         await container_repo.save(
             Container(
-                slug="api-app",
-                name="API Application",
-                system_slug="banking-system",
+                slug=Slug("api-app"),
+                name=Name("API Application"),
+                system_slug=Slug("banking-system"),
                 container_type=ContainerType.API,
             )
         )
@@ -356,47 +357,47 @@ class TestGetComponentDiagramUseCase:
         # Components
         await component_repo.save(
             Component(
-                slug="auth-controller",
-                name="Auth Controller",
-                container_slug="api-app",
-                system_slug="banking-system",
+                slug=Slug("auth-controller"),
+                name=Name("Auth Controller"),
+                container_slug=Slug("api-app"),
+                system_slug=Slug("banking-system"),
             )
         )
         await component_repo.save(
             Component(
-                slug="user-service",
-                name="User Service",
-                container_slug="api-app",
-                system_slug="banking-system",
+                slug=Slug("user-service"),
+                name=Name("User Service"),
+                container_slug=Slug("api-app"),
+                system_slug=Slug("banking-system"),
             )
         )
         await component_repo.save(
             Component(
-                slug="account-service",
-                name="Account Service",
-                container_slug="api-app",
-                system_slug="banking-system",
+                slug=Slug("account-service"),
+                name=Name("Account Service"),
+                container_slug=Slug("api-app"),
+                system_slug=Slug("banking-system"),
             )
         )
 
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug="auth-to-user",
+                slug=Slug("auth-to-user"),
                 source_type=ElementType.COMPONENT,
-                source_slug="auth-controller",
+                source_slug=Slug("auth-controller"),
                 destination_type=ElementType.COMPONENT,
-                destination_slug="user-service",
+                destination_slug=Slug("user-service"),
                 description="Validates users via",
             )
         )
         await relationship_repo.save(
             Relationship(
-                slug="auth-to-account",
+                slug=Slug("auth-to-account"),
                 source_type=ElementType.COMPONENT,
-                source_slug="auth-controller",
+                source_slug=Slug("auth-controller"),
                 destination_type=ElementType.COMPONENT,
-                destination_slug="account-service",
+                destination_slug=Slug("account-service"),
                 description="Gets accounts via",
             )
         )
@@ -454,22 +455,22 @@ class TestGetSystemLandscapeDiagramUseCase:
         # Systems
         await system_repo.save(
             SoftwareSystem(
-                slug="banking-system",
-                name="Banking System",
+                slug=Slug("banking-system"),
+                name=Name("Banking System"),
                 system_type=SystemType.INTERNAL,
             )
         )
         await system_repo.save(
             SoftwareSystem(
-                slug="insurance-system",
-                name="Insurance System",
+                slug=Slug("insurance-system"),
+                name=Name("Insurance System"),
                 system_type=SystemType.INTERNAL,
             )
         )
         await system_repo.save(
             SoftwareSystem(
-                slug="email-system",
-                name="Email System",
+                slug=Slug("email-system"),
+                name=Name("Email System"),
                 system_type=SystemType.EXTERNAL,
             )
         )
@@ -477,20 +478,20 @@ class TestGetSystemLandscapeDiagramUseCase:
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug="customer-to-banking",
+                slug=Slug("customer-to-banking"),
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="banking-system",
+                destination_slug=Slug("banking-system"),
             )
         )
         await relationship_repo.save(
             Relationship(
-                slug="banking-to-insurance",
+                slug=Slug("banking-to-insurance"),
                 source_type=ElementType.SOFTWARE_SYSTEM,
-                source_slug="banking-system",
+                source_slug=Slug("banking-system"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="insurance-system",
+                destination_slug=Slug("insurance-system"),
             )
         )
 
@@ -542,45 +543,45 @@ class TestGetDeploymentDiagramUseCase:
         # Containers
         await container_repo.save(
             Container(
-                slug="api-app",
-                name="API Application",
-                system_slug="banking-system",
+                slug=Slug("api-app"),
+                name=Name("API Application"),
+                system_slug=Slug("banking-system"),
             )
         )
         await container_repo.save(
             Container(
-                slug="web-app",
-                name="Web Application",
-                system_slug="banking-system",
+                slug=Slug("web-app"),
+                name=Name("Web Application"),
+                system_slug=Slug("banking-system"),
             )
         )
 
         # Deployment nodes
         await deployment_node_repo.save(
             DeploymentNode(
-                slug="aws-region",
-                name="AWS Region",
+                slug=Slug("aws-region"),
+                name=Name("AWS Region"),
                 environment="production",
                 node_type=NodeType.CLOUD_REGION,
             )
         )
         await deployment_node_repo.save(
             DeploymentNode(
-                slug="k8s-cluster",
-                name="Kubernetes Cluster",
+                slug=Slug("k8s-cluster"),
+                name=Name("Kubernetes Cluster"),
                 environment="production",
                 node_type=NodeType.KUBERNETES_CLUSTER,
-                parent_slug="aws-region",
+                parent_slug=Slug("aws-region"),
                 container_instances=(
-                    ContainerInstance(container_slug="api-app", instance_count=3),
-                    ContainerInstance(container_slug="web-app", instance_count=2),
+                    ContainerInstance(container_slug=Slug("api-app"), instance_count=3),
+                    ContainerInstance(container_slug=Slug("web-app"), instance_count=2),
                 ),
             )
         )
         await deployment_node_repo.save(
             DeploymentNode(
-                slug="staging-server",
-                name="Staging Server",
+                slug=Slug("staging-server"),
+                name=Name("Staging Server"),
                 environment="staging",
                 node_type=NodeType.VIRTUAL_MACHINE,
             )
@@ -589,11 +590,11 @@ class TestGetDeploymentDiagramUseCase:
         # Container relationships
         await relationship_repo.save(
             Relationship(
-                slug="web-to-api",
+                slug=Slug("web-to-api"),
                 source_type=ElementType.CONTAINER,
-                source_slug="web-app",
+                source_slug=Slug("web-app"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="api-app",
+                destination_slug=Slug("api-app"),
                 description="Makes API calls",
             )
         )
@@ -664,60 +665,60 @@ class TestGetDynamicDiagramUseCase:
         # Containers
         await container_repo.save(
             Container(
-                slug="web-app",
-                name="Web Application",
-                system_slug="banking-system",
+                slug=Slug("web-app"),
+                name=Name("Web Application"),
+                system_slug=Slug("banking-system"),
             )
         )
         await container_repo.save(
             Container(
-                slug="api-app",
-                name="API Application",
-                system_slug="banking-system",
+                slug=Slug("api-app"),
+                name=Name("API Application"),
+                system_slug=Slug("banking-system"),
             )
         )
         await container_repo.save(
             Container(
-                slug="database",
-                name="Database",
-                system_slug="banking-system",
+                slug=Slug("database"),
+                name=Name("Database"),
+                system_slug=Slug("banking-system"),
             )
         )
 
         # Dynamic steps for login sequence
         await dynamic_step_repo.save(
             DynamicStep(
-                slug="login-1",
-                sequence_name="user-login",
+                slug=Slug("login-1"),
+                sequence_name=Name("user-login"),
                 step_number=1,
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="web-app",
+                destination_slug=Slug("web-app"),
                 description="Enters credentials",
             )
         )
         await dynamic_step_repo.save(
             DynamicStep(
-                slug="login-2",
-                sequence_name="user-login",
+                slug=Slug("login-2"),
+                sequence_name=Name("user-login"),
                 step_number=2,
                 source_type=ElementType.CONTAINER,
-                source_slug="web-app",
+                source_slug=Slug("web-app"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="api-app",
+                destination_slug=Slug("api-app"),
                 description="Validates credentials",
             )
         )
         await dynamic_step_repo.save(
             DynamicStep(
-                slug="login-3",
-                sequence_name="user-login",
+                slug=Slug("login-3"),
+                sequence_name=Name("user-login"),
                 step_number=3,
                 source_type=ElementType.CONTAINER,
-                source_slug="api-app",
+                source_slug=Slug("api-app"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="database",
+                destination_slug=Slug("database"),
                 description="Queries user",
             )
         )

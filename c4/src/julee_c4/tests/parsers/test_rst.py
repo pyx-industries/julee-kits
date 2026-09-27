@@ -17,6 +17,7 @@ from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.parsers.rst import (
     parse_component_content,
     parse_component_file,
@@ -145,8 +146,8 @@ class TestSoftwareSystemRoundTrip:
     def test_round_trip_simple(self, tmp_path: Path) -> None:
         """Test simple round-trip."""
         original = SoftwareSystem(
-            slug="round-trip-system",
-            name="Round Trip System",
+            slug=Slug("round-trip-system"),
+            name=Name("Round Trip System"),
             description="Test round-trip.",
             system_type=SystemType.INTERNAL,
             owner="Test Team",
@@ -221,9 +222,9 @@ class TestContainerRoundTrip:
     def test_round_trip_simple(self, tmp_path: Path) -> None:
         """Test simple round-trip."""
         original = Container(
-            slug="round-trip-container",
-            name="Round Trip Container",
-            system_slug="parent-system",
+            slug=Slug("round-trip-container"),
+            name=Name("Round Trip Container"),
+            system_slug=Slug("parent-system"),
             description="Test round-trip.",
             container_type=ContainerType.DATABASE,
             technology="PostgreSQL",
@@ -276,10 +277,10 @@ class TestComponentRoundTrip:
     def test_round_trip_simple(self, tmp_path: Path) -> None:
         """Test simple round-trip."""
         original = Component(
-            slug="round-trip-component",
-            name="Round Trip Component",
-            container_slug="parent-container",
-            system_slug="parent-system",
+            slug=Slug("round-trip-component"),
+            name=Name("Round Trip Component"),
+            container_slug=Slug("parent-container"),
+            system_slug=Slug("parent-system"),
             description="Test round-trip.",
             technology="Python",
             interface="gRPC",
@@ -332,11 +333,11 @@ class TestRelationshipRoundTrip:
     def test_round_trip_simple(self, tmp_path: Path) -> None:
         """Test simple round-trip."""
         original = Relationship(
-            slug="round-trip-rel",
+            slug=Slug("round-trip-rel"),
             source_type=ElementType.CONTAINER,
-            source_slug="container-a",
+            source_slug=Slug("container-a"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="container-b",
+            destination_slug=Slug("container-b"),
             description="Sends data to",
             technology="HTTPS/JSON",
         )
@@ -386,8 +387,8 @@ class TestDeploymentNodeRoundTrip:
     def test_round_trip_simple(self, tmp_path: Path) -> None:
         """Test simple round-trip."""
         original = DeploymentNode(
-            slug="round-trip-node",
-            name="Round Trip Node",
+            slug=Slug("round-trip-node"),
+            name=Name("Round Trip Node"),
             environment="staging",
             node_type=NodeType.KUBERNETES_CLUSTER,
             description="Test round-trip.",
@@ -442,13 +443,13 @@ class TestDynamicStepRoundTrip:
     def test_round_trip_simple(self, tmp_path: Path) -> None:
         """Test simple round-trip."""
         original = DynamicStep(
-            slug="round-trip-step",
-            sequence_name="test-sequence",
+            slug=Slug("round-trip-step"),
+            sequence_name=Name("test-sequence"),
             step_number=1,
             source_type=ElementType.CONTAINER,
-            source_slug="container-a",
+            source_slug=Slug("container-a"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="container-b",
+            destination_slug=Slug("container-b"),
             description="Requests data",
             technology="gRPC",
         )

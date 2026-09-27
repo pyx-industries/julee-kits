@@ -15,6 +15,7 @@ from julee.core.usecases.generic_crud import (
 from pydantic import BaseModel
 
 from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
+from julee_c4.domain.models.text import Slug
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
 
 
@@ -104,7 +105,7 @@ class CreateSoftwareSystemUseCase(
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> SoftwareSystem:
         """Construct a SoftwareSystem from a generated ID and request fields."""
-        return SoftwareSystem(slug=entity_id, **kwargs)
+        return SoftwareSystem(slug=Slug(entity_id), **kwargs)
 
     async def execute(
         self, request: CreateSoftwareSystemRequest

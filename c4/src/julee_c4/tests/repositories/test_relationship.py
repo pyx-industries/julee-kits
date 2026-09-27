@@ -3,6 +3,7 @@
 import pytest
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
+from julee_c4.domain.models.text import Slug
 from julee_c4.infrastructure.repositories.memory.relationship import (
     MemoryRelationshipRepository,
 )
@@ -20,9 +21,9 @@ def create_relationship(
     """Helper to create test relationships."""
     return Relationship(
         source_type=source_type,
-        source_slug=source_slug,
+        source_slug=Slug(source_slug),
         destination_type=destination_type,
-        destination_slug=destination_slug,
+        destination_slug=Slug(destination_slug),
         description=description,
         technology=technology,
         docname=docname,

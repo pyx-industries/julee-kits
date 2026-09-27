@@ -15,6 +15,7 @@ from julee.core.usecases.generic_crud import (
 from pydantic import BaseModel
 
 from julee_c4.domain.models.dynamic_step import DynamicStep, ElementType
+from julee_c4.domain.models.text import Slug
 from julee_c4.domain.repositories.dynamic_step import DynamicStepRepository
 
 
@@ -103,8 +104,15 @@ class CreateDynamicStepUseCase(CreateUseCase[DynamicStep, DynamicStepRepository]
         super().__init__(repo)
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> DynamicStep:
-        """Construct a DynamicStep from a generated ID and request fields."""
-        return DynamicStep(slug=entity_id, **kwargs)
+        """Construct a DynamicStep from a generated ID and request fields.
+
+        A request that names no slug leaves the entity to derive
+        one from its place in the sequence, so the field is left out rather than
+        passed empty.
+        """
+        if not entity_id:
+            return DynamicStep(**kwargs)
+        return DynamicStep(slug=Slug(entity_id), **kwargs)
 
     async def execute(
         self, request: CreateDynamicStepRequest

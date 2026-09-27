@@ -7,6 +7,7 @@ from julee_c4.domain.models.deployment_node import (
     DeploymentNode,
     NodeType,
 )
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.deployment_node import (
     MemoryDeploymentNodeRepository,
 )
@@ -23,11 +24,11 @@ def create_node(
 ) -> DeploymentNode:
     """Helper to create test deployment nodes."""
     return DeploymentNode(
-        slug=slug,
-        name=name,
+        slug=Slug(slug),
+        name=Name(name),
         environment=environment,
         node_type=node_type,
-        parent_slug=parent_slug,
+        parent_slug=Slug(parent_slug) if parent_slug else None,
         container_instances=tuple(container_instances or []),
         docname=docname,
     )
@@ -128,8 +129,8 @@ class TestMemoryDeploymentNodeRepositoryQueries:
                 node_type=NodeType.KUBERNETES_CLUSTER,
                 parent_slug="eu-west-1a",
                 container_instances=[
-                    ContainerInstance(container_slug="api-app", instance_count=3),
-                    ContainerInstance(container_slug="web-app", instance_count=2),
+                    ContainerInstance(container_slug=Slug("api-app"), instance_count=3),
+                    ContainerInstance(container_slug=Slug("web-app"), instance_count=2),
                 ],
                 docname="nodes/k8s",
             ),
@@ -140,7 +141,7 @@ class TestMemoryDeploymentNodeRepositoryQueries:
                 environment="staging",
                 node_type=NodeType.VIRTUAL_MACHINE,
                 container_instances=[
-                    ContainerInstance(container_slug="api-app", instance_count=1),
+                    ContainerInstance(container_slug=Slug("api-app"), instance_count=1),
                 ],
                 docname="nodes/staging",
             ),

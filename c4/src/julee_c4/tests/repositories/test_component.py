@@ -3,6 +3,7 @@
 import pytest
 
 from julee_c4.domain.models.component import Component
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.component import (
     MemoryComponentRepository,
 )
@@ -19,10 +20,10 @@ def create_component(
 ) -> Component:
     """Helper to create test components."""
     return Component(
-        slug=slug,
-        name=name,
-        container_slug=container_slug,
-        system_slug=system_slug,
+        slug=Slug(slug),
+        name=Name(name),
+        container_slug=Slug(container_slug),
+        system_slug=Slug(system_slug),
         code_path=code_path,
         tags=tuple(tags or []),
         docname=docname,

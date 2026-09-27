@@ -3,6 +3,7 @@
 import pytest
 
 from julee_c4.domain.models.container import Container, ContainerType
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.container import (
     MemoryContainerRepository,
 )
@@ -18,9 +19,9 @@ def create_container(
 ) -> Container:
     """Helper to create test containers."""
     return Container(
-        slug=slug,
-        name=name,
-        system_slug=system_slug,
+        slug=Slug(slug),
+        name=Name(name),
+        system_slug=Slug(system_slug),
         container_type=container_type,
         tags=tuple(tags or []),
         docname=docname,

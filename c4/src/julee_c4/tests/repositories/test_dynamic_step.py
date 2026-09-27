@@ -4,6 +4,7 @@ import pytest
 
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.dynamic_step import (
     MemoryDynamicStepRepository,
 )
@@ -21,13 +22,13 @@ def create_step(
 ) -> DynamicStep:
     """Helper to create test dynamic steps."""
     return DynamicStep(
-        slug=slug,
-        sequence_name=sequence_name,
+        slug=Slug(slug),
+        sequence_name=Name(sequence_name),
         step_number=step_number,
         source_type=source_type,
-        source_slug=source_slug,
+        source_slug=Slug(source_slug),
         destination_type=destination_type,
-        destination_slug=destination_slug,
+        destination_slug=Slug(destination_slug),
         docname=docname,
     )
 

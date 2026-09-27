@@ -3,11 +3,28 @@
 A numbered step in a dynamic (sequence) diagram.
 """
 
+from typing import Any
+
 from julee.core.entities.entity import Entity
-from julee.core.utils import slugify
-from pydantic import field_validator
+from pydantic import Field
+
+from julee_c4.domain.models.text import Name, Slug
 
 from .relationship import ElementType
+
+
+def _name_it_after_its_place(data: dict[str, Any]) -> Slug:
+    """Name a step after where it sits in its sequence.
+
+    A step is identified by its sequence and its number, which it
+    already carries, so its slug is derivable rather than something a
+    caller has to invent.
+
+    This ran in ``model_post_init`` and wrote the slug with
+    ``object.__setattr__``, which reaches past validation. As a default
+    it is built the same way a given one is.
+    """
+    return DynamicStep.generate_slug(data["sequence_name"], data["step_number"])
 
 
 class DynamicStep(Entity):
@@ -18,67 +35,19 @@ class DynamicStep(Entity):
     (user stories, use cases, features).
     """
 
-    slug: str = ""
-    sequence_name: str
-    step_number: int
+    sequence_name: Name
+    step_number: int = Field(ge=1, description="Steps are numbered from one")
     source_type: ElementType
-    source_slug: str
+    source_slug: Slug
     destination_type: ElementType
-    destination_slug: str
+    destination_slug: Slug
     description: str = ""
     technology: str = ""
     return_value: str = ""
     is_async: bool = False
     docname: str = ""
-
-    def model_post_init(self, __context: object) -> None:
-        """Derive the slug when none was given.
-
-        A step is identified by where it sits in its sequence, which the
-        step already knows, so the slug is derivable rather than required.
-        """
-        if not self.slug:
-            object.__setattr__(
-                self, "slug", self.generate_slug(self.sequence_name, self.step_number)
-            )
-
-    @field_validator("slug", mode="before")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Normalise the slug; an empty one is derived after validation."""
-        return v.strip() if v else v
-
-    @field_validator("sequence_name", mode="before")
-    @classmethod
-    def validate_sequence_name(cls, v: str) -> str:
-        """Validate sequence_name is not empty."""
-        if not v or not v.strip():
-            raise ValueError("sequence_name cannot be empty")
-        return v.strip()
-
-    @field_validator("step_number")
-    @classmethod
-    def validate_step_number(cls, v: int) -> int:
-        """Validate step_number is positive."""
-        if v < 1:
-            raise ValueError("step_number must be >= 1")
-        return v
-
-    @field_validator("source_slug", mode="before")
-    @classmethod
-    def validate_source_slug(cls, v: str) -> str:
-        """Validate source_slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("source_slug cannot be empty")
-        return v.strip()
-
-    @field_validator("destination_slug", mode="before")
-    @classmethod
-    def validate_destination_slug(cls, v: str) -> str:
-        """Validate destination_slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("destination_slug cannot be empty")
-        return v.strip()
+    slug: Slug = Field(default_factory=_name_it_after_its_place)
+    """Derived from the sequence and step number; declared last so it can be."""
 
     @property
     def step_label(self) -> str:
@@ -102,15 +71,22 @@ class DynamicStep(Entity):
         )
 
     @classmethod
-    def generate_slug(cls, sequence_name: str, step_number: int) -> str:
-        """Generate slug from sequence and step number."""
-        return f"{slugify(sequence_name)}-step-{step_number}"
+    def generate_slug(cls, sequence_name: str, step_number: int) -> Slug:
+        """The slug a step in this place would have.
+
+        Public because a caller looking a step up by its position needs
+        the same answer the entity would give itself.
+        """
+        return Slug(f"{sequence_name}-step-{step_number}")
 
     def involves_element(self, element_type: ElementType, element_slug: str) -> bool:
-        """Check if step involves a specific element."""
-        return (
-            self.source_type == element_type and self.source_slug == element_slug
-        ) or (
-            self.destination_type == element_type
-            and self.destination_slug == element_slug
+        """Check if step involves a specific element.
+
+        The argument is made a :class:`Slug` before comparison, so
+        asking with an element's display name answers the same as
+        asking with its slug.
+        """
+        wanted = Slug(element_slug)
+        return (self.source_type == element_type and self.source_slug == wanted) or (
+            self.destination_type == element_type and self.destination_slug == wanted
         )

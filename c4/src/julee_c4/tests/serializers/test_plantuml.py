@@ -21,6 +21,7 @@ from julee_c4.domain.models.diagrams import (
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.serializers.plantuml import PlantUMLSerializer
 
 pytestmark = pytest.mark.unit
@@ -49,15 +50,15 @@ def diagram() -> DynamicDiagram:
         steps=(_step(),),
         containers=(
             Container(
-                slug="api_app",
-                name="API Application",
-                system_slug="shop",
+                slug=Slug("api_app"),
+                name=Name("API Application"),
+                system_slug=Slug("shop"),
                 container_type=ContainerType.API,
             ),
             Container(
-                slug="database",
-                name="Database",
-                system_slug="shop",
+                slug=Slug("database"),
+                name=Name("Database"),
+                system_slug=Slug("shop"),
                 container_type=ContainerType.DATABASE,
             ),
         ),
@@ -68,7 +69,7 @@ def test_a_dynamic_diagram_renders_its_steps(diagram: DynamicDiagram) -> None:
     """The regression test: this path used to raise on the first step."""
     output = PlantUMLSerializer().serialize_dynamic_diagram(diagram)
 
-    assert 'Rel(api_app, database, "1. Reads the basket")' in output
+    assert 'Rel(apiapp, database, "1. Reads the basket")' in output
 
 
 def test_a_step_with_a_return_value_renders_the_way_back(
@@ -81,7 +82,37 @@ def test_a_step_with_a_return_value_renders_the_way_back(
 
     output = PlantUMLSerializer().serialize_dynamic_diagram(with_return)
 
-    assert 'Rel(database, api_app, "The basket")' in output
+    assert 'Rel(database, apiapp, "The basket")' in output
+
+
+def test_every_arrow_points_at_something_the_diagram_declared(
+    diagram: DynamicDiagram,
+) -> None:
+    """A Rel naming an alias no element declared draws nothing.
+
+    PlantUML invents an empty box for an unknown alias rather than
+    failing, so a diagram can be wrong and still render. Three tests
+    here asserted on a Rel line alone and passed for months over output
+    whose Rel named ``api_app`` while the element above it was declared
+    ``apiapp`` — a step's slug was stripped where the container's was
+    slugified (#70). Comparing the two halves is what catches it.
+    """
+    output = PlantUMLSerializer().serialize_dynamic_diagram(diagram)
+
+    declared = {
+        line.split("(", 1)[1].split(",", 1)[0].strip()
+        for line in output.splitlines()
+        if line.startswith(("Container(", "Component(", "System(", "Person("))
+    }
+    referenced = {
+        end.strip()
+        for line in output.splitlines()
+        if line.startswith("Rel(")
+        for end in line.split("(", 1)[1].split(",")[:2]
+    }
+
+    assert referenced, "no arrows to check, so this would pass over anything"
+    assert referenced <= declared, f"arrows point at {referenced - declared}"
 
 
 def test_a_step_without_a_return_value_draws_only_one_way(
@@ -101,7 +132,7 @@ def test_a_step_technology_is_carried_into_the_relationship(
 
     output = PlantUMLSerializer().serialize_dynamic_diagram(with_tech)
 
-    assert 'Rel(api_app, database, "1. Reads the basket", "HTTPS")' in output
+    assert 'Rel(apiapp, database, "1. Reads the basket", "HTTPS")' in output
 
 
 # =============================================================================
@@ -111,9 +142,9 @@ def test_a_step_technology_is_carried_into_the_relationship(
 
 def _deployment(instance_count: int = 1) -> DeploymentDiagram:
     """A node with one container deployed on it."""
-    node = DeploymentNode(slug="eu-west", name="EU West").with_container_instance(
-        "api-app", instance_count=instance_count
-    )
+    node = DeploymentNode(
+        slug=Slug("eu-west"), name=Name("EU West")
+    ).with_container_instance("api-app", instance_count=instance_count)
     return DeploymentDiagram(environment="production", nodes=(node,))
 
 
@@ -164,15 +195,17 @@ def test_hyphenated_slugs_become_valid_plantuml_identifiers(
 
 def _system(slug: str = "shop", name: str = "Shop") -> SoftwareSystem:
     """A software system with a description worth rendering."""
-    return SoftwareSystem(slug=slug, name=name, description=f"The {name.lower()}")
+    return SoftwareSystem(
+        slug=Slug(slug), name=Name(name), description=f"The {name.lower()}"
+    )
 
 
 def _container(slug: str = "api-app", system: str = "shop") -> Container:
     """A container belonging to a system."""
     return Container(
-        slug=slug,
-        name="API Application",
-        system_slug=system,
+        slug=Slug(slug),
+        name=Name("API Application"),
+        system_slug=Slug(system),
         container_type=ContainerType.API,
         description="Serves the shop",
     )
@@ -182,9 +215,9 @@ def _rel(source: str = "customer", destination: str = "shop") -> Relationship:
     """A relationship between two elements."""
     return Relationship(
         source_type=ElementType.PERSON,
-        source_slug=source,
+        source_slug=Slug(source),
         destination_type=ElementType.SOFTWARE_SYSTEM,
-        destination_slug=destination,
+        destination_slug=Slug(destination),
         description="Buys things",
     )
 
@@ -297,10 +330,10 @@ class TestComponentDiagram:
             container=_container(),
             components=(
                 Component(
-                    slug="order-service",
-                    name="Order Service",
-                    container_slug="api-app",
-                    system_slug="shop",
+                    slug=Slug("order-service"),
+                    name=Name("Order Service"),
+                    container_slug=Slug("api-app"),
+                    system_slug=Slug("shop"),
                 ),
             ),
         )
@@ -339,7 +372,9 @@ class TestSystemLandscape:
     def test_an_external_system_is_distinguished(self) -> None:
         """Which of these we own is the question a landscape answers."""
         external = SoftwareSystem(
-            slug="payments", name="Payments", system_type=SystemType.EXTERNAL
+            slug=Slug("payments"),
+            name=Name("Payments"),
+            system_type=SystemType.EXTERNAL,
         )
 
         output = PlantUMLSerializer().serialize_system_landscape(
@@ -393,7 +428,9 @@ class TestEveryDiagram:
 
         serializer = PlantUMLSerializer()
         hyphenated = SoftwareSystem(
-            slug="order-management", name="Orders", description="Handles orders"
+            slug=Slug("order-management"),
+            name=Name("Orders"),
+            description="Handles orders",
         )
         outputs = [
             serializer.serialize_system_context(

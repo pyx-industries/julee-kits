@@ -1,10 +1,10 @@
 """Tests for DynamicStep domain model."""
 
 import pytest
-from pydantic import ValidationError
 
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType
+from julee_c4.domain.models.text import Name, Slug
 
 
 class TestDynamicStepCreation:
@@ -13,13 +13,13 @@ class TestDynamicStepCreation:
     def test_create_with_required_fields(self) -> None:
         """Test creating a step with minimum required fields."""
         step = DynamicStep(
-            slug="login-step-1",
-            sequence_name="user-login",
+            slug=Slug("login-step-1"),
+            sequence_name=Name("user-login"),
             step_number=1,
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="web-app",
+            destination_slug=Slug("web-app"),
         )
 
         assert step.slug == "login-step-1"
@@ -33,13 +33,13 @@ class TestDynamicStepCreation:
     def test_create_with_all_fields(self) -> None:
         """Test creating a step with all fields."""
         step = DynamicStep(
-            slug="login-step-1",
-            sequence_name="user-login",
+            slug=Slug("login-step-1"),
+            sequence_name=Name("user-login"),
             step_number=1,
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="web-app",
+            destination_slug=Slug("web-app"),
             description="Submits login credentials",
             technology="HTTPS",
             return_value="JWT token",
@@ -54,80 +54,79 @@ class TestDynamicStepCreation:
     def test_empty_slug_is_derived_from_the_sequence(self) -> None:
         """A step's place in its sequence already identifies it."""
         step = DynamicStep(
-            slug="",
-            sequence_name="test",
+            sequence_name=Name("test"),
             step_number=1,
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="app",
+            destination_slug=Slug("app"),
         )
 
         assert step.slug == "test-step-1"
 
     def test_empty_sequence_name_raises_error(self) -> None:
         """Test that empty sequence_name raises validation error."""
-        with pytest.raises(ValidationError, match="sequence_name cannot be empty"):
+        with pytest.raises(ValueError, match="a name cannot be empty"):
             DynamicStep(
-                slug="test",
-                sequence_name="",
+                slug=Slug("test"),
+                sequence_name=Name(""),
                 step_number=1,
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="app",
+                destination_slug=Slug("app"),
             )
 
     def test_zero_step_number_raises_error(self) -> None:
         """Test that step_number < 1 raises validation error."""
-        with pytest.raises(ValidationError, match="step_number must be >= 1"):
+        with pytest.raises(ValueError, match="greater than or equal to 1"):
             DynamicStep(
-                slug="test",
-                sequence_name="test",
+                slug=Slug("test"),
+                sequence_name=Name("test"),
                 step_number=0,
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="app",
+                destination_slug=Slug("app"),
             )
 
     def test_negative_step_number_raises_error(self) -> None:
         """Test that negative step_number raises validation error."""
-        with pytest.raises(ValidationError, match="step_number must be >= 1"):
+        with pytest.raises(ValueError, match="greater than or equal to 1"):
             DynamicStep(
-                slug="test",
-                sequence_name="test",
+                slug=Slug("test"),
+                sequence_name=Name("test"),
                 step_number=-1,
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="app",
+                destination_slug=Slug("app"),
             )
 
     def test_empty_source_slug_raises_error(self) -> None:
         """Test that empty source_slug raises validation error."""
-        with pytest.raises(ValidationError, match="source_slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             DynamicStep(
-                slug="test",
-                sequence_name="test",
+                slug=Slug("test"),
+                sequence_name=Name("test"),
                 step_number=1,
                 source_type=ElementType.PERSON,
-                source_slug="",
+                source_slug=Slug(""),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="app",
+                destination_slug=Slug("app"),
             )
 
     def test_empty_destination_slug_raises_error(self) -> None:
         """Test that empty destination_slug raises validation error."""
-        with pytest.raises(ValidationError, match="destination_slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             DynamicStep(
-                slug="test",
-                sequence_name="test",
+                slug=Slug("test"),
+                sequence_name=Name("test"),
                 step_number=1,
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="",
+                destination_slug=Slug(""),
             )
 
 
@@ -138,13 +137,13 @@ class TestDynamicStepProperties:
     def sample_step(self) -> DynamicStep:
         """Create a sample step for testing."""
         return DynamicStep(
-            slug="login-step-1",
-            sequence_name="user-login",
+            slug=Slug("login-step-1"),
+            sequence_name=Name("user-login"),
             step_number=1,
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="web-app",
+            destination_slug=Slug("web-app"),
             description="Submits credentials",
             technology="HTTPS",
         )
@@ -156,13 +155,13 @@ class TestDynamicStepProperties:
     def test_full_label_without_technology(self) -> None:
         """Test full_label without technology."""
         step = DynamicStep(
-            slug="test",
-            sequence_name="test",
+            slug=Slug("test"),
+            sequence_name=Name("test"),
             step_number=2,
             source_type=ElementType.CONTAINER,
-            source_slug="api",
+            source_slug=Slug("api"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="db",
+            destination_slug=Slug("db"),
             description="Queries data",
         )
         assert step.full_label == "2. Queries data"
@@ -178,26 +177,26 @@ class TestDynamicStepProperties:
     def test_is_person_interaction_destination(self) -> None:
         """Test is_person_interaction when destination is person."""
         step = DynamicStep(
-            slug="test",
-            sequence_name="test",
+            slug=Slug("test"),
+            sequence_name=Name("test"),
             step_number=1,
             source_type=ElementType.CONTAINER,
-            source_slug="app",
+            source_slug=Slug("app"),
             destination_type=ElementType.PERSON,
-            destination_slug="admin",
+            destination_slug=Slug("admin"),
         )
         assert step.is_person_interaction is True
 
     def test_is_person_interaction_false(self) -> None:
         """Test is_person_interaction when no person involved."""
         step = DynamicStep(
-            slug="test",
-            sequence_name="test",
+            slug=Slug("test"),
+            sequence_name=Name("test"),
             step_number=1,
             source_type=ElementType.CONTAINER,
-            source_slug="api",
+            source_slug=Slug("api"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="db",
+            destination_slug=Slug("db"),
         )
         assert step.is_person_interaction is False
 
@@ -223,13 +222,13 @@ class TestDynamicStepInvolvesElement:
     def sample_step(self) -> DynamicStep:
         """Create a sample step for testing."""
         return DynamicStep(
-            slug="test",
-            sequence_name="test",
+            slug=Slug("test"),
+            sequence_name=Name("test"),
             step_number=1,
             source_type=ElementType.CONTAINER,
-            source_slug="api-app",
+            source_slug=Slug("api-app"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="database",
+            destination_slug=Slug("database"),
         )
 
     def test_involves_element_source(self, sample_step: DynamicStep) -> None:

@@ -15,6 +15,7 @@ from julee.core.usecases.generic_crud import (
 from pydantic import BaseModel
 
 from julee_c4.domain.models.component import Component
+from julee_c4.domain.models.text import Slug
 from julee_c4.domain.repositories.component import ComponentRepository
 
 
@@ -97,7 +98,7 @@ class CreateComponentUseCase(CreateUseCase[Component, ComponentRepository]):
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Component:
         """Construct a Component from a generated ID and request fields."""
-        return Component(slug=entity_id, **kwargs)
+        return Component(slug=Slug(entity_id), **kwargs)
 
     async def execute(self, request: CreateComponentRequest) -> CreateComponentResponse:
         """Execute the create component use case."""
