@@ -2,6 +2,7 @@
 
 import pytest
 import pytest_asyncio
+from julee.core.entities.text import Name, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.infrastructure.repositories.memory.app import MemoryAppRepository
@@ -16,8 +17,8 @@ def create_app(
 ) -> App:
     """Helper to create test apps."""
     return App(
-        slug=slug,
-        name=name,
+        slug=Slug(slug),
+        name=Name(name),
         app_type=app_type,
         status=status,
         accelerators=tuple(accelerators or []),

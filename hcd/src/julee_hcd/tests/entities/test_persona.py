@@ -1,7 +1,7 @@
 """Tests for Persona domain model."""
 
 import pytest
-from pydantic import ValidationError
+from julee.core.entities.text import Name, Slug
 
 from julee_hcd.domain.models.persona import Persona
 
@@ -11,7 +11,7 @@ class TestPersonaCreation:
 
     def test_create_persona_minimal(self) -> None:
         """Test creating a persona with minimum fields."""
-        persona = Persona(name="Knowledge Curator")
+        persona = Persona(name=Name("Knowledge Curator"))
         assert persona.name == "Knowledge Curator"
         assert persona.app_slugs == ()
         assert persona.epic_slugs == ()
@@ -19,14 +19,14 @@ class TestPersonaCreation:
     def test_create_persona_complete(self) -> None:
         """Test creating a persona with all fields."""
         persona = Persona(
-            name="Knowledge Curator",
+            name=Name("Knowledge Curator"),
             app_slugs=(
-                "vocabulary-tool",
-                "admin-portal",
+                Slug("vocabulary-tool"),
+                Slug("admin-portal"),
             ),
             epic_slugs=(
-                "vocabulary-management",
-                "credential-creation",
+                Slug("vocabulary-management"),
+                Slug("credential-creation"),
             ),
         )
 
@@ -36,17 +36,17 @@ class TestPersonaCreation:
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises validation error."""
-        with pytest.raises(ValidationError, match="name cannot be empty"):
-            Persona(name="")
+        with pytest.raises(ValueError, match="a name cannot be empty"):
+            Persona(name=Name(""))
 
     def test_whitespace_name_raises_error(self) -> None:
         """Test that whitespace-only name raises validation error."""
-        with pytest.raises(ValidationError, match="name cannot be empty"):
-            Persona(name="   ")
+        with pytest.raises(ValueError, match="a name cannot be empty"):
+            Persona(name=Name("   "))
 
     def test_name_stripped(self) -> None:
         """Test that name is stripped of whitespace."""
-        persona = Persona(name="  Knowledge Curator  ")
+        persona = Persona(name=Name("  Knowledge Curator  "))
         assert persona.name == "Knowledge Curator"
 
 
@@ -57,14 +57,14 @@ class TestPersonaProperties:
     def sample_persona(self) -> Persona:
         """Create a sample persona for testing."""
         return Persona(
-            name="Knowledge Curator",
+            name=Name("Knowledge Curator"),
             app_slugs=(
-                "vocabulary-tool",
-                "admin-portal",
+                Slug("vocabulary-tool"),
+                Slug("admin-portal"),
             ),
             epic_slugs=(
-                "vocabulary-management",
-                "credential-creation",
+                Slug("vocabulary-management"),
+                Slug("credential-creation"),
             ),
         )
 
@@ -90,7 +90,7 @@ class TestPersonaProperties:
 
     def test_has_apps_false(self) -> None:
         """Test has_apps property when false."""
-        persona = Persona(name="Test")
+        persona = Persona(name=Name("Test"))
         assert persona.has_apps is False
 
     def test_has_epics_true(self, sample_persona: Persona) -> None:
@@ -99,7 +99,7 @@ class TestPersonaProperties:
 
     def test_has_epics_false(self) -> None:
         """Test has_epics property when false."""
-        persona = Persona(name="Test")
+        persona = Persona(name=Name("Test"))
         assert persona.has_epics is False
 
 
@@ -110,12 +110,12 @@ class TestPersonaMethods:
     def sample_persona(self) -> Persona:
         """Create a sample persona for testing."""
         return Persona(
-            name="Knowledge Curator",
+            name=Name("Knowledge Curator"),
             app_slugs=(
-                "vocabulary-tool",
-                "admin-portal",
+                Slug("vocabulary-tool"),
+                Slug("admin-portal"),
             ),
-            epic_slugs=("vocabulary-management",),
+            epic_slugs=(Slug("vocabulary-management"),),
         )
 
     def test_uses_app_true(self, sample_persona: Persona) -> None:
@@ -137,7 +137,7 @@ class TestPersonaMethods:
 
     def test_add_app_new(self) -> None:
         """Test adding a new app."""
-        persona = Persona(name="Test")
+        persona = Persona(name=Name("Test"))
         persona = persona.with_app("new-app")
         assert "new-app" in persona.app_slugs
         assert persona.app_count == 1
@@ -150,7 +150,7 @@ class TestPersonaMethods:
 
     def test_add_epic_new(self) -> None:
         """Test adding a new epic."""
-        persona = Persona(name="Test")
+        persona = Persona(name=Name("Test"))
         persona = persona.with_epic("new-epic")
         assert "new-epic" in persona.epic_slugs
         assert persona.epic_count == 1
@@ -168,9 +168,9 @@ class TestPersonaSerialization:
     def test_persona_to_dict(self) -> None:
         """Test persona can be serialized to dict."""
         persona = Persona(
-            name="Test Persona",
-            app_slugs=("app-1",),
-            epic_slugs=("epic-1",),
+            name=Name("Test Persona"),
+            app_slugs=(Slug("app-1"),),
+            epic_slugs=(Slug("epic-1"),),
         )
 
         data = persona.model_dump()
@@ -181,7 +181,7 @@ class TestPersonaSerialization:
 
     def test_persona_to_json(self) -> None:
         """Test persona can be serialized to JSON."""
-        persona = Persona(name="Test Persona")
+        persona = Persona(name=Name("Test Persona"))
         json_str = persona.model_dump_json()
         assert '"name":"Test Persona"' in json_str
         assert '"normalized_name":"test persona"' in json_str

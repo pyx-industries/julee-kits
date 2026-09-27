@@ -5,6 +5,7 @@ Do not edit — regenerate with make generate-crud.
 
 from typing import Any
 
+from julee.core.entities.text import Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -105,7 +106,7 @@ class CreateContribModuleUseCase(CreateUseCase[ContribModule, ContribModuleRepos
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> ContribModule:
         """Construct a ContribModule from a generated ID and request fields."""
-        return ContribModule(slug=entity_id, **kwargs)
+        return ContribModule(slug=Slug(entity_id), **kwargs)
 
     async def execute(
         self, request: CreateContribModuleRequest

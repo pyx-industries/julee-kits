@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.journey import Journey, JourneyStep
@@ -86,7 +87,11 @@ class RstJourneyRepository(RstRepositoryMixin[Journey], JourneyRepository):
             intent=options.get("intent", ""),
             outcome=options.get("outcome", ""),
             goal=goal,
-            depends_on=tuple(parse_comma_list(options.get("depends-on", ""))),
+            depends_on=tuple(
+                Slug(s)
+                for s in parse_comma_list(options.get("depends-on", ""))
+                if s.strip()
+            ),
             preconditions=tuple(parse_multiline_list(options.get("preconditions", ""))),
             postconditions=tuple(
                 parse_multiline_list(options.get("postconditions", ""))

@@ -1,6 +1,7 @@
 """Tests for AppInterface and the C4 labels an App derives from it."""
 
 import pytest
+from julee.core.entities.text import Name, Slug
 
 from julee_hcd.domain.models.app import App, AppInterface
 
@@ -9,7 +10,7 @@ pytestmark = pytest.mark.unit
 
 def test_an_app_with_no_stated_interface_is_unknown() -> None:
     """Most apps are described before anyone says how they are reached."""
-    assert App(slug="x", name="X").interface is AppInterface.UNKNOWN
+    assert App(slug=Slug("x"), name=Name("X")).interface is AppInterface.UNKNOWN
 
 
 def test_an_unrecognised_interface_name_is_unknown_rather_than_an_error() -> None:
@@ -37,7 +38,7 @@ def test_each_interface_labels_itself_for_a_diagram(
     interface: AppInterface, label: str, technology: str
 ) -> None:
     """How an app is reached is what a reader wants on the box."""
-    app = App(slug="x", name="X", interface=interface)
+    app = App(slug=Slug("x"), name=Name("X"), interface=interface)
 
     assert app.interface_label == label
     assert app.c4_technology == technology
@@ -45,7 +46,9 @@ def test_each_interface_labels_itself_for_a_diagram(
 
 def test_an_app_that_states_its_technology_is_believed() -> None:
     """The guess is a fallback, not an override."""
-    app = App(slug="x", name="X", interface=AppInterface.API, technology="Go")
+    app = App(
+        slug=Slug("x"), name=Name("X"), interface=AppInterface.API, technology="Go"
+    )
 
     assert app.c4_technology == "Go"
 

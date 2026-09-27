@@ -17,6 +17,7 @@ from typing import Any
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name, slugify
 
 from julee_hcd.domain.models.persona import Persona
@@ -329,7 +330,7 @@ def generate_persona_index_plantuml(
     lines.append("")
 
     # Collect unique epics
-    all_group_epics: set[str] = set()
+    all_group_epics: set[Slug] = set()
     for epics in persona_epics_map.values():
         all_group_epics.update(e.slug for e in epics)
 

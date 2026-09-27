@@ -6,8 +6,9 @@ Apps are defined via YAML manifests in apps/*/app.yaml.
 
 from enum import StrEnum
 
+from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
-from pydantic import Field, field_validator
+from pydantic import Field, computed_field
 
 from .base import Authored
 
@@ -78,8 +79,8 @@ class App(Authored):
     for the documentation.
     """
 
-    slug: str = Field(description='URL-safe identifier (e.g., "staff-portal")')
-    name: str = Field(description='Display name (e.g., "Staff Portal")')
+    slug: Slug = Field(description='URL-safe identifier (e.g., "staff-portal")')
+    name: Name = Field(description='Display name (e.g., "Staff Portal")')
     app_type: AppType = Field(
         default=AppType.UNKNOWN,
         description="Classification (staff, external, member-tool)",
@@ -102,37 +103,23 @@ class App(Authored):
         description="List of accelerator slugs associated with this app",
     )
     manifest_path: str = Field(default="", description="Path to the app.yaml file")
-    name_normalized: str = Field(default="", description="Lowercase name for matching")
 
-    @field_validator("slug", mode="before")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Validate slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("slug cannot be empty")
-        return v.strip()
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def name_normalized(self) -> str:
+        """Lowercase name for matching, which is what Name.normalized is.
 
-    @field_validator("name", mode="before")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        """Validate name is not empty."""
-        if not v or not v.strip():
-            raise ValueError("name cannot be empty")
-        return v.strip()
+        This was a stored field, filled by a validator that returned any
+        value it was given and recomputed in ``model_post_init`` in case
+        the validator had not run. Three mechanisms for one derived
+        value, and a caller could still write a name_normalized that
+        disagreed with the name — which the repositories match on, so an
+        app with a wrong one is an app that cannot be found by name.
 
-    @field_validator("name_normalized", mode="before")
-    @classmethod
-    def compute_name_normalized(cls, v: str, info) -> str:
-        """Compute normalized name from name if not provided."""
-        if v:
-            return v
-        name = info.data.get("name", "")
-        return normalize_name(name) if name else ""
-
-    def model_post_init(self, __context) -> None:
-        """Ensure normalized fields are computed after init."""
-        if not self.name_normalized and self.name:
-            object.__setattr__(self, "name_normalized", normalize_name(self.name))
+        Persona has always done it this way. This is the other four
+        catching up (#71).
+        """
+        return self.name.normalized
 
     @classmethod
     def from_manifest(
@@ -155,8 +142,8 @@ class App(Authored):
         app_type = AppType.from_string(manifest.get("type", "unknown"))
 
         return cls(
-            slug=slug,
-            name=name,
+            slug=Slug(slug),
+            name=Name(name),
             app_type=app_type,
             status=manifest.get("status"),
             description=manifest.get("description", "").strip(),

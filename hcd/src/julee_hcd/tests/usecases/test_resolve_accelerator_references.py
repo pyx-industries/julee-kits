@@ -9,6 +9,7 @@ from julee.core.entities.bounded_context_info import (
     BoundedContextInfo,
     ClassInfo,
 )
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.domain.models.integration import Direction, Integration
@@ -66,12 +67,12 @@ def create_app(slug: str, accelerators: list[str] | None = None) -> App:
 def create_story(feature_title: str, app_slug: str) -> Story:
     """Helper to create test stories."""
     return Story(
-        slug=feature_title.lower().replace(" ", "-"),
-        feature_title=feature_title,
-        persona="Test User",
+        slug=NonEmptyText(feature_title.lower().replace(" ", "-")),
+        feature_title=Name(feature_title),
+        persona=Name("Test User"),
         i_want="test",
         so_that="verify",
-        app_slug=app_slug,
+        app_slug=Slug(app_slug),
         file_path="test.feature",
     )
 
@@ -79,15 +80,15 @@ def create_story(feature_title: str, app_slug: str) -> Story:
 def create_journey(slug: str, story_refs: list[str]) -> Journey:
     """Helper to create test journeys."""
     steps = [JourneyStep.story(ref) for ref in story_refs]
-    return Journey(slug=slug, persona="User", steps=tuple(steps))
+    return Journey(slug=Slug(slug), persona="User", steps=tuple(steps))
 
 
 def create_integration(slug: str) -> Integration:
     """Helper to create test integrations."""
     return Integration(
-        slug=slug,
-        module="test",
-        name=slug.replace("-", " ").title(),
+        slug=Slug(slug),
+        module=NonEmptyText("test"),
+        name=Name(slug.replace("-", " ").title()),
         description="Test integration",
         direction=Direction.INBOUND,
         manifest_path=f"integrations/{slug}.yaml",
@@ -294,6 +295,28 @@ class TestGetSourceIntegrations:
         result = get_source_integrations(accelerator, integrations)
 
         assert result == []
+
+    def test_a_manifest_may_name_an_integration_however_it_likes(self) -> None:
+        """The reference and the integration are normalised the same way.
+
+        An accelerator declares what it sources from as plain text in a
+        YAML manifest; an Integration names itself with a Slug. Before
+        #71 the manifest side was used as written, so a manifest saying
+        "Kafka Stream" simply found nothing — no error, an empty list,
+        and a diagram with a missing arrow.
+        """
+        accelerator = create_accelerator(
+            "vocab-builder", sources_from=["Kafka Stream", "  postgres  "]
+        )
+        integrations = [
+            create_integration("kafka-stream"),
+            create_integration("postgres"),
+            create_integration("redis"),
+        ]
+
+        result = get_source_integrations(accelerator, integrations)
+
+        assert {i.slug for i in result} == {"kafka-stream", "postgres"}
 
 
 class TestGetPublishIntegrations:

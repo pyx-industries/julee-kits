@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.story import Story
@@ -59,11 +60,11 @@ class RstStoryRepository(RstRepositoryMixin[Story], StoryRepository):
 
         return Story(
             slug=data["slug"],
-            feature_title=feature_title or data["slug"].replace("-", " ").title(),
-            persona=options.get("persona", persona or "unknown"),
+            feature_title=Name(feature_title or data["slug"].replace("-", " ").title()),
+            persona=Name(options.get("persona", persona or "unknown")),
             i_want=i_want or "do something",
             so_that=so_that or "",
-            app_slug=options.get("app", "unknown"),
+            app_slug=Slug(options.get("app") or "unknown"),
             file_path=f"{docname}.rst",
             gherkin_snippet=gherkin_snippet,
             page_title=parsed.title,

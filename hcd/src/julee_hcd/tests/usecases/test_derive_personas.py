@@ -7,6 +7,7 @@ defined anywhere, so the authored path would have raised AttributeError.
 """
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.persona import Persona
@@ -27,12 +28,12 @@ pytestmark = pytest.mark.unit
 def _story(persona: str, app: str, title: str) -> Story:
     """A story told by a persona about an app."""
     return Story(
-        slug=f"{app}--{title.lower().replace(' ', '-')}",
-        feature_title=title,
-        persona=persona,
+        slug=NonEmptyText(f"{app}--{title.lower().replace(' ', '-')}"),
+        feature_title=Name(title),
+        persona=Name(persona),
         i_want="to do a thing",
         so_that="something follows",
-        app_slug=app,
+        app_slug=Slug(app),
         file_path=f"features/{title}.feature",
     )
 
@@ -44,7 +45,7 @@ async def repos() -> tuple[MemoryStoryRepository, MemoryEpicRepository]:
     await stories.save(_story("Knowledge Curator", "library", "Search"))
     await stories.save(_story("Casual Reader", "library", "Browse"))
     epics = MemoryEpicRepository()
-    await epics.save(Epic(slug="finding", story_refs=("Search",)))
+    await epics.save(Epic(slug=Slug("finding"), story_refs=("Search",)))
     return stories, epics
 
 
@@ -137,7 +138,7 @@ async def test_an_authored_persona_is_not_duplicated_by_its_own_stories(
     )
 
     names = [p.name for p in response.personas]
-    assert names.count("Knowledge Curator") == 1
+    assert names.count(Name("Knowledge Curator")) == 1
 
 
 async def test_an_authored_persona_nobody_tells_stories_about_survives(

@@ -1,6 +1,7 @@
 """Tests for resolve_app_references use case."""
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.domain.models.epic import Epic
@@ -19,8 +20,8 @@ from julee_hcd.usecases.resolve_app_references import (
 def create_app(slug: str, name: str = "") -> App:
     """Helper to create test apps."""
     return App(
-        slug=slug,
-        name=name or slug.replace("-", " ").title(),
+        slug=Slug(slug),
+        name=Name(name or slug.replace("-", " ").title()),
         app_type=AppType.STAFF,
         manifest_path=f"apps/{slug}/app.yaml",
     )
@@ -33,25 +34,25 @@ def create_story(
 ) -> Story:
     """Helper to create test stories."""
     return Story(
-        slug=feature_title.lower().replace(" ", "-"),
-        feature_title=feature_title,
-        persona=persona,
+        slug=NonEmptyText(feature_title.lower().replace(" ", "-")),
+        feature_title=Name(feature_title),
+        persona=Name(persona),
         i_want="test",
         so_that="verify",
-        app_slug=app_slug,
+        app_slug=Slug(app_slug),
         file_path="test.feature",
     )
 
 
 def create_epic(slug: str, story_refs: list[str]) -> Epic:
     """Helper to create test epics."""
-    return Epic(slug=slug, story_refs=tuple(story_refs))
+    return Epic(slug=Slug(slug), story_refs=tuple(story_refs))
 
 
 def create_journey(slug: str, story_refs: list[str]) -> Journey:
     """Helper to create test journeys."""
     steps = [JourneyStep.story(ref) for ref in story_refs]
-    return Journey(slug=slug, persona="User", steps=tuple(steps))
+    return Journey(slug=Slug(slug), persona="User", steps=tuple(steps))
 
 
 class TestGetStoriesForApp:

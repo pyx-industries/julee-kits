@@ -8,12 +8,26 @@ Both are the same entity. is_defined tells them apart, and a derived
 persona can be written up later without becoming a different thing.
 """
 
-from typing import Self
+from typing import Any, Self
 
-from julee.core.utils import normalize_name, slugify
-from pydantic import Field, computed_field, field_validator
+from julee.core.entities.text import Name, Slug
+from pydantic import Field, computed_field
 
 from .base import Authored
+
+
+def _slug_from_name(data: dict[str, Any]) -> Slug:
+    """Name a persona after itself, when it was not given a slug.
+
+    A persona derived from a story has only a name to be identified by,
+    so the name is what the slug comes from.
+
+    This ran in ``model_post_init`` and wrote the slug with
+    ``object.__setattr__``, which reaches past validation: the derived
+    slug was the one value of the field that nothing checked. As a
+    default it is built the way a given one is.
+    """
+    return Slug(data["name"])
 
 
 class Persona(Authored):
@@ -23,11 +37,11 @@ class Persona(Authored):
     what the people writing the solution down know about them.
     """
 
-    name: str = Field(
+    name: Name = Field(
         description='Display name of the persona (e.g., "Knowledge Curator")'
     )
-    slug: str = Field(
-        default="",
+    slug: Slug = Field(
+        default_factory=_slug_from_name,
         description="Identifier; derived from the name when not given",
     )
     goals: tuple[str, ...] = Field(
@@ -46,44 +60,27 @@ class Persona(Authored):
         default="",
         description="The circumstances this persona works in",
     )
-    app_slugs: tuple[str, ...] = Field(
+    app_slugs: tuple[Slug, ...] = Field(
         default_factory=tuple, description="List of app slugs this persona uses"
     )
-    epic_slugs: tuple[str, ...] = Field(
+    epic_slugs: tuple[Slug, ...] = Field(
         default_factory=tuple,
         description="List of epic slugs containing stories for this persona",
     )
-    accelerator_slugs: tuple[str, ...] = Field(
+    accelerator_slugs: tuple[Slug, ...] = Field(
         default_factory=tuple,
         description="Accelerators this persona's work draws on",
     )
-    contrib_slugs: tuple[str, ...] = Field(
+    contrib_slugs: tuple[Slug, ...] = Field(
         default_factory=tuple,
         description="Contrib modules this persona's work draws on",
     )
-
-    def model_post_init(self, __context: object) -> None:
-        """Derive the slug from the name when none was given.
-
-        A persona derived from a story has only a name to be identified
-        by, so the name is what the slug comes from.
-        """
-        if not self.slug:
-            object.__setattr__(self, "slug", slugify(self.name))
-
-    @field_validator("name", mode="before")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        """Validate name is not empty."""
-        if not v or not v.strip():
-            raise ValueError("name cannot be empty")
-        return v.strip()
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def normalized_name(self) -> str:
         """Get normalized name for matching."""
-        return normalize_name(self.name)
+        return self.name.normalized
 
     @property
     def display_name(self) -> str:
@@ -186,8 +183,8 @@ class Persona(Authored):
             docname: Document the persona was written in
         """
         return cls(
-            slug=slug,
-            name=name,
+            slug=Slug(slug),
+            name=Name(name),
             goals=goals,
             frustrations=frustrations,
             jobs_to_be_done=jobs_to_be_done,
@@ -205,4 +202,7 @@ class Persona(Authored):
             name: The persona named in the story
             app_slug: App the story belongs to, if any
         """
-        return cls(name=name, app_slugs=(app_slug,) if app_slug else ())
+        return cls(
+            name=Name(name),
+            app_slugs=(Slug(app_slug),) if app_slug.strip() else (),
+        )

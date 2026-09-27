@@ -8,6 +8,7 @@ knew and the copy had lost.
 from typing import Any
 
 import pytest
+from julee.core.entities.text import Name, Slug
 
 from julee_hcd.domain.models.persona import Persona
 
@@ -16,17 +17,19 @@ pytestmark = pytest.mark.unit
 
 def test_a_persona_derives_its_slug_from_its_name() -> None:
     """A persona out of a story has a name and nothing else to be keyed by."""
-    assert Persona(name="Knowledge Curator").slug == "knowledge-curator"
+    assert Persona(name=Name("Knowledge Curator")).slug == "knowledge-curator"
 
 
 def test_a_persona_keeps_a_slug_it_was_given() -> None:
     """Derivation is a fallback, not a rule about what slugs may be."""
-    assert Persona(name="Knowledge Curator", slug="curator").slug == "curator"
+    assert (
+        Persona(name=Name("Knowledge Curator"), slug=Slug("curator")).slug == "curator"
+    )
 
 
 def test_a_persona_with_only_a_name_is_not_defined() -> None:
     """Being mentioned in a story is not the same as being described."""
-    assert Persona(name="Knowledge Curator").is_defined is False
+    assert Persona(name=Name("Knowledge Curator")).is_defined is False
 
 
 @pytest.mark.parametrize(
@@ -42,7 +45,7 @@ def test_any_one_thing_written_about_a_persona_makes_it_defined(
     written: dict[str, Any],
 ) -> None:
     """Whichever part somebody filled in, the persona has been described."""
-    assert Persona(name="Knowledge Curator", **written).is_defined is True
+    assert Persona(name=Name("Knowledge Curator"), **written).is_defined is True
 
 
 def test_from_definition_keeps_everything_it_was_told() -> None:
@@ -84,9 +87,9 @@ def test_from_story_reference_without_an_app_lists_none() -> None:
 def test_a_persona_can_name_the_accelerators_and_contribs_it_draws_on() -> None:
     """These are the links to the rest of a solution's documentation."""
     persona = Persona(
-        name="Knowledge Curator",
-        accelerator_slugs=("traceability",),
-        contrib_slugs=("polling-workflow",),
+        name=Name("Knowledge Curator"),
+        accelerator_slugs=(Slug("traceability"),),
+        contrib_slugs=(Slug("polling-workflow"),),
     )
 
     assert persona.accelerator_slugs == ("traceability",)

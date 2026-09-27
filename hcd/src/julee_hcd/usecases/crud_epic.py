@@ -5,6 +5,7 @@ Do not edit — regenerate with make generate-crud.
 
 from typing import Any
 
+from julee.core.entities.text import Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -95,7 +96,7 @@ class CreateEpicUseCase(CreateUseCase[Epic, EpicRepository]):
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Epic:
         """Construct a Epic from a generated ID and request fields."""
-        return Epic(slug=entity_id, **kwargs)
+        return Epic(slug=Slug(entity_id), **kwargs)
 
     async def execute(self, request: CreateEpicRequest) -> CreateEpicResponse:
         """Execute the create epic use case."""

@@ -2,6 +2,7 @@
 
 import pytest
 import pytest_asyncio
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.integration import (
     Direction,
@@ -22,9 +23,9 @@ def create_integration(
 ) -> Integration:
     """Helper to create test integrations."""
     return Integration(
-        slug=slug,
-        module=module,
-        name=name,
+        slug=Slug(slug),
+        module=NonEmptyText(module),
+        name=Name(name),
         direction=direction,
         depends_on=tuple(depends_on or []),
         manifest_path=f"integrations/{module}/integration.yaml",
@@ -113,7 +114,7 @@ class TestMemoryIntegrationRepositoryQueries:
                 module="pilot_data",
                 name="Pilot Data Collection",
                 direction=Direction.INBOUND,
-                depends_on=[ExternalDependency(name="Pilot API")],
+                depends_on=[ExternalDependency(name=Name("Pilot API"))],
             ),
             create_integration(
                 slug="analytics-export",
@@ -121,8 +122,8 @@ class TestMemoryIntegrationRepositoryQueries:
                 name="Analytics Export",
                 direction=Direction.OUTBOUND,
                 depends_on=[
-                    ExternalDependency(name="AWS S3"),
-                    ExternalDependency(name="Analytics Service"),
+                    ExternalDependency(name=Name("AWS S3")),
+                    ExternalDependency(name=Name("Analytics Service")),
                 ],
             ),
             create_integration(
@@ -130,7 +131,7 @@ class TestMemoryIntegrationRepositoryQueries:
                 module="data_sync",
                 name="Data Sync",
                 direction=Direction.BIDIRECTIONAL,
-                depends_on=[ExternalDependency(name="AWS S3")],
+                depends_on=[ExternalDependency(name=Name("AWS S3"))],
             ),
             create_integration(
                 slug="notifications",

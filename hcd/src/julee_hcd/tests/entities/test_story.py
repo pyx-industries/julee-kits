@@ -1,7 +1,7 @@
 """Tests for Story domain model."""
 
 import pytest
-from pydantic import ValidationError
+from julee.core.entities.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.story import Story
 
@@ -12,10 +12,10 @@ class TestStoryCreation:
     def test_create_story_with_required_fields(self) -> None:
         """Test creating a story with minimum required fields."""
         story = Story(
-            slug="submit-order",
-            feature_title="Submit Order",
-            persona="Customer",
-            app_slug="checkout-app",
+            slug=NonEmptyText("submit-order"),
+            feature_title=Name("Submit Order"),
+            persona=Name("Customer"),
+            app_slug=Slug("checkout-app"),
             file_path="tests/e2e/checkout-app/features/submit_order.feature",
         )
 
@@ -28,14 +28,12 @@ class TestStoryCreation:
     def test_create_story_with_all_fields(self) -> None:
         """Test creating a story with all fields."""
         story = Story(
-            slug="submit-order",
-            feature_title="Submit Order",
-            persona="Customer",
-            persona_normalized="customer",
+            slug=NonEmptyText("submit-order"),
+            feature_title=Name("Submit Order"),
+            persona=Name("Customer"),
             i_want="submit my order",
             so_that="I can purchase products",
-            app_slug="checkout-app",
-            app_normalized="checkout app",
+            app_slug=Slug("checkout-app"),
             file_path="tests/e2e/checkout-app/features/submit.feature",
             abs_path="/abs/path/to/submit.feature",
             gherkin_snippet="Feature: Submit Order\n  As a Customer",
@@ -50,10 +48,10 @@ class TestStoryCreation:
     def test_normalized_fields_computed_automatically(self) -> None:
         """Test that normalized fields are computed from raw values."""
         story = Story(
-            slug="test",
-            feature_title="Test Feature",
-            persona="Staff Member",
-            app_slug="Staff-Portal",
+            slug=NonEmptyText("test"),
+            feature_title=Name("Test Feature"),
+            persona=Name("Staff Member"),
+            app_slug=Slug("Staff-Portal"),
             file_path="test.feature",
         )
 
@@ -61,57 +59,68 @@ class TestStoryCreation:
         assert story.app_normalized == "staff portal"
 
     def test_empty_slug_raises_error(self) -> None:
-        """Test that empty slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
+        """A story with no identifier cannot be referred to."""
+        with pytest.raises(ValueError, match="cannot be empty"):
             Story(
-                slug="",
-                feature_title="Test",
-                persona="User",
-                app_slug="app",
+                slug=NonEmptyText(""),
+                feature_title=Name("Test"),
+                persona=Name("User"),
+                app_slug=Slug("app"),
                 file_path="test.feature",
             )
 
     def test_empty_feature_title_raises_error(self) -> None:
         """Test that empty feature title raises validation error."""
-        with pytest.raises(ValidationError, match="Feature title cannot be empty"):
+        with pytest.raises(ValueError, match="a name cannot be empty"):
             Story(
-                slug="test",
-                feature_title="",
-                persona="User",
-                app_slug="app",
+                slug=NonEmptyText("test"),
+                feature_title=Name(""),
+                persona=Name("User"),
+                app_slug=Slug("app"),
                 file_path="test.feature",
             )
 
-    def test_empty_persona_defaults_to_unknown(self) -> None:
-        """Test that empty persona defaults to 'unknown'."""
+    def test_an_unstated_persona_and_app_are_unknown(self) -> None:
+        """A story from a feature file may say neither."""
         story = Story(
-            slug="test",
-            feature_title="Test",
-            persona="",
-            app_slug="app",
+            slug=NonEmptyText("test"),
+            feature_title=Name("Test"),
             file_path="test.feature",
         )
-        assert story.persona == "unknown"
 
-    def test_empty_app_slug_defaults_to_unknown(self) -> None:
-        """Test that empty app slug defaults to 'unknown'."""
-        story = Story(
-            slug="test",
-            feature_title="Test",
-            persona="User",
-            app_slug="",
-            file_path="test.feature",
-        )
+        assert story.persona == "unknown"
         assert story.app_slug == "unknown"
 
+    @pytest.mark.parametrize("field", ["persona", "app_slug"])
+    def test_saying_one_is_empty_is_refused_rather_than_assumed(
+        self, field: str
+    ) -> None:
+        """Not stating a thing and stating that it is nothing differ.
+
+        These defaulted an empty string to "unknown" in a validator,
+        which meant a caller that had genuinely lost the value got a
+        story attributed to a persona named "unknown" rather than an
+        error. Omitting it still does that, because a feature file may
+        legitimately say neither (#71).
+        """
+        with pytest.raises(ValueError, match="cannot be empty|nothing in it"):
+            Story.model_validate(
+                {
+                    "slug": "test",
+                    "feature_title": "Test",
+                    "file_path": "test.feature",
+                    field: "",
+                }
+            )
+
     def test_whitespace_only_slug_raises_error(self) -> None:
-        """Test that whitespace-only slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
+        """Stripped first, so whitespace is the same as nothing."""
+        with pytest.raises(ValueError, match="cannot be empty"):
             Story(
-                slug="   ",
-                feature_title="Test",
-                persona="User",
-                app_slug="app",
+                slug=NonEmptyText("   "),
+                feature_title=Name("Test"),
+                persona=Name("User"),
+                app_slug=Slug("app"),
                 file_path="test.feature",
             )
 
@@ -150,10 +159,10 @@ class TestStoryMatching:
     def sample_story(self) -> Story:
         """Create a sample story for testing."""
         return Story(
-            slug="test-story",
-            feature_title="Test Story",
-            persona="Staff Member",
-            app_slug="staff-portal",
+            slug=NonEmptyText("test-story"),
+            feature_title=Name("Test Story"),
+            persona=Name("Staff Member"),
+            app_slug=Slug("staff-portal"),
             file_path="test.feature",
         )
 
@@ -190,10 +199,10 @@ class TestStorySerialization:
     def test_story_to_dict(self) -> None:
         """Test story can be serialized to dict."""
         story = Story(
-            slug="test",
-            feature_title="Test",
-            persona="User",
-            app_slug="app",
+            slug=NonEmptyText("test"),
+            feature_title=Name("Test"),
+            persona=Name("User"),
+            app_slug=Slug("app"),
             file_path="test.feature",
         )
 
@@ -205,10 +214,10 @@ class TestStorySerialization:
     def test_story_to_json(self) -> None:
         """Test story can be serialized to JSON."""
         story = Story(
-            slug="test",
-            feature_title="Test",
-            persona="User",
-            app_slug="app",
+            slug=NonEmptyText("test"),
+            feature_title=Name("Test"),
+            persona=Name("User"),
+            app_slug=Slug("app"),
             file_path="test.feature",
         )
 

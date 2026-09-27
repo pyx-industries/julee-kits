@@ -3,10 +3,9 @@
 Represents a user story extracted from a Gherkin .feature file.
 """
 
-from typing import Any
-
+from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.utils import normalize_name, slugify
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, computed_field
 
 from .base import Authored
 
@@ -18,11 +17,12 @@ class Story(Authored):
     They capture who wants to do what and why.
     """
 
-    slug: str = Field(description="URL-safe identifier derived from feature title")
-    feature_title: str = Field(description="The Feature: line from the Gherkin file")
-    persona: str = Field(description='The actor from "As a <persona>"')
-    persona_normalized: str = Field(
-        default="", description="Lowercase, spaces-normalized persona for matching"
+    slug: NonEmptyText = Field(
+        description="Identifier, app slug and feature title joined by --"
+    )
+    feature_title: Name = Field(description="The Feature: line from the Gherkin file")
+    persona: Name = Field(
+        default=Name("unknown"), description='The actor from "As a <persona>"'
     )
     i_want: str = Field(
         default="do something", description='The action from "I want to <action>"'
@@ -30,9 +30,8 @@ class Story(Authored):
     so_that: str = Field(
         default="achieve a goal", description='The benefit from "So that <benefit>"'
     )
-    app_slug: str = Field(description="The application this story belongs to")
-    app_normalized: str = Field(
-        default="", description="Lowercase, spaces-normalized app name for matching"
+    app_slug: Slug = Field(
+        default=Slug("unknown"), description="The application this story belongs to"
     )
     file_path: str = Field(description="Relative path to the .feature file")
     abs_path: str = Field(default="", description="Absolute path to the .feature file")
@@ -40,56 +39,30 @@ class Story(Authored):
         default="", description="The story header portion of the feature file"
     )
 
-    @field_validator("slug")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Ensure slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("Story slug cannot be empty")
-        return v.strip()
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def persona_normalized(self) -> str:
+        """Lowercase persona for matching, which is Name.normalized."""
+        return self.persona.normalized
 
-    @field_validator("feature_title")
-    @classmethod
-    def validate_feature_title(cls, v: str) -> str:
-        """Ensure feature title is not empty."""
-        if not v or not v.strip():
-            raise ValueError("Feature title cannot be empty")
-        return v.strip()
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def app_normalized(self) -> str:
+        """The app slug in the form names are compared in.
 
-    @field_validator("persona")
-    @classmethod
-    def validate_persona(cls, v: str) -> str:
-        """Ensure persona is not empty, default to 'unknown'."""
-        if not v or not v.strip():
-            return "unknown"
-        return v.strip()
+        Both of these were stored fields filled by a before-validator
+        until #71, so a caller could write one that disagreed with the
+        field it is derived from — and matching reads the stored one.
 
-    @field_validator("app_slug")
-    @classmethod
-    def validate_app_slug(cls, v: str) -> str:
-        """Ensure app slug is not empty, default to 'unknown'."""
-        if not v or not v.strip():
-            return "unknown"
-        return v.strip()
-
-    @model_validator(mode="before")
-    @classmethod
-    def normalize_names(cls, data: Any) -> Any:
-        """Fill the normalized names from the raw ones when they are absent.
-
-        Done before validation because an entity is frozen once built.
+        This one normalises a *slug*, not a name, which is a separate
+        problem: :meth:`matches_app` takes an app's display name and
+        compares it with this, so the two agree only when the app's
+        slug happens to be the slugified form of its name. Resolving a
+        name to a slug needs the App repository, so it is not the
+        entity's to do. Recorded on #71 and #72 rather than changed
+        here.
         """
-        if isinstance(data, dict):
-            data = dict(data)
-            if not data.get("persona_normalized"):
-                data["persona_normalized"] = normalize_name(
-                    data.get("persona") or "unknown"
-                )
-            if not data.get("app_normalized"):
-                data["app_normalized"] = normalize_name(
-                    data.get("app_slug") or "unknown"
-                )
-        return data
+        return normalize_name(self.app_slug)
 
     @classmethod
     def from_feature_file(
@@ -120,12 +93,14 @@ class Story(Authored):
         """
         # Include app_slug in slug to avoid collisions between apps
         return cls(
-            slug=f"{app_slug}--{slugify(feature_title)}",
-            feature_title=feature_title,
-            persona=persona,
+            # Not a Slug: slugify collapses the -- that keeps two
+            # apps' identically titled stories apart.
+            slug=NonEmptyText(f"{app_slug}--{slugify(feature_title)}"),
+            feature_title=Name(feature_title),
+            persona=Name(persona) if persona.strip() else Name("unknown"),
             i_want=i_want,
             so_that=so_that,
-            app_slug=app_slug,
+            app_slug=Slug(app_slug) if app_slug.strip() else Slug("unknown"),
             file_path=file_path,
             abs_path=abs_path,
             gherkin_snippet=gherkin_snippet,

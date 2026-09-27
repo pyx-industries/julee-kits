@@ -2,6 +2,7 @@
 
 import pytest
 import pytest_asyncio
+from julee.core.entities.text import Slug
 
 from julee_hcd.domain.models.journey import Journey, JourneyStep
 from julee_hcd.infrastructure.repositories.memory.journey import (
@@ -18,10 +19,10 @@ def create_journey(
 ) -> Journey:
     """Helper to create test journeys."""
     return Journey(
-        slug=slug,
+        slug=Slug(slug),
         persona=persona,
         docname=docname,
-        depends_on=tuple(depends_on or []),
+        depends_on=tuple(Slug(s) for s in depends_on or []),
         steps=tuple(steps or []),
     )
 

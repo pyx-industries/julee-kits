@@ -5,6 +5,7 @@ Finds apps, stories, journeys, and integrations related to an accelerator.
 
 from julee.core.entities.accelerator import Accelerator
 from julee.core.entities.bounded_context_info import BoundedContextInfo
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
 from pydantic import BaseModel
 
@@ -108,12 +109,18 @@ def get_source_integrations(
     Returns:
         List of Integration entities this accelerator sources from
     """
-    source_slugs = accelerator.get_sources_from_slugs()
     integration_lookup = {i.slug: i for i in integrations}
 
-    return [
-        integration_lookup[slug] for slug in source_slugs if slug in integration_lookup
+    # The accelerator declares these as plain text in a manifest, and an
+    # Integration names itself with a Slug. Making the wanted slug the
+    # same way is what lets a manifest say "Pilot Data" and find
+    # pilot-data — before julee-kits#71 the two were normalised
+    # differently and the lookup simply missed (#70).
+    wanted = [
+        Slug(slug) for slug in accelerator.get_sources_from_slugs() if slug.strip()
     ]
+
+    return [integration_lookup[slug] for slug in wanted if slug in integration_lookup]
 
 
 def get_publish_integrations(
@@ -129,12 +136,18 @@ def get_publish_integrations(
     Returns:
         List of Integration entities this accelerator publishes to
     """
-    publish_slugs = accelerator.get_publishes_to_slugs()
     integration_lookup = {i.slug: i for i in integrations}
 
-    return [
-        integration_lookup[slug] for slug in publish_slugs if slug in integration_lookup
+    # The accelerator declares these as plain text in a manifest, and an
+    # Integration names itself with a Slug. Making the wanted slug the
+    # same way is what lets a manifest say "Pilot Data" and find
+    # pilot-data — before julee-kits#71 the two were normalised
+    # differently and the lookup simply missed (#70).
+    wanted = [
+        Slug(slug) for slug in accelerator.get_publishes_to_slugs() if slug.strip()
     ]
+
+    return [integration_lookup[slug] for slug in wanted if slug in integration_lookup]
 
 
 def get_dependent_accelerators(
