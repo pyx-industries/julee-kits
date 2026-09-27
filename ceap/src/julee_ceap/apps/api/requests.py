@@ -43,7 +43,7 @@ class CreateAssemblySpecificationRequest(BaseModel):
     jsonschema: dict[str, Any] = Field(
         description=AssemblySpecification.model_fields["jsonschema"].description
     )
-    knowledge_service_queries: dict[str, str] = Field(
+    knowledge_service_queries: dict[str, NonEmptyText] = Field(
         default_factory=dict,
         description=AssemblySpecification.model_fields[
             "knowledge_service_queries"
@@ -61,14 +61,16 @@ class CreateAssemblySpecificationRequest(BaseModel):
     @field_validator("jsonschema")
     @classmethod
     def validate_jsonschema(cls, v: dict[str, Any]) -> dict[str, Any]:
-        return AssemblySpecification.jsonschema_must_be_valid(v)
+        AssemblySpecification.jsonschema_must_be_valid(v)
+        return v
 
     @field_validator("knowledge_service_queries")
     @classmethod
     def validate_knowledge_service_queries(
-        cls, v: dict[str, str], info: ValidationInfo
-    ) -> dict[str, str]:
-        return AssemblySpecification.knowledge_service_queries_must_be_valid(v, info)
+        cls, v: dict[str, NonEmptyText], info: ValidationInfo
+    ) -> dict[str, NonEmptyText]:
+        AssemblySpecification.knowledge_service_queries_must_be_valid(v, info)
+        return v
 
     def to_domain_model(self, assembly_specification_id: str) -> AssemblySpecification:
         """Convert this request to a complete AssemblySpecification object.

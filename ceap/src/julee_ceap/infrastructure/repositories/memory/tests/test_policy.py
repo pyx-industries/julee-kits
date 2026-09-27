@@ -34,10 +34,13 @@ def sample_policy() -> Policy:
         description=NonEmptyText("Validates content meets quality standards"),
         status=PolicyStatus.ACTIVE,
         validation_scores=(
-            ("quality-check-query", 80),
-            ("completeness-check", 90),
+            (NonEmptyText("quality-check-query"), 80),
+            (NonEmptyText("completeness-check"), 90),
         ),
-        transformation_queries=("improve-quality", "fix-grammar"),
+        transformation_queries=(
+            NonEmptyText("improve-quality"),
+            NonEmptyText("fix-grammar"),
+        ),
         version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
@@ -52,7 +55,7 @@ def validation_only_policy() -> Policy:
         title=Name("Validation Only Policy"),
         description=NonEmptyText("Only validates content without transformations"),
         status=PolicyStatus.ACTIVE,
-        validation_scores=(("basic-validation", 70),),
+        validation_scores=((NonEmptyText("basic-validation"), 70),),
         transformation_queries=(),  # Empty tuple - validation only
         version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
@@ -157,7 +160,7 @@ class TestMemoryPolicyRepositoryPolicyTypes:
             policy_id=NonEmptyText("policy-none-transforms"),
             title=Name("Policy with None Transformations"),
             description=NonEmptyText("Policy where transformation_queries is None"),
-            validation_scores=(("test-query", 75),),
+            validation_scores=((NonEmptyText("test-query"), 75),),
             transformation_queries=None,  # Explicitly None
         )
 
@@ -277,13 +280,13 @@ class TestMemoryPolicyRepositoryEdgeCases:
             title=Name("Complex Validation Policy"),
             description=NonEmptyText("Policy with multiple validation criteria"),
             validation_scores=(
-                ("grammar-check", 80),
-                ("completeness-check", 85),
-                ("accuracy-check", 90),
-                ("style-check", 75),
-                ("readability-check", 70),
+                (NonEmptyText("grammar-check"), 80),
+                (NonEmptyText("completeness-check"), 85),
+                (NonEmptyText("accuracy-check"), 90),
+                (NonEmptyText("style-check"), 75),
+                (NonEmptyText("readability-check"), 70),
             ),
-            transformation_queries=("improve-all-aspects",),
+            transformation_queries=(NonEmptyText("improve-all-aspects"),),
         )
 
         await policy_repo.save(policy)
@@ -306,7 +309,7 @@ class TestMemoryPolicyRepositoryEdgeCases:
             title=Name("Lifecycle Test Policy"),
             description=NonEmptyText("Testing policy lifecycle"),
             status=PolicyStatus.DRAFT,
-            validation_scores=(("test-check", 80),),
+            validation_scores=((NonEmptyText("test-check"), 80),),
             version=NonEmptyText("0.1.0"),
         )
 
@@ -345,15 +348,15 @@ class TestMemoryPolicyRepositoryEdgeCases:
             policy_id=NonEmptyText("policy-1"),
             title=Name("First Policy"),
             description=NonEmptyText("First test policy"),
-            validation_scores=(("check-1", 80),),
+            validation_scores=((NonEmptyText("check-1"), 80),),
         )
 
         policy2 = Policy(
             policy_id=NonEmptyText("policy-2"),
             title=Name("Second Policy"),
             description=NonEmptyText("Second test policy"),
-            validation_scores=(("check-2", 90),),
-            transformation_queries=("transform-2",),
+            validation_scores=((NonEmptyText("check-2"), 90),),
+            transformation_queries=(NonEmptyText("transform-2"),),
         )
 
         # Save both policies
@@ -433,8 +436,8 @@ class TestMemoryPolicyRepositoryRoundtrip:
             title=Name("Round-trip Test Policy"),
             description=NonEmptyText("Testing complete policy round-trip"),
             status=PolicyStatus.DRAFT,
-            validation_scores=(("round-trip-check", 85),),
-            transformation_queries=("round-trip-transform",),
+            validation_scores=((NonEmptyText("round-trip-check"), 85),),
+            transformation_queries=(NonEmptyText("round-trip-transform"),),
             version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),

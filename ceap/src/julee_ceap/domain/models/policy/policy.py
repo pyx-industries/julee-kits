@@ -57,12 +57,12 @@ class Policy(Entity):
 
     # Policy configuration
     status: PolicyStatus = PolicyStatus.ACTIVE
-    validation_scores: tuple[tuple[str, int], ...] = Field(
+    validation_scores: tuple[tuple[NonEmptyText, int], ...] = Field(
         description="List of (knowledge_service_query_id, required_score) "
         "tuples where required_score is between 0 and 100. All scores "
         "must be met or exceeded for the policy to pass"
     )
-    transformation_queries: tuple[str, ...] | None = Field(
+    transformation_queries: tuple[NonEmptyText, ...] | None = Field(
         default=None,
         description="Optional list of knowledge service query IDs for "
         "transformations to apply before re-validation. If not provided "
@@ -79,15 +79,21 @@ class Policy(Entity):
     @field_validator("validation_scores")
     @classmethod
     def validation_scores_must_be_valid(
-        cls, v: list[tuple[str, int]]
-    ) -> tuple[tuple[str, int], ...]:
+        cls, v: tuple[tuple[NonEmptyText, int], ...]
+    ) -> tuple[tuple[NonEmptyText, int], ...]:
+        """What a score list must be, beyond being a list of scores.
+
+        A rule, not a normalisation: the list cannot be empty, no query
+        may be scored twice, and a score is a percentage. What used to
+        be here as well — stripping each query id and rebuilding the
+        tuple around it — is NonEmptyText's now (#306).
+        """
         if not isinstance(v, (list, tuple)):
             raise ValueError("Validation scores must be a list")
 
         if not v:
             raise ValueError("Validation scores list cannot be empty")
 
-        validated_scores: list[tuple[str, int]] = []
         query_ids_seen = set()
 
         for item in v:
@@ -98,13 +104,6 @@ class Policy(Entity):
                 )
 
             query_id, required_score = item
-
-            # Validate query ID
-            if not isinstance(query_id, str) or not query_id.strip():
-                raise ValueError(
-                    "Query ID in validation scores must be a non-empty string"
-                )
-            query_id = query_id.strip()
 
             # Check for duplicate query IDs
             if query_id in query_ids_seen:
@@ -121,45 +120,29 @@ class Policy(Entity):
                     f"Required score {required_score} must be between 0 and 100"
                 )
 
-            validated_scores.append((query_id, required_score))
-
-        return tuple(validated_scores)
+        return v
 
     @field_validator("transformation_queries")
     @classmethod
     def transformation_queries_must_be_valid(
-        cls, v: list[str] | None
-    ) -> tuple[str, ...] | None:
+        cls, v: tuple[NonEmptyText, ...] | None
+    ) -> tuple[NonEmptyText, ...] | None:
+        """No query may be named twice. The rest is the element type."""
         if v is None:
             return v
 
         if not isinstance(v, (list, tuple)):
             raise ValueError("Transformation queries must be a list or None")
 
-        # Empty list is valid - means no transformations
-        if not v:
-            return ()
-
-        validated_queries: list[str] = []
-        query_ids_seen = set()
-
+        query_ids_seen: set[str] = set()
         for query_id in v:
-            if not isinstance(query_id, str) or not query_id.strip():
-                raise ValueError(
-                    "Each transformation query ID must be a non-empty string"
-                )
-            query_id = query_id.strip()
-
-            # Check for duplicate query IDs
             if query_id in query_ids_seen:
                 raise ValueError(
                     f"Duplicate query ID '{query_id}' in transformation queries"
                 )
             query_ids_seen.add(query_id)
 
-            validated_queries.append(query_id)
-
-        return tuple(validated_queries)
+        return v
 
     @property
     def is_validation_only(self) -> bool:

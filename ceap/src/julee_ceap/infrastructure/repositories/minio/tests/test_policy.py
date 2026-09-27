@@ -41,10 +41,13 @@ def sample_policy() -> Policy:
         description=NonEmptyText("Validates content meets quality standards"),
         status=PolicyStatus.ACTIVE,
         validation_scores=(
-            ("quality-check-query", 80),
-            ("completeness-check", 90),
+            (NonEmptyText("quality-check-query"), 80),
+            (NonEmptyText("completeness-check"), 90),
         ),
-        transformation_queries=("improve-quality", "fix-grammar"),
+        transformation_queries=(
+            NonEmptyText("improve-quality"),
+            NonEmptyText("fix-grammar"),
+        ),
         version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
@@ -59,7 +62,7 @@ def validation_only_policy() -> Policy:
         title=Name("Validation Only Policy"),
         description=NonEmptyText("Only validates content without transformations"),
         status=PolicyStatus.ACTIVE,
-        validation_scores=(("basic-validation", 70),),
+        validation_scores=((NonEmptyText("basic-validation"), 70),),
         transformation_queries=(),  # Empty tuple - validation only
         version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
@@ -164,7 +167,7 @@ class TestMinioPolicyRepositoryPolicyTypes:
             policy_id=NonEmptyText("policy-none-transforms"),
             title=Name("Policy with None Transformations"),
             description=NonEmptyText("Policy where transformation_queries is None"),
-            validation_scores=(("test-query", 75),),
+            validation_scores=((NonEmptyText("test-query"), 75),),
             transformation_queries=None,  # Explicitly None
         )
 
@@ -284,13 +287,13 @@ class TestMinioPolicyRepositoryComplexScenarios:
             title=Name("Complex Validation Policy"),
             description=NonEmptyText("Policy with multiple validation criteria"),
             validation_scores=(
-                ("grammar-check", 80),
-                ("completeness-check", 85),
-                ("accuracy-check", 90),
-                ("style-check", 75),
-                ("readability-check", 70),
+                (NonEmptyText("grammar-check"), 80),
+                (NonEmptyText("completeness-check"), 85),
+                (NonEmptyText("accuracy-check"), 90),
+                (NonEmptyText("style-check"), 75),
+                (NonEmptyText("readability-check"), 70),
             ),
-            transformation_queries=("improve-all-aspects",),
+            transformation_queries=(NonEmptyText("improve-all-aspects"),),
         )
 
         await policy_repo.save(policy)
@@ -316,8 +319,8 @@ class TestMinioPolicyRepositoryComplexScenarios:
             title=Name("Lifecycle Test Policy"),
             description=NonEmptyText("Testing full lifecycle"),
             status=PolicyStatus.DRAFT,
-            validation_scores=(("lifecycle-check", 80),),
-            transformation_queries=("lifecycle-transform",),
+            validation_scores=((NonEmptyText("lifecycle-check"), 80),),
+            transformation_queries=(NonEmptyText("lifecycle-transform"),),
             version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -350,15 +353,15 @@ class TestMinioPolicyRepositoryComplexScenarios:
             policy_id=NonEmptyText("policy-test-1"),
             title=Name("First Policy"),
             description=NonEmptyText("First test policy"),
-            validation_scores=(("check-1", 80),),
+            validation_scores=((NonEmptyText("check-1"), 80),),
         )
 
         policy2 = Policy(
             policy_id=NonEmptyText("policy-test-2"),
             title=Name("Second Policy"),
             description=NonEmptyText("Second test policy"),
-            validation_scores=(("check-2", 90),),
-            transformation_queries=("transform-2",),
+            validation_scores=((NonEmptyText("check-2"), 90),),
+            transformation_queries=(NonEmptyText("transform-2"),),
         )
 
         # Save both policies
@@ -400,10 +403,13 @@ class TestMinioPolicyRepositoryComplexScenarios:
             title=Name("Política de Calidad 品質ポリシー"),
             description=NonEmptyText("Política con contenido unicode 🚀📝 и кириллица"),
             validation_scores=(
-                ("验证查询", 85),  # Chinese
-                ("проверка", 90),  # Russian
+                (NonEmptyText("验证查询"), 85),  # Chinese
+                (NonEmptyText("проверка"), 90),  # Russian
             ),
-            transformation_queries=("transformación", "преобразование"),
+            transformation_queries=(
+                NonEmptyText("transformación"),
+                NonEmptyText("преобразование"),
+            ),
             version=NonEmptyText("1.0.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -473,8 +479,8 @@ class TestMinioPolicyRepositoryRoundtrip:
             title=Name("Round-trip Test Policy"),
             description=NonEmptyText("Testing complete policy round-trip"),
             status=PolicyStatus.DRAFT,
-            validation_scores=(("round-trip-check", 85),),
-            transformation_queries=("round-trip-transform",),
+            validation_scores=((NonEmptyText("round-trip-check"), 85),),
+            transformation_queries=(NonEmptyText("round-trip-transform"),),
             version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -509,11 +515,14 @@ class TestMinioPolicyRepositoryRoundtrip:
             description=NonEmptyText("Testing JSON serialization"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(
-                ("test-1", 80),
-                ("test-2", 90),
-                ("test-3", 75),
+                (NonEmptyText("test-1"), 80),
+                (NonEmptyText("test-2"), 90),
+                (NonEmptyText("test-3"), 75),
             ),
-            transformation_queries=("transform-1", "transform-2"),
+            transformation_queries=(
+                NonEmptyText("transform-1"),
+                NonEmptyText("transform-2"),
+            ),
             version=NonEmptyText("2.0.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -562,7 +571,7 @@ class TestMinioPolicyRepositoryErrorHandling:
             policy_id=NonEmptyText(special_id),
             title=Name("Special ID Policy"),
             description=NonEmptyText("Policy with special characters in ID"),
-            validation_scores=(("test-check", 80),),
+            validation_scores=((NonEmptyText("test-check"), 80),),
         )
 
         await policy_repo.save(policy)

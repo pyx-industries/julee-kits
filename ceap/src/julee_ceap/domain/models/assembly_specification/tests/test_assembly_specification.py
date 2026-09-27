@@ -450,7 +450,9 @@ class TestAssemblyDefaults:
             },
             status=AssemblySpecificationStatus.DRAFT,
             version=NonEmptyText("2.0.0"),
-            knowledge_service_queries={"/properties/custom": "custom-query-1"},
+            knowledge_service_queries={
+                "/properties/custom": NonEmptyText("custom-query-1")
+            },
         )
 
         assert custom_assembly.status == AssemblySpecificationStatus.DRAFT
@@ -580,7 +582,7 @@ class TestAssemblyRefSchemaValidation:
             name=Name("KSQ Ref Test"),
             applicability=NonEmptyText("Testing pointer validation against $ref"),
             jsonschema={"$ref": _UNRESOLVABLE_URL},
-            knowledge_service_queries={"/properties/sku": "extract-sku"},
+            knowledge_service_queries={"/properties/sku": NonEmptyText("extract-sku")},
         )
         assert spec.knowledge_service_queries == {"/properties/sku": "extract-sku"}
 
@@ -595,7 +597,9 @@ class TestAssemblyRefSchemaValidation:
             name=Name("Deferred Pointer Test"),
             applicability=NonEmptyText("Testing pointer deferral for $ref schemas"),
             jsonschema={"$ref": _UNRESOLVABLE_URL},
-            knowledge_service_queries={"/properties/nonexistent": "query-1"},
+            knowledge_service_queries={
+                "/properties/nonexistent": NonEmptyText("query-1")
+            },
         )
         assert spec.knowledge_service_queries == {"/properties/nonexistent": "query-1"}
 
@@ -610,5 +614,5 @@ class TestAssemblyRefSchemaValidation:
                 name=Name("Bad Format Test"),
                 applicability=NonEmptyText("Testing malformed pointer rejection"),
                 jsonschema={"$ref": _UNRESOLVABLE_URL},
-                knowledge_service_queries={"not-a-pointer": "query-1"},
+                knowledge_service_queries={"not-a-pointer": NonEmptyText("query-1")},
             )
