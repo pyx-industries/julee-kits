@@ -17,13 +17,11 @@ from julee_polling.domain.handlers.polling_result_handler import (
     PollingResultHandler,
 )
 from julee_polling.domain.models.polling_config import PollingConfig
+from julee_polling.dtos.poll_data import PollDataRequest
 from julee_polling.infrastructure.temporal.proxies import (
     WorkflowPollerServiceProxy,
 )
-from julee_polling.usecases.poll_data import (
-    PollDataRequest,
-    PollDataUseCase,
-)
+from julee_polling.usecases.poll_data import PollDataUseCase
 
 logger = logging.getLogger(__name__)
 

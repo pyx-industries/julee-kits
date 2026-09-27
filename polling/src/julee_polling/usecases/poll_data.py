@@ -9,34 +9,14 @@ It has no knowledge of Temporal, workflows, or application infrastructure.
 import hashlib
 import logging
 
-from pydantic import BaseModel
-
 from julee_polling.domain.calculators.new_data import NewDataCalculator
 from julee_polling.domain.handlers.polling_result_handler import (
     PollingResultHandler,
 )
-from julee_polling.domain.models.polling_config import PollingConfig
 from julee_polling.domain.services.poller import PollerService
+from julee_polling.dtos.poll_data import PollDataRequest, PollDataResponse
 
 logger = logging.getLogger(__name__)
-
-
-class PollDataRequest(BaseModel):
-    """Input for PollDataUseCase."""
-
-    config: PollingConfig
-    previous_completion: dict | None = None
-
-
-class PollDataResponse(BaseModel):
-    """Output for PollDataUseCase."""
-
-    endpoint_id: str
-    content_hash: str
-    content: str
-    polled_at: str
-    new_items_found: bool
-    items_processed: int
 
 
 class PollDataUseCase:
