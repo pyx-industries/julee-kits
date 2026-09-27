@@ -15,6 +15,7 @@ from typing import Any
 
 import jsonschema
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol, validate_parameter_types
 from julee.core.witnesses import ClockWitness, ExecutionWitness, SystemClockWitness
@@ -30,7 +31,10 @@ from julee_ceap.domain.models import (
     DocumentStatus,
     KnowledgeServiceQuery,
 )
-from julee_ceap.domain.models.document.multihash import content_multihash
+from julee_ceap.domain.models.document.multihash import (
+    ContentMultihash,
+    content_multihash,
+)
 from julee_ceap.domain.oracles import SchemaOracle
 from julee_ceap.domain.repositories import (
     AssemblyRepository,
@@ -226,10 +230,10 @@ class ExtractAssembleDataUseCase:
         # Step 3: Store the initial assembly
         now = self._clock_witness.now()
         assembly = Assembly(
-            assembly_id=assembly_id,
-            assembly_specification_id=assembly_specification_id,
-            input_document_id=document_id,
-            execution_id=execution_id,
+            assembly_id=NonEmptyText(assembly_id),
+            assembly_specification_id=NonEmptyText(assembly_specification_id),
+            input_document_id=NonEmptyText(document_id),
+            execution_id=NonEmptyText(execution_id),
             status=AssemblyStatus.IN_PROGRESS,
             assembled_document_id=None,
             created_at=now,
@@ -319,7 +323,7 @@ class ExtractAssembleDataUseCase:
             RuntimeError: If registration fails
 
         """
-        registrations = {}
+        registrations: dict[str, str] = {}
 
         required_service_ids = {
             query.knowledge_service_id for query in queries.values()
@@ -613,13 +617,15 @@ class ExtractAssembleDataUseCase:
 
         now = self._clock_witness.now()
         assembled_document = Document(
-            document_id=document_id,
+            document_id=NonEmptyText(document_id),
             original_filename=(
-                f"assembled_{assembly_specification.name.replace(' ', '_')}.json"
+                NonEmptyText(
+                    f"assembled_{assembly_specification.name.replace(' ', '_')}.json"
+                )
             ),
-            content_type="application/json",
+            content_type=NonEmptyText("application/json"),
             size_bytes=len(content_bytes),
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.ASSEMBLED,
             created_at=now,
             updated_at=now,

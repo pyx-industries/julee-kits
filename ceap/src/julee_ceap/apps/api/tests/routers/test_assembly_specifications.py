@@ -12,6 +12,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from fastapi_pagination import add_pagination
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.apps.api.dependencies import (
     get_assembly_specification_repository,
@@ -72,9 +73,9 @@ def client(
 def sample_assembly_specification() -> AssemblySpecification:
     """Create a sample assembly specification for testing."""
     return AssemblySpecification(
-        assembly_specification_id="test-spec-123",
-        name="Meeting Minutes",
-        applicability="Online video meeting transcripts",
+        assembly_specification_id=NonEmptyText("test-spec-123"),
+        name=Name("Meeting Minutes"),
+        applicability=NonEmptyText("Online video meeting transcripts"),
         jsonschema={
             "type": "object",
             "properties": {
@@ -87,7 +88,7 @@ def sample_assembly_specification() -> AssemblySpecification:
             "/properties/summary": "query-456",
         },
         status=AssemblySpecificationStatus.ACTIVE,
-        version="1.0.0",
+        version=NonEmptyText("1.0.0"),
     )
 
 
@@ -144,9 +145,9 @@ class TestGetAssemblySpecifications:
         """Test getting specifications when repository contains data."""
         # Create a second specification for testing
         spec2 = AssemblySpecification(
-            assembly_specification_id="test-spec-456",
-            name="Project Report",
-            applicability="Project documentation and status updates",
+            assembly_specification_id=NonEmptyText("test-spec-456"),
+            name=Name("Project Report"),
+            applicability=NonEmptyText("Project documentation and status updates"),
             jsonschema={
                 "type": "object",
                 "properties": {
@@ -205,9 +206,9 @@ class TestGetAssemblySpecifications:
         specifications = []
         for i in range(5):
             spec = AssemblySpecification(
-                assembly_specification_id=f"spec-{i:03d}",
-                name=f"Specification {i}",
-                applicability=f"Test applicability {i}",
+                assembly_specification_id=NonEmptyText(f"spec-{i:03d}"),
+                name=Name(f"Specification {i}"),
+                applicability=NonEmptyText(f"Test applicability {i}"),
                 jsonschema={"type": "object", "properties": {}},
             )
             specifications.append(spec)
@@ -292,9 +293,9 @@ class TestGetAssemblySpecification:
     ) -> None:
         """Test getting specification with complex JSON schema."""
         complex_spec = AssemblySpecification(
-            assembly_specification_id="complex-spec-123",
-            name="Complex Meeting Minutes",
-            applicability="Detailed meeting transcripts with metadata",
+            assembly_specification_id=NonEmptyText("complex-spec-123"),
+            name=Name("Complex Meeting Minutes"),
+            applicability=NonEmptyText("Detailed meeting transcripts with metadata"),
             jsonschema={
                 "type": "object",
                 "properties": {
@@ -365,9 +366,9 @@ class TestGetAssemblySpecification:
         """Test getting specifications with different status values."""
         for status in AssemblySpecificationStatus:
             spec = AssemblySpecification(
-                assembly_specification_id=f"spec-{status.value}",
-                name=f"Spec {status.value}",
-                applicability="Test applicability",
+                assembly_specification_id=NonEmptyText(f"spec-{status.value}"),
+                name=Name(f"Spec {status.value}"),
+                applicability=NonEmptyText("Test applicability"),
                 jsonschema={"type": "object", "properties": {}},
                 status=status,
             )

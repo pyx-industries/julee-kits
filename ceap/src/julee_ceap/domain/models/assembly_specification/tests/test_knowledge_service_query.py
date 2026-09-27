@@ -19,6 +19,7 @@ Design decisions documented:
 """
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.domain.models.assembly_specification import (
@@ -130,10 +131,10 @@ class TestKnowledgeServiceQueryInstantiation:
         if expected_success:
             # Should create successfully
             query = KnowledgeServiceQuery(
-                query_id=query_id,
-                name=name,
-                knowledge_service_id=knowledge_service_id,
-                prompt=prompt,
+                query_id=NonEmptyText(query_id),
+                name=Name(name),
+                knowledge_service_id=NonEmptyText(knowledge_service_id),
+                prompt=NonEmptyText(prompt),
             )
             assert query.query_id == query_id.strip()
             assert query.name == name.strip()
@@ -143,10 +144,10 @@ class TestKnowledgeServiceQueryInstantiation:
             # Should raise validation error
             with pytest.raises((ValueError, ValidationError)):
                 KnowledgeServiceQuery(
-                    query_id=query_id,
-                    name=name,
-                    knowledge_service_id=knowledge_service_id,
-                    prompt=prompt,
+                    query_id=NonEmptyText(query_id),
+                    name=Name(name),
+                    knowledge_service_id=NonEmptyText(knowledge_service_id),
+                    prompt=NonEmptyText(prompt),
                 )
 
 
@@ -203,10 +204,10 @@ class TestKnowledgeServiceQueryDefaults:
     def test_knowledge_service_query_default_values(self) -> None:
         """Test that KnowledgeServiceQuery has correct default values."""
         minimal_query = KnowledgeServiceQuery(
-            query_id="test-id",
-            name="Test Query",
-            knowledge_service_id="test-service",
-            prompt="Test prompt",
+            query_id=NonEmptyText("test-id"),
+            name=Name("Test Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test prompt"),
         )
 
         assert minimal_query.created_at is not None
@@ -215,10 +216,10 @@ class TestKnowledgeServiceQueryDefaults:
     def test_knowledge_service_query_custom_values(self) -> None:
         """Test KnowledgeServiceQuery with custom non-default values."""
         custom_query = KnowledgeServiceQuery(
-            query_id="custom-id",
-            name="Custom Query",
-            knowledge_service_id="custom-service",
-            prompt="Custom prompt",
+            query_id=NonEmptyText("custom-id"),
+            name=Name("Custom Query"),
+            knowledge_service_id=NonEmptyText("custom-service"),
+            prompt=NonEmptyText("Custom prompt"),
         )
 
         assert custom_query.query_id == "custom-id"
@@ -231,10 +232,10 @@ class TestKnowledgeServiceQueryMetadata:
     def test_query_metadata_defaults_to_empty_dict(self) -> None:
         """Test that query_metadata defaults to an empty dict."""
         query = KnowledgeServiceQuery(
-            query_id="test-id",
-            name="Test Query",
-            knowledge_service_id="test-service",
-            prompt="Test prompt",
+            query_id=NonEmptyText("test-id"),
+            name=Name("Test Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test prompt"),
         )
 
         assert query.query_metadata == {}
@@ -248,10 +249,10 @@ class TestKnowledgeServiceQueryMetadata:
         }
 
         query = KnowledgeServiceQuery(
-            query_id="test-id",
-            name="Test Query",
-            knowledge_service_id="anthropic-service",
-            prompt="Test prompt",
+            query_id=NonEmptyText("test-id"),
+            name=Name("Test Query"),
+            knowledge_service_id=NonEmptyText("anthropic-service"),
+            prompt=NonEmptyText("Test prompt"),
             query_metadata=metadata,
         )
 
@@ -270,10 +271,10 @@ class TestKnowledgeServiceQueryMetadata:
         }
 
         query = KnowledgeServiceQuery(
-            query_id="openai-query",
-            name="OpenAI Query",
-            knowledge_service_id="openai-service",
-            prompt="Test prompt for OpenAI",
+            query_id=NonEmptyText("openai-query"),
+            name=Name("OpenAI Query"),
+            knowledge_service_id=NonEmptyText("openai-service"),
+            prompt=NonEmptyText("Test prompt for OpenAI"),
             query_metadata=metadata,
         )
 
@@ -296,10 +297,10 @@ class TestKnowledgeServiceQueryMetadata:
         }
 
         original = KnowledgeServiceQuery(
-            query_id="roundtrip-test",
-            name="Roundtrip Test",
-            knowledge_service_id="test-service",
-            prompt="Test roundtrip serialization",
+            query_id=NonEmptyText("roundtrip-test"),
+            name=Name("Roundtrip Test"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test roundtrip serialization"),
             query_metadata=metadata,
         )
 

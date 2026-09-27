@@ -9,6 +9,7 @@ project.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.policy import Policy, PolicyStatus
 from julee_ceap.infrastructure.repositories.memory.policy import (
@@ -28,16 +29,16 @@ def policy_repo() -> MemoryPolicyRepository:
 def sample_policy() -> Policy:
     """Create a sample policy for testing."""
     return Policy(
-        policy_id="policy-test-123",
-        title="Content Quality Policy",
-        description="Validates content meets quality standards",
+        policy_id=NonEmptyText("policy-test-123"),
+        title=Name("Content Quality Policy"),
+        description=NonEmptyText("Validates content meets quality standards"),
         status=PolicyStatus.ACTIVE,
         validation_scores=(
             ("quality-check-query", 80),
             ("completeness-check", 90),
         ),
         transformation_queries=("improve-quality", "fix-grammar"),
-        version="1.0.0",
+        version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -47,13 +48,13 @@ def sample_policy() -> Policy:
 def validation_only_policy() -> Policy:
     """Create a validation-only policy (no transformations) for testing."""
     return Policy(
-        policy_id="policy-validation-only",
-        title="Validation Only Policy",
-        description="Only validates content without transformations",
+        policy_id=NonEmptyText("policy-validation-only"),
+        title=Name("Validation Only Policy"),
+        description=NonEmptyText("Only validates content without transformations"),
         status=PolicyStatus.ACTIVE,
         validation_scores=(("basic-validation", 70),),
         transformation_queries=(),  # Empty tuple - validation only
-        version="1.0.0",
+        version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -153,9 +154,9 @@ class TestMemoryPolicyRepositoryPolicyTypes:
     ) -> None:
         """Test policy with None transformation queries."""
         policy = Policy(
-            policy_id="policy-none-transforms",
-            title="Policy with None Transformations",
-            description="Policy where transformation_queries is None",
+            policy_id=NonEmptyText("policy-none-transforms"),
+            title=Name("Policy with None Transformations"),
+            description=NonEmptyText("Policy where transformation_queries is None"),
             validation_scores=(("test-query", 75),),
             transformation_queries=None,  # Explicitly None
         )
@@ -272,9 +273,9 @@ class TestMemoryPolicyRepositoryEdgeCases:
     ) -> None:
         """Test policy with many validation scores."""
         policy = Policy(
-            policy_id="complex-policy",
-            title="Complex Validation Policy",
-            description="Policy with multiple validation criteria",
+            policy_id=NonEmptyText("complex-policy"),
+            title=Name("Complex Validation Policy"),
+            description=NonEmptyText("Policy with multiple validation criteria"),
             validation_scores=(
                 ("grammar-check", 80),
                 ("completeness-check", 85),
@@ -301,12 +302,12 @@ class TestMemoryPolicyRepositoryEdgeCases:
         """Test complete policy lifecycle from draft to deprecated."""
         # Create draft policy
         policy = Policy(
-            policy_id="lifecycle-policy",
-            title="Lifecycle Test Policy",
-            description="Testing policy lifecycle",
+            policy_id=NonEmptyText("lifecycle-policy"),
+            title=Name("Lifecycle Test Policy"),
+            description=NonEmptyText("Testing policy lifecycle"),
             status=PolicyStatus.DRAFT,
             validation_scores=(("test-check", 80),),
-            version="0.1.0",
+            version=NonEmptyText("0.1.0"),
         )
 
         # Save as draft
@@ -341,16 +342,16 @@ class TestMemoryPolicyRepositoryEdgeCases:
         """Test that multiple policies are stored independently."""
         # Create multiple policies
         policy1 = Policy(
-            policy_id="policy-1",
-            title="First Policy",
-            description="First test policy",
+            policy_id=NonEmptyText("policy-1"),
+            title=Name("First Policy"),
+            description=NonEmptyText("First test policy"),
             validation_scores=(("check-1", 80),),
         )
 
         policy2 = Policy(
-            policy_id="policy-2",
-            title="Second Policy",
-            description="Second test policy",
+            policy_id=NonEmptyText("policy-2"),
+            title=Name("Second Policy"),
+            description=NonEmptyText("Second test policy"),
             validation_scores=(("check-2", 90),),
             transformation_queries=("transform-2",),
         )
@@ -428,13 +429,13 @@ class TestMemoryPolicyRepositoryRoundtrip:
 
         # Create and save initial policy
         policy = Policy(
-            policy_id=policy_id,
-            title="Round-trip Test Policy",
-            description="Testing complete policy round-trip",
+            policy_id=NonEmptyText(policy_id),
+            title=Name("Round-trip Test Policy"),
+            description=NonEmptyText("Testing complete policy round-trip"),
             status=PolicyStatus.DRAFT,
             validation_scores=(("round-trip-check", 85),),
             transformation_queries=("round-trip-transform",),
-            version="0.1.0",
+            version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

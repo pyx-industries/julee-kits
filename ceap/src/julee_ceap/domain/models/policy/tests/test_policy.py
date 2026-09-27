@@ -8,7 +8,7 @@ including validation, serialization, and business logic.
 from datetime import UTC, datetime
 
 import pytest
-from pydantic import ValidationError
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.policy import (
     Policy,
@@ -24,9 +24,9 @@ class TestPolicy:
     def test_create_minimal_policy(self) -> None:
         """Test creating a policy with minimal fields."""
         policy = Policy(
-            policy_id="policy-001",
-            title="Content Quality Policy",
-            description="Validates content meets quality standards",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Content Quality Policy"),
+            description=NonEmptyText("Validates content meets quality standards"),
             validation_scores=(("quality-check-query", 80),),
         )
 
@@ -45,9 +45,9 @@ class TestPolicy:
     def test_create_policy_with_transformations(self) -> None:
         """Test creating a policy with transformations."""
         policy = Policy(
-            policy_id="policy-002",
-            title="Content Enhancement Policy",
-            description="Validates and enhances content quality",
+            policy_id=NonEmptyText("policy-002"),
+            title=Name("Content Enhancement Policy"),
+            description=NonEmptyText("Validates and enhances content quality"),
             validation_scores=(
                 ("grammar-check-query", 85),
                 ("clarity-check-query", 75),
@@ -75,13 +75,13 @@ class TestPolicy:
         updated_at = datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC)
 
         policy = Policy(
-            policy_id="policy-003",
-            title="Complete Policy",
-            description="A policy with all fields specified",
+            policy_id=NonEmptyText("policy-003"),
+            title=Name("Complete Policy"),
+            description=NonEmptyText("A policy with all fields specified"),
             status=PolicyStatus.DRAFT,
             validation_scores=(("test-query", 90),),
             transformation_queries=("transform-query",),
-            version="1.0.0",
+            version=NonEmptyText("1.0.0"),
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -99,30 +99,30 @@ class TestPolicy:
     def test_policy_id_validation(self) -> None:
         """Test policy ID validation."""
         # Empty ID should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText(""),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
             )
-        assert "Policy ID cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Whitespace-only ID should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="   ",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("   "),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
             )
-        assert "Policy ID cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Valid ID with whitespace should be stripped
         policy = Policy(
-            policy_id="  policy-001  ",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("  policy-001  "),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
         )
         assert policy.policy_id == "policy-001"
@@ -130,30 +130,30 @@ class TestPolicy:
     def test_title_validation(self) -> None:
         """Test title validation."""
         # Empty title should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name(""),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
             )
-        assert "Policy title cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Whitespace-only title should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="   ",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("   "),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
             )
-        assert "Policy title cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Valid title with whitespace should be stripped
         policy = Policy(
-            policy_id="policy-001",
-            title="  Test Policy  ",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("  Test Policy  "),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
         )
         assert policy.title == "Test Policy"
@@ -161,30 +161,30 @@ class TestPolicy:
     def test_description_validation(self) -> None:
         """Test description validation."""
         # Empty description should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText(""),
                 validation_scores=(("test-query", 80),),
             )
-        assert "Policy description cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Whitespace-only description should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="   ",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("   "),
                 validation_scores=(("test-query", 80),),
             )
-        assert "Policy description cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Valid description with whitespace should be stripped
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="  Test description  ",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("  Test description  "),
             validation_scores=(("test-query", 80),),
         )
         assert policy.description == "Test description"
@@ -192,51 +192,51 @@ class TestPolicy:
     def test_validation_scores_validation(self) -> None:
         """Test validation scores validation."""
         # Empty list should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(),
             )
         assert "Validation scores list cannot be empty" in str(exc_info.value)
 
         # Non-list should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores="not-a-list",  # type: ignore
             )
         assert "Input should be a valid tuple" in str(exc_info.value)
 
         # Invalid tuple length should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=[("query-id",)],  # type: ignore
             )
         assert "Field required" in str(exc_info.value)
 
         # Non-string query ID should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=[(123, 80)],  # type: ignore
             )
         assert "Input should be a valid string" in str(exc_info.value)
 
         # Empty query ID should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("", 80),),
             )
         assert "Query ID in validation scores must be a non-empty string" in str(
@@ -244,41 +244,41 @@ class TestPolicy:
         )
 
         # Non-integer score should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=[("query-id", "not-a-number")],  # type: ignore
             )
         assert "Input should be a valid integer" in str(exc_info.value)
 
         # Score below 0 should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("query-id", -1),),
             )
         assert "Required score -1 must be between 0 and 100" in str(exc_info.value)
 
         # Score above 100 should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("query-id", 101),),
             )
         assert "Required score 101 must be between 0 and 100" in str(exc_info.value)
 
         # Duplicate query IDs should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(
                     ("query-id", 80),
                     ("query-id", 90),
@@ -290,18 +290,18 @@ class TestPolicy:
 
         # Valid scores with whitespace should be stripped
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("  query-id  ", 80),),
         )
         assert policy.validation_scores == (("query-id", 80),)
 
         # Boundary values should work
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(
                 ("min-score", 0),
                 ("max-score", 100),
@@ -316,9 +316,9 @@ class TestPolicy:
         """Test transformation queries validation."""
         # None should be valid
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
             transformation_queries=None,
         )
@@ -327,9 +327,9 @@ class TestPolicy:
 
         # Empty list should be valid
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
             transformation_queries=(),
         )
@@ -337,33 +337,33 @@ class TestPolicy:
         assert policy.is_validation_only is True
 
         # Non-list should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
                 transformation_queries="not-a-list",  # type: ignore
             )
         assert "Input should be a valid tuple" in str(exc_info.value)
 
         # Non-string query ID should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
                 transformation_queries=[123],  # type: ignore
             )
         assert "Input should be a valid string" in str(exc_info.value)
 
         # Empty string query ID should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
                 transformation_queries=("",),
             )
@@ -372,11 +372,11 @@ class TestPolicy:
         )
 
         # Duplicate query IDs should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
                 transformation_queries=("query-1", "query-1"),
             )
@@ -386,9 +386,9 @@ class TestPolicy:
 
         # Valid queries with whitespace should be stripped
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
             transformation_queries=("  query-1  ", "  query-2  "),
         )
@@ -398,34 +398,34 @@ class TestPolicy:
     def test_version_validation(self) -> None:
         """Test version validation."""
         # Empty version should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
-                version="",
+                version=NonEmptyText(""),
             )
-        assert "Policy version cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Whitespace-only version should fail
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
-                version="   ",
+                version=NonEmptyText("   "),
             )
-        assert "Policy version cannot be empty" in str(exc_info.value)
+        assert "cannot be empty" in str(exc_info.value)
 
         # Valid version with whitespace should be stripped
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
-            version="  1.0.0  ",
+            version=NonEmptyText("  1.0.0  "),
         )
         assert policy.version == "1.0.0"
 
@@ -434,9 +434,9 @@ class TestPolicy:
         # Test all valid status values
         for status in PolicyStatus:
             policy = Policy(
-                policy_id="policy-001",
-                title="Test Policy",
-                description="Test description",
+                policy_id=NonEmptyText("policy-001"),
+                title=Name("Test Policy"),
+                description=NonEmptyText("Test description"),
                 validation_scores=(("test-query", 80),),
                 status=status,
             )
@@ -452,9 +452,9 @@ class TestPolicy:
         """Test is_validation_only property logic."""
         # No transformation queries (empty list)
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
             transformation_queries=(),
         )
@@ -462,9 +462,9 @@ class TestPolicy:
 
         # Non-empty transformation queries
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
             transformation_queries=("transform-query",),
         )
@@ -474,9 +474,9 @@ class TestPolicy:
         """Test has_transformations property logic."""
         # No transformation queries (empty list)
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
             transformation_queries=(),
         )
@@ -484,9 +484,9 @@ class TestPolicy:
 
         # Non-empty transformation queries
         policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
             transformation_queries=("transform-query",),
         )
@@ -495,16 +495,16 @@ class TestPolicy:
     def test_policy_serialization(self) -> None:
         """Test Policy serialization and deserialization."""
         original_policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(
                 ("grammar-query", 85),
                 ("clarity-query", 75),
             ),
             transformation_queries=("fix-grammar", "improve-clarity"),
             status=PolicyStatus.DRAFT,
-            version="1.2.0",
+            version=NonEmptyText("1.2.0"),
         )
 
         # Serialize to dict
@@ -530,9 +530,9 @@ class TestPolicy:
     def test_policy_json_serialization(self) -> None:
         """Test Policy JSON serialization and deserialization."""
         original_policy = Policy(
-            policy_id="policy-001",
-            title="Test Policy",
-            description="Test description",
+            policy_id=NonEmptyText("policy-001"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test description"),
             validation_scores=(("test-query", 80),),
         )
 

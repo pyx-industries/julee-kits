@@ -21,6 +21,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import NonEmptyText
 from pydantic import Field, field_validator
 
 
@@ -60,10 +61,10 @@ class DocumentPolicyValidation(Entity):
     validation_id: str = Field(
         description="Unique identifier for this validation instance"
     )
-    input_document_id: str = Field(
+    input_document_id: NonEmptyText = Field(
         description="ID of the document being validated against the policy"
     )
-    policy_id: str = Field(
+    policy_id: NonEmptyText = Field(
         description="ID of the policy configuration used for validation"
     )
 
@@ -79,7 +80,7 @@ class DocumentPolicyValidation(Entity):
     )
 
     # Transformation results (if applicable)
-    transformed_document_id: str | None = Field(
+    transformed_document_id: NonEmptyText | None = Field(
         default=None,
         description="ID of the document after transformations have been "
         "applied. Only present if the policy includes transformation queries "
@@ -101,7 +102,7 @@ class DocumentPolicyValidation(Entity):
     completed_at: datetime | None = Field(
         default=None, description="When the validation process completed"
     )
-    error_message: str | None = Field(
+    error_message: NonEmptyText | None = Field(
         default=None, description="Error message if validation process failed"
     )
 
@@ -111,20 +112,6 @@ class DocumentPolicyValidation(Entity):
         description="Whether the document passed policy validation. "
         "None while validation is in progress, True/False when complete",
     )
-
-    @field_validator("input_document_id")
-    @classmethod
-    def input_document_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Input document ID cannot be empty")
-        return v.strip()
-
-    @field_validator("policy_id")
-    @classmethod
-    def policy_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Policy ID cannot be empty")
-        return v.strip()
 
     @field_validator("validation_scores")
     @classmethod
@@ -156,26 +143,6 @@ class DocumentPolicyValidation(Entity):
             return ()
 
         return cls._validate_score_tuples(v, "post_transform_validation_scores")
-
-    @field_validator("error_message")
-    @classmethod
-    def error_message_must_be_valid(cls, v: str | None) -> str | None:
-        if v is None:
-            return v
-        if not isinstance(v, str):
-            raise ValueError("Error message must be a string or None")
-        return v.strip() if v.strip() else None
-
-    @field_validator("transformed_document_id")
-    @classmethod
-    def transformed_document_id_must_be_valid(cls, v: str | None) -> str | None:
-        if v is None:
-            return v
-        if not isinstance(v, str) or not v.strip():
-            raise ValueError(
-                "Transformed document ID must be a non-empty string or None"
-            )
-        return v.strip()
 
     @classmethod
     def _validate_score_tuples(

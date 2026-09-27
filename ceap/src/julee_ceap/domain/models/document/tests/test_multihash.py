@@ -8,9 +8,11 @@ answer cannot arrive quietly.
 import hashlib
 
 import pytest
+from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.document.multihash import (
+    ContentMultihash,
     content_multihash,
     is_content_multihash,
 )
@@ -70,11 +72,11 @@ class TestRecognisingIt:
 class TestWhatADocumentAccepts:
     def test_a_document_takes_a_real_multihash(self) -> None:
         document = Document(
-            document_id="doc-1",
-            original_filename="test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-1"),
+            original_filename=NonEmptyText("test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=5,
-            content_multihash=content_multihash(b"hello"),
+            content_multihash=ContentMultihash(content_multihash(b"hello")),
         )
 
         assert document.content_multihash == content_multihash(b"hello")
@@ -88,11 +90,11 @@ class TestWhatADocumentAccepts:
         builds a Document has to go through the one implementation."""
         with pytest.raises(ValueError, match="multihash"):
             Document(
-                document_id="doc-1",
-                original_filename="test.txt",
-                content_type="text/plain",
+                document_id=NonEmptyText("doc-1"),
+                original_filename=NonEmptyText("test.txt"),
+                content_type=NonEmptyText("text/plain"),
                 size_bytes=5,
-                content_multihash=value,
+                content_multihash=ContentMultihash(value),
             )
 
     def test_the_factory_names_the_content_it_builds(self) -> None:

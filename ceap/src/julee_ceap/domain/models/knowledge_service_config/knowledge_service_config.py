@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import Field, field_validator
 
 
@@ -37,11 +38,11 @@ class KnowledgeServiceConfig(Entity):
     """
 
     # Core service identification
-    knowledge_service_id: str = Field(
+    knowledge_service_id: NonEmptyText = Field(
         description="Unique identifier for this knowledge service"
     )
-    name: str = Field(description="Human-readable name for the knowledge service")
-    description: str = Field(
+    name: Name = Field(description="Human-readable name for the knowledge service")
+    description: NonEmptyText = Field(
         description="Description of what this knowledge service does"
     )
     service_api: ServiceApi = Field(
@@ -51,27 +52,6 @@ class KnowledgeServiceConfig(Entity):
     # Timestamps
     created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
-
-    @field_validator("knowledge_service_id")
-    @classmethod
-    def knowledge_service_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Knowledge service ID cannot be empty")
-        return v.strip()
-
-    @field_validator("name")
-    @classmethod
-    def name_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Knowledge service name cannot be empty")
-        return v.strip()
-
-    @field_validator("description")
-    @classmethod
-    def description_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Knowledge service description cannot be empty")
-        return v.strip()
 
     @field_validator("service_api")
     @classmethod

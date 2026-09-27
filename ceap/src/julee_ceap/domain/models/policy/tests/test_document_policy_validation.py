@@ -16,6 +16,7 @@ Tests focus on:
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.domain.models.policy import (
@@ -54,11 +55,11 @@ class TestDocumentPolicyValidationValidation:
 
         validation = DocumentPolicyValidation(
             validation_id="val-789",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             status=DocumentPolicyValidationStatus.PASSED,
             validation_scores=(("query1", 85), ("query2", 92)),
-            transformed_document_id="doc-123-transformed",
+            transformed_document_id=NonEmptyText("doc-123-transformed"),
             post_transform_validation_scores=(("query1", 95), ("query2", 88)),
             started_at=started_at,
             completed_at=completed_at,
@@ -104,24 +105,21 @@ class TestDocumentPolicyValidationFieldValidation:
         test_cases = ["", "   ", "\t", "\n"]
 
         for empty_value in test_cases:
-            with pytest.raises(ValidationError) as exc_info:
+            with pytest.raises(ValueError) as exc_info:
                 DocumentPolicyValidation(
                     validation_id="val-123",
-                    input_document_id=empty_value,
-                    policy_id="policy-456",
+                    input_document_id=NonEmptyText(empty_value),
+                    policy_id=NonEmptyText("policy-456"),
                 )
 
-            errors = exc_info.value.errors()
-            assert any(
-                "Input document ID cannot be empty" in str(error) for error in errors
-            )
+            assert "cannot be empty" in str(exc_info.value)
 
     def test_input_document_id_strips_whitespace(self) -> None:
         """Test that input_document_id strips whitespace."""
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="  doc-123  ",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("  doc-123  "),
+            policy_id=NonEmptyText("policy-456"),
         )
         assert validation.input_document_id == "doc-123"
 
@@ -130,22 +128,21 @@ class TestDocumentPolicyValidationFieldValidation:
         test_cases = ["", "   ", "\t", "\n"]
 
         for empty_value in test_cases:
-            with pytest.raises(ValidationError) as exc_info:
+            with pytest.raises(ValueError) as exc_info:
                 DocumentPolicyValidation(
                     validation_id="val-123",
-                    input_document_id="doc-123",
-                    policy_id=empty_value,
+                    input_document_id=NonEmptyText("doc-123"),
+                    policy_id=NonEmptyText(empty_value),
                 )
 
-            errors = exc_info.value.errors()
-            assert any("Policy ID cannot be empty" in str(error) for error in errors)
+            assert "cannot be empty" in str(exc_info.value)
 
     def test_policy_id_strips_whitespace(self) -> None:
         """Test that policy_id strips whitespace."""
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="  policy-456  ",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("  policy-456  "),
         )
         assert validation.policy_id == "policy-456"
 
@@ -154,8 +151,8 @@ class TestDocumentPolicyValidationFieldValidation:
         # None is valid
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             transformed_document_id=None,
         )
         assert validation.transformed_document_id is None
@@ -163,33 +160,30 @@ class TestDocumentPolicyValidationFieldValidation:
         # Non-empty string is valid
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
-            transformed_document_id="doc-123-transformed",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
+            transformed_document_id=NonEmptyText("doc-123-transformed"),
         )
         assert validation.transformed_document_id == "doc-123-transformed"
 
         # Empty string should be invalid
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
-                transformed_document_id="",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
+                transformed_document_id=NonEmptyText(""),
             )
 
-        errors = exc_info.value.errors()
-        assert any(
-            "must be a non-empty string or None" in str(error) for error in errors
-        )
+        assert "cannot be empty" in str(exc_info.value)
 
     def test_error_message_validation(self) -> None:
         """Test error_message field validation."""
         # None is valid
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             error_message=None,
         )
         assert validation.error_message is None
@@ -197,20 +191,25 @@ class TestDocumentPolicyValidationFieldValidation:
         # Non-empty string is valid
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
-            error_message="Something went wrong",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
+            error_message=NonEmptyText("Something went wrong"),
         )
         assert validation.error_message == "Something went wrong"
 
-        # Empty/whitespace string becomes None
-        validation = DocumentPolicyValidation(
-            validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
-            error_message="   ",
-        )
-        assert validation.error_message is None
+        # Saying the error message is blank is not the same as saying
+        # there was no error. A validator used to turn whitespace into
+        # None, so a caller that had lost the message reported success
+        # (#71). Leaving it out still says there was no error.
+        with pytest.raises(ValueError, match="cannot be empty"):
+            DocumentPolicyValidation.model_validate(
+                {
+                    "validation_id": "val-123",
+                    "input_document_id": "doc-123",
+                    "policy_id": "policy-456",
+                    "error_message": "   ",
+                }
+            )
 
 
 class TestValidationScores:
@@ -220,8 +219,8 @@ class TestValidationScores:
         """Test that empty validation_scores list is valid."""
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             validation_scores=(),
         )
         assert validation.validation_scores == ()
@@ -231,8 +230,8 @@ class TestValidationScores:
         scores = (("query1", 85), ("query2", 92), ("query3", 78))
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             validation_scores=scores,
         )
         assert validation.validation_scores == scores
@@ -241,8 +240,8 @@ class TestValidationScores:
         """Test that validation_scores work with valid integer scores."""
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             validation_scores=(("query1", 85), ("query2", 92)),
         )
         assert validation.validation_scores == (
@@ -256,8 +255,8 @@ class TestValidationScores:
         with pytest.raises(ValidationError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 validation_scores=(("", 85),),
             )
 
@@ -268,8 +267,8 @@ class TestValidationScores:
         with pytest.raises(ValidationError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 validation_scores=(("   ", 85),),
             )
 
@@ -282,8 +281,8 @@ class TestValidationScores:
         with pytest.raises(ValidationError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 validation_scores=(("query1", -1),),
             )
 
@@ -294,8 +293,8 @@ class TestValidationScores:
         with pytest.raises(ValidationError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 validation_scores=(("query1", 101),),
             )
 
@@ -305,8 +304,8 @@ class TestValidationScores:
         # Valid edge cases
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             validation_scores=(("query1", 0), ("query2", 100)),
         )
         assert validation.validation_scores == (
@@ -319,8 +318,8 @@ class TestValidationScores:
         with pytest.raises(ValidationError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 validation_scores=(("query1", 85), ("query1", 92)),
             )
 
@@ -335,8 +334,8 @@ class TestPostTransformValidationScores:
         """Test that None post_transform_validation_scores is valid."""
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             post_transform_validation_scores=None,
         )
         assert validation.post_transform_validation_scores is None
@@ -345,8 +344,8 @@ class TestPostTransformValidationScores:
         """Test that empty post_transform_validation_scores list is valid."""
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             post_transform_validation_scores=(),
         )
         assert validation.post_transform_validation_scores == ()
@@ -356,8 +355,8 @@ class TestPostTransformValidationScores:
         scores = (("query1", 95), ("query2", 88))
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
             post_transform_validation_scores=scores,
         )
         assert validation.post_transform_validation_scores == scores
@@ -369,8 +368,8 @@ class TestPostTransformValidationScores:
         with pytest.raises(ValidationError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 post_transform_validation_scores=(("query1", -5),),
             )
 
@@ -381,8 +380,8 @@ class TestPostTransformValidationScores:
         with pytest.raises(ValidationError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 post_transform_validation_scores=(
                     ("query1", 85),
                     ("query1", 92),
@@ -400,8 +399,8 @@ class TestDocumentPolicyValidationStatusEnum:
         """Test that default status is PENDING."""
         validation = DocumentPolicyValidation(
             validation_id="val-123",
-            input_document_id="doc-123",
-            policy_id="policy-456",
+            input_document_id=NonEmptyText("doc-123"),
+            policy_id=NonEmptyText("policy-456"),
         )
         assert validation.status == DocumentPolicyValidationStatus.PENDING
 
@@ -417,8 +416,8 @@ class TestDocumentPolicyValidationStatusEnum:
         for status in valid_statuses:
             validation = DocumentPolicyValidation(
                 validation_id="val-123",
-                input_document_id="doc-123",
-                policy_id="policy-456",
+                input_document_id=NonEmptyText("doc-123"),
+                policy_id=NonEmptyText("policy-456"),
                 status=status,
             )
             assert validation.status == status

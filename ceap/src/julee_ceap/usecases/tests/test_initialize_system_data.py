@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
@@ -103,9 +104,9 @@ def fixture_configs() -> list[dict]:
 def sample_anthropic_config() -> KnowledgeServiceConfig:
     """Create sample Anthropic configuration."""
     return KnowledgeServiceConfig(
-        knowledge_service_id="anthropic-claude",
-        name="Anthropic Claude",
-        description="Claude 3 for general text analysis and extraction",
+        knowledge_service_id=NonEmptyText("anthropic-claude"),
+        name=Name("Anthropic Claude"),
+        description=NonEmptyText("Claude 3 for general text analysis and extraction"),
         service_api=ServiceApi.ANTHROPIC,
         created_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
         updated_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),

@@ -29,6 +29,7 @@ from julee_ceap.domain.models.assembly_specification import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
@@ -896,7 +897,7 @@ class InitializeSystemDataUseCase:
             original_filename=doc_data["original_filename"],
             content_type=doc_data["content_type"],
             size_bytes=size_bytes,
-            content_multihash=multihash_of_content,
+            content_multihash=ContentMultihash(multihash_of_content),
             status=status,
             knowledge_service_id=knowledge_service_id,
             assembly_types=assembly_types,

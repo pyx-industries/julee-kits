@@ -16,7 +16,8 @@ from datetime import datetime
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
-from pydantic import Field, field_validator
+from julee.core.entities.text import NonEmptyText
+from pydantic import Field
 
 
 class AssemblyStatus(StrEnum):
@@ -40,18 +41,22 @@ class Assembly(Entity):
     """
 
     # Core assembly identification
-    assembly_id: str = Field(description="Unique identifier for this assembly instance")
-    assembly_specification_id: str = Field(
+    assembly_id: NonEmptyText = Field(
+        description="Unique identifier for this assembly instance"
+    )
+    assembly_specification_id: NonEmptyText = Field(
         description="ID of the AssemblySpecification defining how to assemble"
     )
-    input_document_id: str = Field(
+    input_document_id: NonEmptyText = Field(
         description="ID of the input document to assemble from"
     )
-    execution_id: str = Field(description="Execution ID that created this assembly")
+    execution_id: NonEmptyText = Field(
+        description="Execution ID that created this assembly"
+    )
 
     # Assembly process tracking
     status: AssemblyStatus = AssemblyStatus.PENDING
-    assembled_document_id: str | None = Field(
+    assembled_document_id: NonEmptyText | None = Field(
         default=None,
         description="ID of the assembled document produced by this assembly",
     )
@@ -59,40 +64,3 @@ class Assembly(Entity):
     # Assembly metadata — provided by use case via ClockWitness (ADR 004)
     created_at: datetime | None = None
     updated_at: datetime | None = None
-
-    @field_validator("assembly_id")
-    @classmethod
-    def assembly_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Assembly ID cannot be empty")
-        return v.strip()
-
-    @field_validator("assembly_specification_id")
-    @classmethod
-    def assembly_specification_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Assembly specification ID cannot be empty")
-        return v.strip()
-
-    @field_validator("input_document_id")
-    @classmethod
-    def input_document_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Input document ID cannot be empty")
-        return v.strip()
-
-    @field_validator("assembled_document_id")
-    @classmethod
-    def assembled_document_id_must_not_be_empty_if_provided(
-        cls, v: str | None
-    ) -> str | None:
-        if v is not None and (not v or not v.strip()):
-            raise ValueError("Assembled document ID cannot be empty string")
-        return v.strip() if v else None
-
-    @field_validator("execution_id")
-    @classmethod
-    def execution_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Execution ID cannot be empty")
-        return v.strip()

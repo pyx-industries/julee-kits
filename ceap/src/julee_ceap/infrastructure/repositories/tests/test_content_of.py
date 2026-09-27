@@ -21,10 +21,14 @@ import io
 
 import pytest
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.models.document.multihash import content_multihash
+from julee_ceap.domain.models.document.multihash import (
+    ContentMultihash,
+    content_multihash,
+)
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.infrastructure.repositories.memory.document import (
     MemoryDocumentRepository,
@@ -57,11 +61,11 @@ async def a_stored_document(
     """
     await repository.store_content(ContentStream(io.BytesIO(content)))
     return Document(
-        document_id="doc-1",
-        original_filename="spec.txt",
-        content_type="text/plain",
+        document_id=NonEmptyText("doc-1"),
+        original_filename=NonEmptyText("spec.txt"),
+        content_type=NonEmptyText("text/plain"),
         size_bytes=len(content),
-        content_multihash=content_multihash(content),
+        content_multihash=ContentMultihash(content_multihash(content)),
         status=DocumentStatus.CAPTURED,
     )
 

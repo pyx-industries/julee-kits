@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.apps.api.app import app
 from julee_ceap.apps.api.dependencies import (
@@ -77,10 +78,10 @@ def client(
 def sample_knowledge_service_query() -> KnowledgeServiceQuery:
     """Create a sample knowledge service query for testing."""
     return KnowledgeServiceQuery(
-        query_id="test-query-123",
-        name="Extract Meeting Summary",
-        knowledge_service_id="anthropic-claude",
-        prompt="Extract the main summary from this meeting transcript",
+        query_id=NonEmptyText("test-query-123"),
+        name=Name("Extract Meeting Summary"),
+        knowledge_service_id=NonEmptyText("anthropic-claude"),
+        prompt=NonEmptyText("Extract the main summary from this meeting transcript"),
         query_metadata={"model": "claude-3", "temperature": 0.2},
         assistant_prompt="Please format as JSON",
     )
@@ -214,10 +215,10 @@ class TestKnowledgeServiceQueriesEndpoint:
         """Test getting queries when repository contains data."""
         # Create a second query for testing
         query2 = KnowledgeServiceQuery(
-            query_id="test-query-456",
-            name="Extract Attendees",
-            knowledge_service_id="openai-service",
-            prompt="Extract all attendees from this meeting",
+            query_id=NonEmptyText("test-query-456"),
+            name=Name("Extract Attendees"),
+            knowledge_service_id=NonEmptyText("openai-service"),
+            prompt=NonEmptyText("Extract all attendees from this meeting"),
             query_metadata={"model": "gpt-4", "temperature": 0.1},
             assistant_prompt="Format as JSON array",
         )
@@ -266,10 +267,10 @@ class TestKnowledgeServiceQueriesEndpoint:
         queries = []
         for i in range(5):
             query = KnowledgeServiceQuery(
-                query_id=f"query-{i:03d}",
-                name=f"Query {i}",
-                knowledge_service_id="test-service",
-                prompt=f"Test prompt {i}",
+                query_id=NonEmptyText(f"query-{i:03d}"),
+                name=Name(f"Query {i}"),
+                knowledge_service_id=NonEmptyText("test-service"),
+                prompt=NonEmptyText(f"Test prompt {i}"),
             )
             queries.append(query)
             await memory_repo.save(query)
