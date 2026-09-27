@@ -6,9 +6,8 @@ A runtime boundary - application or data store within a software system.
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, Slug
 from pydantic import Field, computed_field
-
-from julee_c4.domain.models.text import Name, Slug
 
 
 class ContainerType(StrEnum):

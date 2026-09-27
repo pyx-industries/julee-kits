@@ -4,9 +4,8 @@ A grouping of related functionality within a container.
 """
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, Slug
 from pydantic import Field, computed_field
-
-from julee_c4.domain.models.text import Name, Slug
 
 
 class Component(Entity):

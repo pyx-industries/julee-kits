@@ -7,9 +7,8 @@ from collections.abc import Mapping
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, Slug
 from pydantic import Field
-
-from julee_c4.domain.models.text import Name, Slug
 
 
 class NodeType(StrEnum):

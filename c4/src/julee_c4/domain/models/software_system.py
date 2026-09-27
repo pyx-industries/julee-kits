@@ -6,9 +6,8 @@ The highest level of abstraction in C4 - something that delivers value to users.
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, Slug
 from pydantic import Field, computed_field
-
-from julee_c4.domain.models.text import Name, Slug
 
 
 class SystemType(StrEnum):

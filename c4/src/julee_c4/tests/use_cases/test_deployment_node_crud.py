@@ -1,13 +1,13 @@
 """Tests for DeploymentNode CRUD use cases."""
 
 import pytest
+from julee.core.entities.text import Name, Slug
 from julee.core.usecases.generic_crud import EntityNotFoundError
 
 from julee_c4.domain.models.deployment_node import (
     DeploymentNode,
     NodeType,
 )
-from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.deployment_node import (
     MemoryDeploymentNodeRepository,
 )

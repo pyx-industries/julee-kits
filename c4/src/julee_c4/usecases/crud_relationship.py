@@ -5,6 +5,7 @@ Do not edit — regenerate with make generate-crud.
 
 from typing import Any
 
+from julee.core.entities.text import Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -15,7 +16,6 @@ from julee.core.usecases.generic_crud import (
 from pydantic import BaseModel
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
-from julee_c4.domain.models.text import Slug
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 
 

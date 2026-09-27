@@ -1,10 +1,10 @@
 """Tests for MemoryDynamicStepRepository."""
 
 import pytest
+from julee.core.entities.text import Name, Slug
 
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType
-from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.dynamic_step import (
     MemoryDynamicStepRepository,
 )

@@ -1,9 +1,9 @@
 """Tests for MemoryRelationshipRepository."""
 
 import pytest
+from julee.core.entities.text import Slug
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
-from julee_c4.domain.models.text import Slug
 from julee_c4.infrastructure.repositories.memory.relationship import (
     MemoryRelationshipRepository,
 )
