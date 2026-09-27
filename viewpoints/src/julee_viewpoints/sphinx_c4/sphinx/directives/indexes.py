@@ -21,6 +21,7 @@ from docutils import nodes
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container
 from julee_c4.domain.models.deployment_node import DeploymentNode
+from julee_c4.domain.models.text import Slug
 
 from ..context import C4Context, get_c4_context
 from .base import C4Directive
@@ -183,7 +184,7 @@ def build_container_index(c4_context: C4Context) -> list[nodes.Node]:
         para += nodes.emphasis(text="No containers defined.")
         return [para]
 
-    by_system: dict[str, list[tuple[str, Container]]] = {}
+    by_system: dict[Slug, list[tuple[Slug, Container]]] = {}
     for slug, container in containers.items():
         by_system.setdefault(container.system_slug, []).append((slug, container))
 
@@ -229,7 +230,7 @@ def build_component_index(c4_context: C4Context) -> list[nodes.Node]:
         para += nodes.emphasis(text="No components defined.")
         return [para]
 
-    by_container: dict[str, list[tuple[str, Component]]] = {}
+    by_container: dict[Slug, list[tuple[Slug, Component]]] = {}
     for slug, component in components.items():
         by_container.setdefault(component.container_slug, []).append((slug, component))
 

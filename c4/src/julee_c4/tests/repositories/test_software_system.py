@@ -6,6 +6,7 @@ from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.software_system import (
     MemorySoftwareSystemRepository,
 )
@@ -21,8 +22,8 @@ def create_system(
 ) -> SoftwareSystem:
     """Helper to create test systems."""
     return SoftwareSystem(
-        slug=slug,
-        name=name,
+        slug=Slug(slug),
+        name=Name(name),
         system_type=system_type,
         owner=owner,
         tags=tuple(tags or []),

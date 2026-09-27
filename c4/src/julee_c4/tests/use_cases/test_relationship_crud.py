@@ -7,6 +7,7 @@ from julee_c4.domain.models.relationship import (
     ElementType,
     Relationship,
 )
+from julee_c4.domain.models.text import Slug
 from julee_c4.infrastructure.repositories.memory.relationship import (
     MemoryRelationshipRepository,
 )
@@ -122,11 +123,11 @@ class TestGetRelationshipUseCase:
         """Create repository with sample data."""
         await repo.save(
             Relationship(
-                slug="api-to-db",
+                slug=Slug("api-to-db"),
                 source_type=ElementType.CONTAINER,
-                source_slug="api-app",
+                source_slug=Slug("api-app"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="database",
+                destination_slug=Slug("database"),
                 description="Reads data",
             )
         )
@@ -178,25 +179,25 @@ class TestListRelationshipsUseCase:
         """Create repository with sample data."""
         relationships = [
             Relationship(
-                slug="rel-1",
+                slug=Slug("rel-1"),
                 source_type=ElementType.CONTAINER,
-                source_slug="a",
+                source_slug=Slug("a"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="b",
+                destination_slug=Slug("b"),
             ),
             Relationship(
-                slug="rel-2",
+                slug=Slug("rel-2"),
                 source_type=ElementType.CONTAINER,
-                source_slug="b",
+                source_slug=Slug("b"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="c",
+                destination_slug=Slug("c"),
             ),
             Relationship(
-                slug="rel-3",
+                slug=Slug("rel-3"),
                 source_type=ElementType.PERSON,
-                source_slug="user",
+                source_slug=Slug("user"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="system",
+                destination_slug=Slug("system"),
             ),
         ]
         for r in relationships:
@@ -249,11 +250,11 @@ class TestUpdateRelationshipUseCase:
         """Create repository with sample data."""
         await repo.save(
             Relationship(
-                slug="api-to-db",
+                slug=Slug("api-to-db"),
                 source_type=ElementType.CONTAINER,
-                source_slug="api-app",
+                source_slug=Slug("api-app"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="database",
+                destination_slug=Slug("database"),
                 description="Original description",
                 technology="SQL",
             )
@@ -333,11 +334,11 @@ class TestDeleteRelationshipUseCase:
         """Create repository with sample data."""
         await repo.save(
             Relationship(
-                slug="to-delete",
+                slug=Slug("to-delete"),
                 source_type=ElementType.CONTAINER,
-                source_slug="a",
+                source_slug=Slug("a"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="b",
+                destination_slug=Slug("b"),
             )
         )
         return repo

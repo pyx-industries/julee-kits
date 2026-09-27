@@ -1,13 +1,13 @@
 """Tests for DeploymentNode domain model."""
 
 import pytest
-from pydantic import ValidationError
 
 from julee_c4.domain.models.deployment_node import (
     ContainerInstance,
     DeploymentNode,
     NodeType,
 )
+from julee_c4.domain.models.text import Name, Slug
 
 
 class TestContainerInstanceCreation:
@@ -15,7 +15,7 @@ class TestContainerInstanceCreation:
 
     def test_create_with_required_fields(self) -> None:
         """Test creating a container instance with minimum fields."""
-        instance = ContainerInstance(container_slug="api-app")
+        instance = ContainerInstance(container_slug=Slug("api-app"))
 
         assert instance.container_slug == "api-app"
         assert instance.instance_count == 1
@@ -24,7 +24,7 @@ class TestContainerInstanceCreation:
     def test_create_with_all_fields(self) -> None:
         """Test creating a container instance with all fields."""
         instance = ContainerInstance(
-            container_slug="api-app",
+            container_slug=Slug("api-app"),
             instance_count=3,
             properties={"version": "1.0.0", "port": "8080"},
         )
@@ -35,8 +35,8 @@ class TestContainerInstanceCreation:
 
     def test_empty_container_slug_raises_error(self) -> None:
         """Test that empty container_slug raises validation error."""
-        with pytest.raises(ValidationError, match="container_slug cannot be empty"):
-            ContainerInstance(container_slug="")
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
+            ContainerInstance(container_slug=Slug(""))
 
 
 class TestDeploymentNodeCreation:
@@ -45,8 +45,8 @@ class TestDeploymentNodeCreation:
     def test_create_with_required_fields(self) -> None:
         """Test creating a deployment node with minimum fields."""
         node = DeploymentNode(
-            slug="web-server-1",
-            name="Web Server 1",
+            slug=Slug("web-server-1"),
+            name=Name("Web Server 1"),
         )
 
         assert node.slug == "web-server-1"
@@ -59,15 +59,15 @@ class TestDeploymentNodeCreation:
     def test_create_with_all_fields(self) -> None:
         """Test creating a deployment node with all fields."""
         node = DeploymentNode(
-            slug="web-server-1",
-            name="Web Server 1",
+            slug=Slug("web-server-1"),
+            name=Name("Web Server 1"),
             environment="production",
             node_type=NodeType.VIRTUAL_MACHINE,
             description="Primary web server",
             technology="AWS EC2 t3.large",
             instances=2,
-            parent_slug="aws-us-east-1",
-            container_instances=(ContainerInstance(container_slug="api-app"),),
+            parent_slug=Slug("aws-us-east-1"),
+            container_instances=(ContainerInstance(container_slug=Slug("api-app")),),
             properties={"ip": "10.0.1.10"},
             tags=("primary", "web"),
             docname="architecture/deployment",
@@ -81,17 +81,17 @@ class TestDeploymentNodeCreation:
 
     def test_empty_slug_raises_error(self) -> None:
         """Test that empty slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
-            DeploymentNode(slug="", name="Test")
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
+            DeploymentNode(slug=Slug(""), name=Name("Test"))
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises validation error."""
-        with pytest.raises(ValidationError, match="name cannot be empty"):
-            DeploymentNode(slug="test", name="")
+        with pytest.raises(ValueError, match="a name cannot be empty"):
+            DeploymentNode(slug=Slug("test"), name=Name(""))
 
     def test_slug_is_normalized(self) -> None:
         """Test that slug is normalized (slugified)."""
-        node = DeploymentNode(slug="Web Server 1", name="Test")
+        node = DeploymentNode(slug=Slug("Web Server 1"), name=Name("Test"))
         assert node.slug == "web-server-1"
 
 
@@ -100,43 +100,45 @@ class TestDeploymentNodeProperties:
 
     def test_has_parent_true(self) -> None:
         """Test has_parent when parent_slug is set."""
-        node = DeploymentNode(slug="test", name="Test", parent_slug="parent-node")
+        node = DeploymentNode(
+            slug=Slug("test"), name=Name("Test"), parent_slug=Slug("parent-node")
+        )
         assert node.has_parent is True
 
     def test_has_parent_false(self) -> None:
         """Test has_parent when no parent."""
-        node = DeploymentNode(slug="test", name="Test")
+        node = DeploymentNode(slug=Slug("test"), name=Name("Test"))
         assert node.has_parent is False
 
     def test_has_containers_true(self) -> None:
         """Test has_containers when containers deployed."""
         node = DeploymentNode(
-            slug="test",
-            name="Test",
-            container_instances=(ContainerInstance(container_slug="api-app"),),
+            slug=Slug("test"),
+            name=Name("Test"),
+            container_instances=(ContainerInstance(container_slug=Slug("api-app")),),
         )
         assert node.has_containers is True
 
     def test_has_containers_false(self) -> None:
         """Test has_containers when no containers."""
-        node = DeploymentNode(slug="test", name="Test")
+        node = DeploymentNode(slug=Slug("test"), name=Name("Test"))
         assert node.has_containers is False
 
     def test_total_container_instances(self) -> None:
         """Test total_container_instances calculation."""
         node = DeploymentNode(
-            slug="test",
-            name="Test",
+            slug=Slug("test"),
+            name=Name("Test"),
             container_instances=(
-                ContainerInstance(container_slug="api-app", instance_count=3),
-                ContainerInstance(container_slug="web-app", instance_count=2),
+                ContainerInstance(container_slug=Slug("api-app"), instance_count=3),
+                ContainerInstance(container_slug=Slug("web-app"), instance_count=2),
             ),
         )
         assert node.total_container_instances == 5
 
     def test_total_container_instances_empty(self) -> None:
         """Test total_container_instances with no containers."""
-        node = DeploymentNode(slug="test", name="Test")
+        node = DeploymentNode(slug=Slug("test"), name=Name("Test"))
         assert node.total_container_instances == 0
 
 
@@ -146,24 +148,24 @@ class TestDeploymentNodeContainerOperations:
     def test_deploys_container_true(self) -> None:
         """Test deploys_container returns True for deployed container."""
         node = DeploymentNode(
-            slug="test",
-            name="Test",
-            container_instances=(ContainerInstance(container_slug="api-app"),),
+            slug=Slug("test"),
+            name=Name("Test"),
+            container_instances=(ContainerInstance(container_slug=Slug("api-app")),),
         )
         assert node.deploys_container("api-app") is True
 
     def test_deploys_container_false(self) -> None:
         """Test deploys_container returns False for non-deployed container."""
         node = DeploymentNode(
-            slug="test",
-            name="Test",
-            container_instances=(ContainerInstance(container_slug="api-app"),),
+            slug=Slug("test"),
+            name=Name("Test"),
+            container_instances=(ContainerInstance(container_slug=Slug("api-app")),),
         )
         assert node.deploys_container("other-app") is False
 
     def test_with_container_instance_new(self) -> None:
         """Deploying a container returns a node that deploys it."""
-        node = DeploymentNode(slug="test", name="Test")
+        node = DeploymentNode(slug=Slug("test"), name=Name("Test"))
         node = node.with_container_instance("api-app", instance_count=2)
 
         assert len(node.container_instances) == 1
@@ -173,10 +175,10 @@ class TestDeploymentNodeContainerOperations:
     def test_with_container_instance_existing(self) -> None:
         """Deploying more of a container it already runs adds to the count."""
         node = DeploymentNode(
-            slug="test",
-            name="Test",
+            slug=Slug("test"),
+            name=Name("Test"),
             container_instances=(
-                ContainerInstance(container_slug="api-app", instance_count=2),
+                ContainerInstance(container_slug=Slug("api-app"), instance_count=2),
             ),
         )
         node = node.with_container_instance("api-app", instance_count=3)
@@ -186,7 +188,7 @@ class TestDeploymentNodeContainerOperations:
 
     def test_with_container_instance_with_properties(self) -> None:
         """Properties travel with the instance."""
-        node = DeploymentNode(slug="test", name="Test")
+        node = DeploymentNode(slug=Slug("test"), name=Name("Test"))
         node = node.with_container_instance(
             "api-app", instance_count=1, properties={"version": "1.0"}
         )
@@ -199,14 +201,16 @@ class TestDeploymentNodeTags:
 
     def test_has_tag(self) -> None:
         """Test tag lookup."""
-        node = DeploymentNode(slug="test", name="Test", tags=("production", "primary"))
+        node = DeploymentNode(
+            slug=Slug("test"), name=Name("Test"), tags=("production", "primary")
+        )
         assert node.has_tag("production") is True
         assert node.has_tag("PRODUCTION") is True
         assert node.has_tag("staging") is False
 
     def test_with_tag(self) -> None:
         """Tagging returns a new entity carrying the tag."""
-        node = DeploymentNode(slug="test", name="Test", tags=("existing",))
+        node = DeploymentNode(slug=Slug("test"), name=Name("Test"), tags=("existing",))
         node = node.with_tag("new")
         assert "new" in node.tags
         assert len(node.tags) == 2

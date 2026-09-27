@@ -1,9 +1,9 @@
 """Tests for Relationship domain model."""
 
 import pytest
-from pydantic import ValidationError
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
+from julee_c4.domain.models.text import Slug
 
 
 class TestRelationshipCreation:
@@ -13,9 +13,9 @@ class TestRelationshipCreation:
         """Test creating a relationship with minimum required fields."""
         relationship = Relationship(
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.SOFTWARE_SYSTEM,
-            destination_slug="banking-system",
+            destination_slug=Slug("banking-system"),
         )
 
         assert relationship.source_type == ElementType.PERSON
@@ -28,11 +28,11 @@ class TestRelationshipCreation:
     def test_create_with_all_fields(self) -> None:
         """Test creating a relationship with all fields."""
         relationship = Relationship(
-            slug="customer-to-banking",
+            slug=Slug("customer-to-banking"),
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.SOFTWARE_SYSTEM,
-            destination_slug="banking-system",
+            destination_slug=Slug("banking-system"),
             description="Views account balances, makes payments",
             technology="HTTPS/JSON",
             tags=("external", "api"),
@@ -49,30 +49,30 @@ class TestRelationshipCreation:
         """Test that slug is auto-generated from source and destination."""
         relationship = Relationship(
             source_type=ElementType.CONTAINER,
-            source_slug="api-app",
+            source_slug=Slug("api-app"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="database",
+            destination_slug=Slug("database"),
         )
         assert relationship.slug == "api-app-to-database"
 
     def test_empty_source_slug_raises_error(self) -> None:
         """Test that empty source_slug raises validation error."""
-        with pytest.raises(ValidationError, match="source_slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             Relationship(
                 source_type=ElementType.PERSON,
-                source_slug="",
+                source_slug=Slug(""),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="system",
+                destination_slug=Slug("system"),
             )
 
     def test_empty_destination_slug_raises_error(self) -> None:
         """Test that empty destination_slug raises validation error."""
-        with pytest.raises(ValidationError, match="destination_slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             Relationship(
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
-                destination_slug="",
+                destination_slug=Slug(""),
             )
 
 
@@ -83,9 +83,9 @@ class TestRelationshipProperties:
         """Test is_person_relationship when source is person."""
         relationship = Relationship(
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.SOFTWARE_SYSTEM,
-            destination_slug="system",
+            destination_slug=Slug("system"),
         )
         assert relationship.is_person_relationship is True
 
@@ -93,9 +93,9 @@ class TestRelationshipProperties:
         """Test is_person_relationship when destination is person."""
         relationship = Relationship(
             source_type=ElementType.SOFTWARE_SYSTEM,
-            source_slug="system",
+            source_slug=Slug("system"),
             destination_type=ElementType.PERSON,
-            destination_slug="admin",
+            destination_slug=Slug("admin"),
         )
         assert relationship.is_person_relationship is True
 
@@ -103,9 +103,9 @@ class TestRelationshipProperties:
         """Test is_person_relationship when no person involved."""
         relationship = Relationship(
             source_type=ElementType.CONTAINER,
-            source_slug="api",
+            source_slug=Slug("api"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="db",
+            destination_slug=Slug("db"),
         )
         assert relationship.is_person_relationship is False
 
@@ -113,9 +113,9 @@ class TestRelationshipProperties:
         """Test is_cross_system when system involved."""
         relationship = Relationship(
             source_type=ElementType.SOFTWARE_SYSTEM,
-            source_slug="system-a",
+            source_slug=Slug("system-a"),
             destination_type=ElementType.SOFTWARE_SYSTEM,
-            destination_slug="system-b",
+            destination_slug=Slug("system-b"),
         )
         assert relationship.is_cross_system is True
 
@@ -123,9 +123,9 @@ class TestRelationshipProperties:
         """Test is_internal for container-to-container relationships."""
         relationship = Relationship(
             source_type=ElementType.CONTAINER,
-            source_slug="api",
+            source_slug=Slug("api"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="db",
+            destination_slug=Slug("db"),
         )
         assert relationship.is_internal is True
 
@@ -133,9 +133,9 @@ class TestRelationshipProperties:
         """Test is_internal for component relationships."""
         relationship = Relationship(
             source_type=ElementType.COMPONENT,
-            source_slug="controller",
+            source_slug=Slug("controller"),
             destination_type=ElementType.COMPONENT,
-            destination_slug="service",
+            destination_slug=Slug("service"),
         )
         assert relationship.is_internal is True
 
@@ -143,9 +143,9 @@ class TestRelationshipProperties:
         """Test label generation without technology."""
         relationship = Relationship(
             source_type=ElementType.CONTAINER,
-            source_slug="api",
+            source_slug=Slug("api"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="db",
+            destination_slug=Slug("db"),
             description="Reads from",
         )
         assert relationship.label == "Reads from"
@@ -154,9 +154,9 @@ class TestRelationshipProperties:
         """Test label generation with technology."""
         relationship = Relationship(
             source_type=ElementType.CONTAINER,
-            source_slug="api",
+            source_slug=Slug("api"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="db",
+            destination_slug=Slug("db"),
             description="Reads from",
             technology="SQL/TCP",
         )
@@ -171,9 +171,9 @@ class TestRelationshipInvolvesElement:
         """Create a sample relationship."""
         return Relationship(
             source_type=ElementType.CONTAINER,
-            source_slug="api-app",
+            source_slug=Slug("api-app"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="database",
+            destination_slug=Slug("database"),
             description="Reads/writes data",
         )
 
@@ -199,9 +199,9 @@ class TestRelationshipInvolvesElement:
         """Test involves_system method."""
         relationship = Relationship(
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.SOFTWARE_SYSTEM,
-            destination_slug="banking",
+            destination_slug=Slug("banking"),
         )
         assert relationship.involves_system("banking") is True
         assert relationship.involves_system("other") is False
@@ -210,9 +210,9 @@ class TestRelationshipInvolvesElement:
         """Test involves_person method."""
         relationship = Relationship(
             source_type=ElementType.PERSON,
-            source_slug="customer",
+            source_slug=Slug("customer"),
             destination_type=ElementType.SOFTWARE_SYSTEM,
-            destination_slug="banking",
+            destination_slug=Slug("banking"),
         )
         assert relationship.involves_person("customer") is True
         assert relationship.involves_person("admin") is False
@@ -225,9 +225,9 @@ class TestRelationshipTags:
         """Test tag lookup."""
         relationship = Relationship(
             source_type=ElementType.CONTAINER,
-            source_slug="api",
+            source_slug=Slug("api"),
             destination_type=ElementType.CONTAINER,
-            destination_slug="db",
+            destination_slug=Slug("db"),
             tags=("async", "internal"),
         )
         assert relationship.has_tag("async") is True

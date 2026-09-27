@@ -6,8 +6,9 @@ A runtime boundary - application or data store within a software system.
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
-from julee.core.utils import normalize_name, slugify
-from pydantic import Field, computed_field, field_validator
+from pydantic import Field, computed_field
+
+from julee_c4.domain.models.text import Name, Slug
 
 
 class ContainerType(StrEnum):
@@ -35,9 +36,9 @@ class Container(Entity):
     predates containerization technology.
     """
 
-    slug: str
-    name: str
-    system_slug: str
+    slug: Slug
+    name: Name
+    system_slug: Slug
     description: str = ""
     container_type: ContainerType = ContainerType.OTHER
     technology: str = ""
@@ -45,35 +46,11 @@ class Container(Entity):
     tags: tuple[str, ...] = Field(default_factory=tuple)
     docname: str = ""
 
-    @field_validator("slug", mode="before")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Validate and normalize slug."""
-        if not v or not v.strip():
-            raise ValueError("slug cannot be empty")
-        return slugify(v.strip())
-
-    @field_validator("name", mode="before")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        """Validate name is not empty."""
-        if not v or not v.strip():
-            raise ValueError("name cannot be empty")
-        return v.strip()
-
-    @field_validator("system_slug", mode="before")
-    @classmethod
-    def validate_system_slug(cls, v: str) -> str:
-        """Validate system_slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("system_slug cannot be empty")
-        return v.strip()
-
     @computed_field  # type: ignore[prop-decorator]
     @property
     def name_normalized(self) -> str:
         """Normalized name for case-insensitive matching."""
-        return normalize_name(self.name)
+        return self.name.normalized
 
     @property
     def qualified_slug(self) -> str:

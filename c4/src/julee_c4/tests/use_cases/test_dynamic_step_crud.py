@@ -5,6 +5,7 @@ from julee.core.usecases.generic_crud import EntityNotFoundError
 
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.dynamic_step import (
     MemoryDynamicStepRepository,
 )
@@ -125,13 +126,13 @@ class TestGetDynamicStepUseCase:
         """Create repository with sample data."""
         await repo.save(
             DynamicStep(
-                slug="login-step-1",
-                sequence_name="user-login",
+                slug=Slug("login-step-1"),
+                sequence_name=Name("user-login"),
                 step_number=1,
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="web-app",
+                destination_slug=Slug("web-app"),
             )
         )
         return repo
@@ -182,31 +183,31 @@ class TestListDynamicStepsUseCase:
         """Create repository with sample data."""
         steps = [
             DynamicStep(
-                slug="step-1",
-                sequence_name="flow",
+                slug=Slug("step-1"),
+                sequence_name=Name("flow"),
                 step_number=1,
                 source_type=ElementType.CONTAINER,
-                source_slug="a",
+                source_slug=Slug("a"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="b",
+                destination_slug=Slug("b"),
             ),
             DynamicStep(
-                slug="step-2",
-                sequence_name="flow",
+                slug=Slug("step-2"),
+                sequence_name=Name("flow"),
                 step_number=2,
                 source_type=ElementType.CONTAINER,
-                source_slug="b",
+                source_slug=Slug("b"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="c",
+                destination_slug=Slug("c"),
             ),
             DynamicStep(
-                slug="step-3",
-                sequence_name="other-flow",
+                slug=Slug("step-3"),
+                sequence_name=Name("other-flow"),
                 step_number=1,
                 source_type=ElementType.PERSON,
-                source_slug="user",
+                source_slug=Slug("user"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="app",
+                destination_slug=Slug("app"),
             ),
         ]
         for s in steps:
@@ -259,13 +260,13 @@ class TestUpdateDynamicStepUseCase:
         """Create repository with sample data."""
         await repo.save(
             DynamicStep(
-                slug="login-step-1",
-                sequence_name="user-login",
+                slug=Slug("login-step-1"),
+                sequence_name=Name("user-login"),
                 step_number=1,
                 source_type=ElementType.PERSON,
-                source_slug="customer",
+                source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="web-app",
+                destination_slug=Slug("web-app"),
                 description="Original description",
                 technology="HTTP",
             )
@@ -362,13 +363,13 @@ class TestDeleteDynamicStepUseCase:
         """Create repository with sample data."""
         await repo.save(
             DynamicStep(
-                slug="to-delete",
-                sequence_name="flow",
+                slug=Slug("to-delete"),
+                sequence_name=Name("flow"),
                 step_number=1,
                 source_type=ElementType.CONTAINER,
-                source_slug="a",
+                source_slug=Slug("a"),
                 destination_type=ElementType.CONTAINER,
-                destination_slug="b",
+                destination_slug=Slug("b"),
             )
         )
         return repo

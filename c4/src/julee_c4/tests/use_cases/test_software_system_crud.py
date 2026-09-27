@@ -7,6 +7,7 @@ from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
+from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.software_system import (
     MemorySoftwareSystemRepository,
 )
@@ -99,8 +100,8 @@ class TestGetSoftwareSystemUseCase:
         """Create repository with sample data."""
         await repo.save(
             SoftwareSystem(
-                slug="banking-system",
-                name="Banking System",
+                slug=Slug("banking-system"),
+                name=Name("Banking System"),
                 system_type=SystemType.INTERNAL,
             )
         )
@@ -151,9 +152,9 @@ class TestListSoftwareSystemsUseCase:
     ) -> MemorySoftwareSystemRepository:
         """Create repository with sample data."""
         systems = [
-            SoftwareSystem(slug="system-1", name="System 1"),
-            SoftwareSystem(slug="system-2", name="System 2"),
-            SoftwareSystem(slug="system-3", name="System 3"),
+            SoftwareSystem(slug=Slug("system-1"), name=Name("System 1")),
+            SoftwareSystem(slug=Slug("system-2"), name=Name("System 2")),
+            SoftwareSystem(slug=Slug("system-3"), name=Name("System 3")),
         ]
         for s in systems:
             await repo.save(s)
@@ -203,8 +204,8 @@ class TestUpdateSoftwareSystemUseCase:
         """Create repository with sample data."""
         await repo.save(
             SoftwareSystem(
-                slug="banking-system",
-                name="Banking System",
+                slug=Slug("banking-system"),
+                name=Name("Banking System"),
                 description="Original description",
                 system_type=SystemType.INTERNAL,
                 owner="Original Team",
@@ -284,7 +285,7 @@ class TestDeleteSoftwareSystemUseCase:
         self, repo: MemorySoftwareSystemRepository
     ) -> MemorySoftwareSystemRepository:
         """Create repository with sample data."""
-        await repo.save(SoftwareSystem(slug="to-delete", name="To Delete"))
+        await repo.save(SoftwareSystem(slug=Slug("to-delete"), name=Name("To Delete")))
         return repo
 
     @pytest.fixture

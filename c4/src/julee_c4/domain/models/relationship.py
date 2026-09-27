@@ -4,19 +4,37 @@ Connections between C4 elements representing interactions.
 """
 
 from enum import StrEnum
+from typing import Any
 
 from julee.core.entities.entity import Entity
-from julee.core.utils import slugify
-from pydantic import Field, field_validator
+from pydantic import Field
+
+from julee_c4.domain.models.text import Slug
 
 
 class ElementType(StrEnum):
     """Types of elements that can participate in relationships."""
 
-    PERSON = "person"  # References HCD Persona by normalized_name
+    PERSON = "person"  # References an hcd Persona by its slug
     SOFTWARE_SYSTEM = "software_system"
     CONTAINER = "container"
     COMPONENT = "component"
+
+
+def _name_it_after_its_ends(data: dict[str, Any]) -> Slug:
+    """Name a relationship after what it joins.
+
+    A relationship is identified by its two ends, which it already
+    carries, so its slug is derivable rather than something a caller
+    has to invent.
+
+    This ran in ``model_post_init`` and wrote the slug with
+    ``object.__setattr__``, which reaches past validation: the derived
+    slug was the one value of the field that nothing checked. As a
+    default it is built the same way a given one is, by
+    :class:`~julee_c4.domain.models.text.Slug`.
+    """
+    return Slug(f"{data['source_slug']}-to-{data['destination_slug']}")
 
 
 class Relationship(Entity):
@@ -25,45 +43,29 @@ class Relationship(Entity):
     Represents a connection between two C4 elements. Relationships have
     a source, destination, and description of the interaction.
 
-    When source_type or destination_type is PERSON, the corresponding slug
-    should be the persona's normalized_name, which references an HCD Persona.
+    When source_type or destination_type is PERSON, the corresponding
+    slug is an hcd ``Persona.slug``, which hcd derives with the same
+    :func:`~julee.core.utils.slugify`.
+
+    This used to say ``normalized_name``, which is the other thing a
+    Persona carries: a lowercased name with spaces in it, for comparing
+    names by. A reference holding spaces is not a slug, and would never
+    have matched the field it is used as a key into. Declaring both ends
+    :class:`~julee_c4.domain.models.text.Slug` settles which one is
+    meant (#70).
     """
 
-    slug: str = ""
     source_type: ElementType
-    source_slug: str
+    source_slug: Slug
     destination_type: ElementType
-    destination_slug: str
+    destination_slug: Slug
     description: str = "Uses"
     technology: str = ""
     tags: tuple[str, ...] = Field(default_factory=tuple)
     bidirectional: bool = False
     docname: str = ""
-
-    def model_post_init(self, __context) -> None:
-        """Generate slug if not provided."""
-        if not self.slug:
-            object.__setattr__(self, "slug", self._generate_slug())
-
-    def _generate_slug(self) -> str:
-        """Generate a deterministic slug from source and destination."""
-        return slugify(f"{self.source_slug}-to-{self.destination_slug}")
-
-    @field_validator("source_slug", mode="before")
-    @classmethod
-    def validate_source_slug(cls, v: str) -> str:
-        """Validate source_slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("source_slug cannot be empty")
-        return v.strip()
-
-    @field_validator("destination_slug", mode="before")
-    @classmethod
-    def validate_destination_slug(cls, v: str) -> str:
-        """Validate destination_slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("destination_slug cannot be empty")
-        return v.strip()
+    slug: Slug = Field(default_factory=_name_it_after_its_ends)
+    """Derived from the two ends when not given; declared last so it can be."""
 
     @property
     def is_person_relationship(self) -> bool:
@@ -98,12 +100,15 @@ class Relationship(Entity):
         return self.description
 
     def involves_element(self, element_type: ElementType, element_slug: str) -> bool:
-        """Check if relationship involves a specific element."""
-        return (
-            self.source_type == element_type and self.source_slug == element_slug
-        ) or (
-            self.destination_type == element_type
-            and self.destination_slug == element_slug
+        """Check if relationship involves a specific element.
+
+        The argument is made a :class:`Slug` before comparison, so
+        asking with an element's display name answers the same as
+        asking with its slug.
+        """
+        wanted = Slug(element_slug)
+        return (self.source_type == element_type and self.source_slug == wanted) or (
+            self.destination_type == element_type and self.destination_slug == wanted
         )
 
     def involves_system(self, system_slug: str) -> bool:

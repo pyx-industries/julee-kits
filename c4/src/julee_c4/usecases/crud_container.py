@@ -15,6 +15,7 @@ from julee.core.usecases.generic_crud import (
 from pydantic import BaseModel
 
 from julee_c4.domain.models.container import Container, ContainerType
+from julee_c4.domain.models.text import Slug
 from julee_c4.domain.repositories.container import ContainerRepository
 
 
@@ -96,7 +97,7 @@ class CreateContainerUseCase(CreateUseCase[Container, ContainerRepository]):
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Container:
         """Construct a Container from a generated ID and request fields."""
-        return Container(slug=entity_id, **kwargs)
+        return Container(slug=Slug(entity_id), **kwargs)
 
     async def execute(self, request: CreateContainerRequest) -> CreateContainerResponse:
         """Execute the create container use case."""

@@ -7,8 +7,9 @@ from collections.abc import Mapping
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
-from julee.core.utils import slugify
-from pydantic import Field, field_validator
+from pydantic import Field
+
+from julee_c4.domain.models.text import Name, Slug
 
 
 class NodeType(StrEnum):
@@ -36,17 +37,9 @@ class ContainerInstance(Entity):
     Represents a container running within a deployment node.
     """
 
-    container_slug: str
+    container_slug: Slug
     instance_count: int = 1
     properties: Mapping[str, str] = Field(default_factory=dict)
-
-    @field_validator("container_slug", mode="before")
-    @classmethod
-    def validate_container_slug(cls, v: str) -> str:
-        """Validate container_slug is not empty."""
-        if not v or not v.strip():
-            raise ValueError("container_slug cannot be empty")
-        return v.strip()
 
 
 class DeploymentNode(Entity):
@@ -59,34 +52,18 @@ class DeploymentNode(Entity):
     (e.g., Cloud Region > Availability Zone > Kubernetes Cluster > Pod).
     """
 
-    slug: str
-    name: str
+    slug: Slug
+    name: Name
     environment: str = "production"
     node_type: NodeType = NodeType.OTHER
     description: str = ""
     technology: str = ""
     instances: int = 1
-    parent_slug: str | None = None
+    parent_slug: Slug | None = None
     container_instances: tuple[ContainerInstance, ...] = Field(default_factory=tuple)
     properties: Mapping[str, str] = Field(default_factory=dict)
     tags: tuple[str, ...] = Field(default_factory=tuple)
     docname: str = ""
-
-    @field_validator("slug", mode="before")
-    @classmethod
-    def validate_slug(cls, v: str) -> str:
-        """Validate and normalize slug."""
-        if not v or not v.strip():
-            raise ValueError("slug cannot be empty")
-        return slugify(v.strip())
-
-    @field_validator("name", mode="before")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        """Validate name is not empty."""
-        if not v or not v.strip():
-            raise ValueError("name cannot be empty")
-        return v.strip()
 
     @property
     def has_parent(self) -> bool:
@@ -104,10 +81,15 @@ class DeploymentNode(Entity):
         return sum(ci.instance_count for ci in self.container_instances)
 
     def deploys_container(self, container_slug: str) -> bool:
-        """Check if a specific container is deployed here."""
-        return any(
-            ci.container_slug == container_slug for ci in self.container_instances
-        )
+        """Check if a specific container is deployed here.
+
+        The argument is made a :class:`Slug` before it is compared, so
+        asking with the container's display name answers the same as
+        asking with its slug. Comparing the argument as given is how
+        this kind of lookup silently returned nothing (#70).
+        """
+        wanted = Slug(container_slug)
+        return any(ci.container_slug == wanted for ci in self.container_instances)
 
     def with_container_instance(
         self,
@@ -129,10 +111,11 @@ class DeploymentNode(Entity):
         Returns:
             A new DeploymentNode
         """
+        wanted = Slug(container_slug)
         instances = []
         found = False
         for instance in self.container_instances:
-            if instance.container_slug == container_slug:
+            if instance.container_slug == wanted:
                 found = True
                 instances.append(
                     instance.model_copy(
@@ -147,7 +130,7 @@ class DeploymentNode(Entity):
         if not found:
             instances.append(
                 ContainerInstance(
-                    container_slug=container_slug,
+                    container_slug=wanted,
                     instance_count=instance_count,
                     properties=properties or {},
                 )

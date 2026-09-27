@@ -15,6 +15,7 @@ from julee.core.usecases.generic_crud import (
 from pydantic import BaseModel
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
+from julee_c4.domain.models.text import Slug
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 
 
@@ -100,8 +101,15 @@ class CreateRelationshipUseCase(CreateUseCase[Relationship, RelationshipReposito
         super().__init__(repo)
 
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Relationship:
-        """Construct a Relationship from a generated ID and request fields."""
-        return Relationship(slug=entity_id, **kwargs)
+        """Construct a Relationship from a generated ID and request fields.
+
+        A request that names no slug leaves the entity to derive
+        one from its two ends, so the field is left out rather than
+        passed empty.
+        """
+        if not entity_id:
+            return Relationship(**kwargs)
+        return Relationship(slug=Slug(entity_id), **kwargs)
 
     async def execute(
         self, request: CreateRelationshipRequest

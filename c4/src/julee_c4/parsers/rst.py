@@ -19,6 +19,7 @@ from julee_c4.domain.models.deployment_node import (
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
+from julee_c4.domain.models.text import Name, Slug
 
 logger = logging.getLogger(__name__)
 
@@ -340,8 +341,8 @@ def parse_software_system_file(file_path: Path) -> SoftwareSystem | None:
             )
 
     return SoftwareSystem(
-        slug=parsed.slug,
-        name=parsed.name or parsed.slug,
+        slug=Slug(parsed.slug),
+        name=Name(parsed.name or parsed.slug),
         description=parsed.description,
         system_type=system_type,
         owner=parsed.owner,
@@ -426,9 +427,9 @@ def parse_container_file(file_path: Path) -> Container | None:
             )
 
     return Container(
-        slug=parsed.slug,
-        name=parsed.name or parsed.slug,
-        system_slug=parsed.system_slug,
+        slug=Slug(parsed.slug),
+        name=Name(parsed.name or parsed.slug),
+        system_slug=Slug(parsed.system_slug),
         description=parsed.description,
         container_type=container_type,
         technology=parsed.technology,
@@ -497,10 +498,10 @@ def parse_component_file(file_path: Path) -> Component | None:
         return None
 
     return Component(
-        slug=parsed.slug,
-        name=parsed.name or parsed.slug,
-        container_slug=parsed.container_slug,
-        system_slug=parsed.system_slug,
+        slug=Slug(parsed.slug),
+        name=Name(parsed.name or parsed.slug),
+        container_slug=Slug(parsed.container_slug),
+        system_slug=Slug(parsed.system_slug),
         description=parsed.description,
         technology=parsed.technology,
         interface=parsed.interface,
@@ -581,12 +582,13 @@ def parse_relationship_file(file_path: Path) -> Relationship | None:
         logger.warning(f"Unknown destination_type '{parsed.destination_type}'")
         return None
 
+    named = {"slug": Slug(parsed.slug)} if parsed.slug else {}
     return Relationship(
-        slug=parsed.slug,
+        **named,
         source_type=source_type,
-        source_slug=parsed.source_slug,
+        source_slug=Slug(parsed.source_slug),
         destination_type=destination_type,
-        destination_slug=parsed.destination_slug,
+        destination_slug=Slug(parsed.destination_slug),
         description=parsed.description or "Uses",
         technology=parsed.technology,
         bidirectional=parsed.bidirectional,
@@ -682,21 +684,21 @@ def parse_deployment_node_file(file_path: Path) -> DeploymentNode | None:
 
     container_instances = [
         ContainerInstance(
-            container_slug=ci["container_slug"],
+            container_slug=Slug(ci["container_slug"]),
             instance_count=ci["instance_count"],
         )
         for ci in parsed.container_instances
     ]
 
     return DeploymentNode(
-        slug=parsed.slug,
-        name=parsed.name or parsed.slug,
+        slug=Slug(parsed.slug),
+        name=Name(parsed.name or parsed.slug),
         environment=parsed.environment or "production",
         node_type=node_type,
         description=parsed.description,
         technology=parsed.technology,
         instances=parsed.instances,
-        parent_slug=parsed.parent_slug or None,
+        parent_slug=Slug(parsed.parent_slug) if parsed.parent_slug else None,
         container_instances=tuple(container_instances),
         tags=tuple(parsed.tags),
     )
@@ -784,14 +786,15 @@ def parse_dynamic_step_file(file_path: Path) -> DynamicStep | None:
         logger.warning(f"Unknown destination_type '{parsed.destination_type}'")
         return None
 
+    named = {"slug": Slug(parsed.slug)} if parsed.slug else {}
     return DynamicStep(
-        slug=parsed.slug,
-        sequence_name=parsed.sequence_name,
+        **named,
+        sequence_name=Name(parsed.sequence_name),
         step_number=parsed.step_number,
         source_type=source_type,
-        source_slug=parsed.source_slug,
+        source_slug=Slug(parsed.source_slug),
         destination_type=destination_type,
-        destination_slug=parsed.destination_slug,
+        destination_slug=Slug(parsed.destination_slug),
         description=parsed.description,
         technology=parsed.technology,
         return_value=parsed.return_value,

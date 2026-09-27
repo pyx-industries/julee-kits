@@ -1,9 +1,9 @@
 """Tests for Component domain model."""
 
 import pytest
-from pydantic import ValidationError
 
 from julee_c4.domain.models.component import Component
+from julee_c4.domain.models.text import Name, Slug
 
 
 class TestComponentCreation:
@@ -12,10 +12,10 @@ class TestComponentCreation:
     def test_create_with_required_fields(self) -> None:
         """Test creating a component with minimum required fields."""
         component = Component(
-            slug="auth-controller",
-            name="Authentication Controller",
-            container_slug="api-app",
-            system_slug="banking-system",
+            slug=Slug("auth-controller"),
+            name=Name("Authentication Controller"),
+            container_slug=Slug("api-app"),
+            system_slug=Slug("banking-system"),
         )
 
         assert component.slug == "auth-controller"
@@ -28,10 +28,10 @@ class TestComponentCreation:
     def test_create_with_all_fields(self) -> None:
         """Test creating a component with all fields."""
         component = Component(
-            slug="auth-controller",
-            name="Authentication Controller",
-            container_slug="api-app",
-            system_slug="banking-system",
+            slug=Slug("auth-controller"),
+            name=Name("Authentication Controller"),
+            container_slug=Slug("api-app"),
+            system_slug=Slug("banking-system"),
             description="Handles user authentication and authorization",
             technology="Python, FastAPI",
             interface="REST API",
@@ -47,51 +47,51 @@ class TestComponentCreation:
 
     def test_empty_slug_raises_error(self) -> None:
         """Test that empty slug raises validation error."""
-        with pytest.raises(ValidationError, match="slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             Component(
-                slug="",
-                name="Test",
-                container_slug="container",
-                system_slug="system",
+                slug=Slug(""),
+                name=Name("Test"),
+                container_slug=Slug("container"),
+                system_slug=Slug("system"),
             )
 
     def test_empty_name_raises_error(self) -> None:
         """Test that empty name raises validation error."""
-        with pytest.raises(ValidationError, match="name cannot be empty"):
+        with pytest.raises(ValueError, match="a name cannot be empty"):
             Component(
-                slug="test",
-                name="",
-                container_slug="container",
-                system_slug="system",
+                slug=Slug("test"),
+                name=Name(""),
+                container_slug=Slug("container"),
+                system_slug=Slug("system"),
             )
 
     def test_empty_container_slug_raises_error(self) -> None:
         """Test that empty container_slug raises validation error."""
-        with pytest.raises(ValidationError, match="container_slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             Component(
-                slug="test",
-                name="Test",
-                container_slug="",
-                system_slug="system",
+                slug=Slug("test"),
+                name=Name("Test"),
+                container_slug=Slug(""),
+                system_slug=Slug("system"),
             )
 
     def test_empty_system_slug_raises_error(self) -> None:
         """Test that empty system_slug raises validation error."""
-        with pytest.raises(ValidationError, match="system_slug cannot be empty"):
+        with pytest.raises(ValueError, match="nothing in it that can be a slug"):
             Component(
-                slug="test",
-                name="Test",
-                container_slug="container",
-                system_slug="",
+                slug=Slug("test"),
+                name=Name("Test"),
+                container_slug=Slug("container"),
+                system_slug=Slug(""),
             )
 
     def test_slug_is_normalized(self) -> None:
         """Test that slug is normalized (slugified)."""
         component = Component(
-            slug="Auth Controller",
-            name="Test",
-            container_slug="container",
-            system_slug="system",
+            slug=Slug("Auth Controller"),
+            name=Name("Test"),
+            container_slug=Slug("container"),
+            system_slug=Slug("system"),
         )
         assert component.slug == "auth-controller"
 
@@ -102,20 +102,20 @@ class TestComponentComputedFields:
     def test_name_normalized(self) -> None:
         """Test normalized name is computed."""
         component = Component(
-            slug="test",
-            name="Authentication Controller",
-            container_slug="container",
-            system_slug="system",
+            slug=Slug("test"),
+            name=Name("Authentication Controller"),
+            container_slug=Slug("container"),
+            system_slug=Slug("system"),
         )
         assert component.name_normalized == "authentication controller"
 
     def test_qualified_slug(self) -> None:
         """Test qualified slug includes container and system."""
         component = Component(
-            slug="auth-controller",
-            name="Test",
-            container_slug="api-app",
-            system_slug="banking-system",
+            slug=Slug("auth-controller"),
+            name=Name("Test"),
+            container_slug=Slug("api-app"),
+            system_slug=Slug("banking-system"),
         )
         assert component.qualified_slug == "banking-system/api-app/auth-controller"
 
@@ -126,10 +126,10 @@ class TestComponentTags:
     def test_has_tag_exact(self) -> None:
         """Test tag lookup with exact match."""
         component = Component(
-            slug="test",
-            name="Test",
-            container_slug="container",
-            system_slug="system",
+            slug=Slug("test"),
+            name=Name("Test"),
+            container_slug=Slug("container"),
+            system_slug=Slug("system"),
             tags=("security", "core"),
         )
         assert component.has_tag("security") is True
@@ -138,10 +138,10 @@ class TestComponentTags:
     def test_has_tag_case_insensitive(self) -> None:
         """Test tag lookup is case-insensitive."""
         component = Component(
-            slug="test",
-            name="Test",
-            container_slug="container",
-            system_slug="system",
+            slug=Slug("test"),
+            name=Name("Test"),
+            container_slug=Slug("container"),
+            system_slug=Slug("system"),
             tags=("Security",),
         )
         assert component.has_tag("security") is True
@@ -150,10 +150,10 @@ class TestComponentTags:
     def test_with_tag(self) -> None:
         """Tagging returns a new entity carrying the tag."""
         component = Component(
-            slug="test",
-            name="Test",
-            container_slug="container",
-            system_slug="system",
+            slug=Slug("test"),
+            name=Name("Test"),
+            container_slug=Slug("container"),
+            system_slug=Slug("system"),
             tags=("existing",),
         )
         component = component.with_tag("new")
@@ -167,10 +167,10 @@ class TestComponentSerialization:
     def test_to_dict(self) -> None:
         """Test model can be serialized to dict."""
         component = Component(
-            slug="test",
-            name="Test Component",
-            container_slug="container",
-            system_slug="system",
+            slug=Slug("test"),
+            name=Name("Test Component"),
+            container_slug=Slug("container"),
+            system_slug=Slug("system"),
             technology="Python",
         )
         data = component.model_dump()
