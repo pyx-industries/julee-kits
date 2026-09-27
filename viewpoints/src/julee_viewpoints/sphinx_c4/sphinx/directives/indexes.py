@@ -17,11 +17,11 @@ once every document has been read.
 """
 
 from docutils import nodes
+from julee.core.entities.text import Slug
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container
 from julee_c4.domain.models.deployment_node import DeploymentNode
-from julee_c4.domain.models.text import Slug
 
 from ..context import C4Context, get_c4_context
 from .base import C4Directive

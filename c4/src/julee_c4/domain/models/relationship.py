@@ -7,9 +7,8 @@ from enum import StrEnum
 from typing import Any
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Slug
 from pydantic import Field
-
-from julee_c4.domain.models.text import Slug
 
 
 class ElementType(StrEnum):
@@ -32,7 +31,7 @@ def _name_it_after_its_ends(data: dict[str, Any]) -> Slug:
     ``object.__setattr__``, which reaches past validation: the derived
     slug was the one value of the field that nothing checked. As a
     default it is built the same way a given one is, by
-    :class:`~julee_c4.domain.models.text.Slug`.
+    :class:`~julee.core.entities.text.Slug`.
     """
     return Slug(f"{data['source_slug']}-to-{data['destination_slug']}")
 
@@ -51,7 +50,7 @@ class Relationship(Entity):
     Persona carries: a lowercased name with spaces in it, for comparing
     names by. A reference holding spaces is not a slug, and would never
     have matched the field it is used as a key into. Declaring both ends
-    :class:`~julee_c4.domain.models.text.Slug` settles which one is
+    :class:`~julee.core.entities.text.Slug` settles which one is
     meant (#70).
     """
 

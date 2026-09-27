@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from julee.core.entities.text import Name, Slug
+
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container, ContainerType
 from julee_c4.domain.models.deployment_node import (
@@ -17,7 +19,6 @@ from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
-from julee_c4.domain.models.text import Name, Slug
 from julee_c4.parsers.rst import (
     parse_component_content,
     parse_component_file,

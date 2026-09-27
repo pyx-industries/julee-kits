@@ -1,6 +1,7 @@
 """Tests for diagram computation use cases."""
 
 import pytest
+from julee.core.entities.text import Name, Slug
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container, ContainerType
@@ -15,7 +16,6 @@ from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
-from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.component import (
     MemoryComponentRepository,
 )

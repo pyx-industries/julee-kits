@@ -1,12 +1,12 @@
 """Tests for MemorySoftwareSystemRepository."""
 
 import pytest
+from julee.core.entities.text import Name, Slug
 
 from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
-from julee_c4.domain.models.text import Name, Slug
 from julee_c4.infrastructure.repositories.memory.software_system import (
     MemorySoftwareSystemRepository,
 )

@@ -6,9 +6,8 @@ A numbered step in a dynamic (sequence) diagram.
 from typing import Any
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, Slug
 from pydantic import Field
-
-from julee_c4.domain.models.text import Name, Slug
 
 from .relationship import ElementType
 
