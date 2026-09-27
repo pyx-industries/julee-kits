@@ -8,38 +8,15 @@ All domain models use Pydantic BaseModel for validation, serialization,
 and type safety, following the patterns established in the sample project.
 """
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from julee.core.entities.content_stream import (
-    ContentStream,
-)
 from julee.core.entities.entity import Entity
-from pydantic import Field, ValidationInfo, field_validator, model_validator
+from pydantic import Field, field_validator
 
 from julee_ceap.domain.models.document.multihash import is_content_multihash
-
-
-def delegate_to_content(*method_names: str) -> Callable[[type], type]:
-    """Decorator to delegate IO methods to the content stream property."""
-
-    def decorator(cls: type) -> type:
-        for method_name in method_names:
-
-            def make_delegated_method(name: str) -> Callable[..., Any]:
-                def delegated_method(self: Any, *args: Any, **kwargs: Any) -> Any:
-                    return getattr(self.content, name)(*args, **kwargs)
-
-                delegated_method.__name__ = name
-                delegated_method.__doc__ = f"Delegate {name} to content stream."
-                return delegated_method
-
-            setattr(cls, method_name, make_delegated_method(method_name))
-        return cls
-
-    return decorator
 
 
 class DocumentStatus(StrEnum):
@@ -56,16 +33,30 @@ class DocumentStatus(StrEnum):
     FAILED = "failed"
 
 
-@delegate_to_content("read", "seek", "tell")
 class Document(Entity):
-    """Complete document entity including content and metadata.
+    """A document's metadata, and the name of its content.
 
-    This is the primary domain model that represents a complete document
-    in the CEAP workflow system. Content is provided as a ContentStream
-    for efficient handling of both small and large documents.
+    The content is not here. It is stored under its own hash and read
+    with ``DocumentRepository.content_of``, which is how the storage
+    layer has always kept it: metadata in one bucket, content in
+    another, keyed by ``content_multihash``.
 
-    The content stream is excluded from JSON serialization - use separate
-    content endpoints for streaming binary data over HTTP.
+    It used to be a field, ``content: ContentStream | None``, excluded
+    from serialisation because a live stream cannot be serialised. So a
+    Document that had crossed a Temporal boundary never carried it, and
+    an invariant saying every document has content was false in transit
+    by construction. What that produced was a validator containing
+
+        if info.context.get("temporal_validation"): return self
+
+    in a domain entity: a dependency on the name of an infrastructure
+    technology, in the innermost ring, written as a string literal that
+    no import linter or type checker would catch. A Document whose
+    invariant had been skipped was also indistinguishable from one whose
+    invariant held, so nothing downstream could rely on it (#69).
+
+    A document that names its content claims nothing the transport
+    cannot honour, so there is nothing left for a flag to silence.
     """
 
     # Core document identification
@@ -86,15 +77,7 @@ class Document(Entity):
     created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
 
-    # Additional data and content stream
     additional_metadata: Mapping[str, Any] = Field(default_factory=dict)
-    content: ContentStream | None = Field(default=None, exclude=True)
-
-    content_bytes: bytes | None = Field(
-        default=None,
-        description="Raw content as bytes for cases where direct in-memory "
-        "binary payloads are preferred over ContentStream.",
-    )
 
     @field_validator("document_id")
     @classmethod
@@ -143,19 +126,3 @@ class Document(Entity):
                 f"content_multihash() to compute one."
             )
         return candidate
-
-    @model_validator(mode="after")
-    def validate_content_fields(self, info: ValidationInfo) -> "Document":
-        """Ensure document has at least content, or content_bytes."""
-
-        # Skip validation in Temporal deserialization context
-        if info.context and info.context.get("temporal_validation"):
-            return self
-
-        has_content = self.content is not None
-        has_content_bytes = self.content_bytes is not None
-
-        if not (has_content or has_content_bytes):
-            raise ValueError("Document must have one of: content, or content_bytes.")
-
-        return self

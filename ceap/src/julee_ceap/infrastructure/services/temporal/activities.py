@@ -49,7 +49,10 @@ class TemporalKnowledgeService(ConfigurableKnowledgeService):
 
     @override
     async def register_file(
-        self, config: KnowledgeServiceConfig, document: Document
+        self,
+        config: KnowledgeServiceConfig,
+        document: Document,
+        content: ContentStream,
     ) -> FileRegistrationResult:
         """Register a document file, reading its content through the port.
 
@@ -64,14 +67,18 @@ class TemporalKnowledgeService(ConfigurableKnowledgeService):
         steps were working around content being a field of the entity
         rather than something the repository can be asked for.
         """
-        content = await self.document_repo.content_of(document)
+        # A ContentStream does not survive an activity boundary, so what
+        # arrives here is not the caller's stream. Ask the repository for
+        # the content this document names, which is a fresh stream over
+        # the stored bytes rather than the spent remains of one.
+        stored = await self.document_repo.content_of(document)
 
         # The upload seeks, and a response streamed off a socket cannot
-        # (julee#90). Buffering it is the adapter's business, and this
-        # is the adapter.
-        seekable = ContentStream(io.BytesIO(content.read()))
-
-        return await super().register_file(config, document.evolve(content=seekable))
+        # (julee#90). Buffering is the adapter's business, and this is
+        # the adapter.
+        return await super().register_file(
+            config, document, ContentStream(io.BytesIO(stored.read()))
+        )
 
 
 ACTIVITY_CLASSES = (TemporalKnowledgeService,)

@@ -13,19 +13,18 @@ import logging
 from collections.abc import Callable, Sequence
 from datetime import datetime
 
+from julee.core.entities.content_stream import ContentStream
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol
 from pydantic import BaseModel
 
 from julee_ceap.domain.models import (
-    ContentStream,
     Document,
     DocumentPolicyValidation,
     DocumentStatus,
     KnowledgeServiceQuery,
     Policy,
 )
-from julee_ceap.domain.models.document.multihash import content_multihash
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidationStatus,
 )
@@ -481,7 +480,7 @@ class ValidateDocumentUseCase:
                 )
 
             registration_result = await self.knowledge_service.register_file(
-                config, document
+                config, document, await self.document_repo.content_of(document)
             )
             registrations[knowledge_service_id] = (
                 registration_result.knowledge_service_file_id
@@ -708,20 +707,22 @@ class ValidateDocumentUseCase:
         # Create new document with transformed content
         transformed_document_id = await self.document_repo.generate_id()
 
-        # Create content stream from transformed text
+        # Store the content, then name it. The multihash comes back
+        # from the store rather than being worked out here and asserted:
+        # content is addressed by what it is, so it has to be read
+        # before anything can name it.
         transformed_bytes = transformed_content.encode("utf-8")
-        transformed_stream = io.BytesIO(transformed_bytes)
-
-        proper_multihash = content_multihash(transformed_bytes)
+        stored = await self.document_repo.store_content(
+            ContentStream(io.BytesIO(transformed_bytes))
+        )
 
         transformed_document = Document(
             document_id=transformed_document_id,
             original_filename=f"transformed_{document.original_filename}",
             content_type=document.content_type,
             size_bytes=len(transformed_bytes),
-            content_multihash=proper_multihash,
+            content_multihash=stored,
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(transformed_stream),
             created_at=self.now_fn(),
             updated_at=self.now_fn(),
         )

@@ -14,6 +14,8 @@ from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
 
+from julee.core.entities.content_stream import ContentStream
+
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
@@ -133,7 +135,10 @@ class MemoryKnowledgeService(KnowledgeService):
         return self._registered_files.copy()
 
     async def register_file(
-        self, config: KnowledgeServiceConfig, document: Document
+        self,
+        config: KnowledgeServiceConfig,
+        document: Document,
+        content: ContentStream,
     ) -> FileRegistrationResult:
         """Register a document file by storing metadata in memory.
 

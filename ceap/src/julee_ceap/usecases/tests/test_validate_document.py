@@ -11,17 +11,14 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
 import pytest
+from julee.core.entities.content_stream import ContentStream
 from pydantic import ValidationError
 
 from julee_ceap.domain.models import (
-    ContentStream,
     Document,
     DocumentStatus,
     KnowledgeServiceConfig,
     KnowledgeServiceQuery,
-)
-from julee_ceap.domain.models.document.multihash import (
-    content_multihash as multihash_of,
 )
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
 from julee_ceap.domain.models.policy import (
@@ -30,6 +27,7 @@ from julee_ceap.domain.models.policy import (
     Policy,
     PolicyStatus,
 )
+from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.infrastructure.repositories.memory import (
     MemoryDocumentPolicyValidationRepository,
     MemoryDocumentRepository,
@@ -44,6 +42,16 @@ from julee_ceap.infrastructure.services.knowledge_service.memory import (
 from julee_ceap.usecases import ValidateDocumentUseCase
 
 pytestmark = pytest.mark.unit
+
+
+async def stored_name(repository: DocumentRepository, content: bytes) -> str:
+    """Put content in the store and give back the name it got.
+
+    Tests used to set content_multihash to a hash of something else and
+    let save() quietly correct it. Nothing corrects it now: content is
+    addressed by what it is, so a document names what was stored.
+    """
+    return await repository.store_content(ContentStream(io.BytesIO(content)))
 
 
 class TestValidateDocumentUseCase:
@@ -166,9 +174,8 @@ class TestValidateDocumentUseCase:
             original_filename="test_document.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-123"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -222,9 +229,8 @@ class TestValidateDocumentUseCase:
             original_filename="test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -266,9 +272,8 @@ class TestValidateDocumentUseCase:
             original_filename="test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -357,9 +362,8 @@ class TestValidateDocumentUseCase:
             original_filename="test_document.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-123"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -489,9 +493,8 @@ class TestValidateDocumentUseCase:
             original_filename="poor_document.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-456"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -576,9 +579,8 @@ class TestValidateDocumentUseCase:
             original_filename="transform_test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-transform-1"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -728,9 +730,8 @@ class TestValidateDocumentUseCase:
             original_filename="poor_transform_test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-transform-2"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -865,9 +866,8 @@ class TestValidateDocumentUseCase:
             original_filename="excellent_doc.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-no-transform"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -973,9 +973,8 @@ class TestValidateDocumentUseCase:
             original_filename="invalid_json_test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-invalid-json"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -1089,9 +1088,8 @@ class TestValidateDocumentUseCase:
             original_filename="missing_query_test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-missing-query"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -1160,9 +1158,8 @@ class TestValidateDocumentUseCase:
             original_filename="test.txt",
             content_type="text/plain",
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-789"),
+            content_multihash=await stored_name(document_repo, content_bytes),
             status=DocumentStatus.CAPTURED,
-            content=ContentStream(io.BytesIO(content_bytes)),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

@@ -86,44 +86,21 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                 )
                 return None
 
-            try:
-                content_response = self.client.get_object(
-                    bucket_name=self.content_bucket,
-                    object_name=content_multihash,
-                )
+            self.logger.info(
+                "Document retrieved successfully",
+                extra={
+                    "document_id": document_id,
+                    "content_multihash": content_multihash,
+                    "retrieved_at": datetime.now(UTC).isoformat(),
+                },
+            )
 
-                # Create ContentStream directly from the Minio response stream
-                # This avoids loading the entire content into memory
-                content_stream = ContentStream(content_response)
-                document_dict["content"] = content_stream
-
-                self.logger.info(
-                    "Document retrieved successfully",
-                    extra={
-                        "document_id": document_id,
-                        "content_multihash": content_multihash,
-                        "retrieved_at": datetime.now(UTC).isoformat(),
-                    },
-                )
-
-                return Document(**document_dict)
-
-            except S3Error as content_error:
-                if getattr(content_error, "code", None) == "NoSuchKey":
-                    self.logger.error(
-                        "Data integrity error: Document metadata exists but "
-                        "content missing",
-                        extra={
-                            "document_id": document_id,
-                            "content_multihash": content_multihash,
-                        },
-                    )
-                    raise ValueError(
-                        f"Document {document_id} metadata exists but content "
-                        f"is missing. Content multihash: {content_multihash}"
-                    )
-                else:
-                    raise content_error
+            # Metadata only. This used to open the content object too,
+            # just to hang a stream off the document — so every caller
+            # that wanted a name and a status paid for a second request
+            # and got a stream it never read. content_of() is for the
+            # callers that want the bytes.
+            return Document(**document_dict)
 
         except S3Error as e:
             if getattr(e, "code", None) == "NoSuchKey":
@@ -191,13 +168,65 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
 
         return ContentStream(response)
 
-    async def save(self, document: Document) -> None:
-        """Save a document with its content and metadata.
+    async def store_content(self, content: ContentStream) -> str:
+        """Keep these bytes under their own name, and say what it is.
 
-        If the document has content_string, it will be converted to a
-        ContentStream and stored. The content_string field should only be
-        used for small content (few KB) when saving from workflows/use-cases.
-        Call-sites in activities should always use the content stream.
+        The name is the content, so storing the same bytes twice finds
+        the first object already there and adds nothing — which is why
+        this can be called without checking first.
+
+        Read once. It used to be read twice, to hash and then to upload,
+        with a seek(0) in between; content fetched from another
+        repository arrives over a response that cannot be rewound, so
+        the seek raised and the save failed (julee#90).
+
+        Args:
+            content: The bytes to store, read once from where it is
+
+        Returns:
+            The multihash the content is stored under
+        """
+        raw = content.read()
+        multihash = content_multihash(raw)
+
+        try:
+            self.client.stat_object(
+                bucket_name=self.content_bucket, object_name=multihash
+            )
+            self.logger.debug(
+                "Content already stored under this name, adding nothing",
+                extra={"content_multihash": multihash},
+            )
+            return multihash
+        except S3Error as error:
+            if getattr(error, "code", None) not in ("NoSuchKey", "NoSuchObject"):
+                raise
+
+        self.client.put_object(
+            bucket_name=self.content_bucket,
+            object_name=multihash,
+            data=io.BytesIO(raw),
+            length=len(raw),
+        )
+
+        self.logger.debug(
+            "Content stored",
+            extra={"content_multihash": multihash, "content_size": len(raw)},
+        )
+
+        return multihash
+
+    async def save(self, document: Document) -> None:
+        """Save a document's metadata.
+
+        The content it names is stored by ``store_content``, before
+        there is a document to name it: a multihash cannot be known
+        until the bytes have been read, so the content goes first and
+        the document is built from what came back.
+
+        This used to do both, taking content off the document, hashing
+        it, and correcting the document's own multihash afterwards if
+        the caller had guessed wrong. There is nothing to correct now.
         """
         self.logger.info(
             "Saving document",
@@ -210,46 +239,23 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
             },
         )
 
-        # Update timestamp
         document = self.update_timestamps(document)
 
         try:
-            # Handle content_string conversion (only if no content provided)
-            document = self._normalize_document_content(document)
-
-            # Store content first and get calculated multihash
-            calculated_multihash = await self._store_content(document)
-
-            # Verify and update multihash if needed
-            if document.content_multihash != calculated_multihash:
-                self.logger.warning(
-                    "Provided multihash differs from calculated, using calculated",
-                    extra={
-                        "document_id": document.document_id,
-                        "provided_multihash": document.content_multihash,
-                        "calculated_multihash": calculated_multihash,
-                    },
-                )
-                document = document.evolve(content_multihash=calculated_multihash)
-
-            # Store metadata second (atomic operation)
             await self._store_metadata(document)
 
             self.logger.info(
                 "Document saved successfully",
                 extra={
                     "document_id": document.document_id,
-                    "content_multihash": calculated_multihash,
+                    "content_multihash": document.content_multihash,
                 },
             )
 
         except Exception as e:
             self.logger.error(
                 "Failed to save document",
-                extra={
-                    "document_id": document.document_id,
-                    "error": str(e),
-                },
+                extra={"document_id": document.document_id, "error": str(e)},
                 exc_info=True,
             )
             raise
@@ -301,31 +307,12 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
 
         # Step 3: Read each unique object's content once.
         #
-        # Held as bytes rather than as the streams themselves. Two
-        # documents can share a content_multihash — the same file
-        # uploaded twice — and a stream is consumed by whoever reads it
-        # first, so handing one to both meant the second document read
-        # empty (#124). Deduplicating the fetch is still worth doing;
-        # what cannot be shared is the reading of it.
-        content_bytes_by_hash: dict[str, bytes] = {}
-        if content_hashes:
-            content_results = self.get_many_binary_objects(
-                bucket_name=self.content_bucket,
-                object_names=list(content_hashes),
-                not_found_log_message="Content not found",
-                error_log_message="Error retrieving content",
-                extra_log_data={
-                    "document_ids": document_ids,
-                    "unique_content_hashes": len(content_hashes),
-                },
-            )
-            content_bytes_by_hash = {
-                multihash: stream.read()
-                for multihash, stream in content_results.items()
-                if stream is not None
-            }
+        # No content is fetched here. This used to read every
+        # document's bytes in order to hang a stream off each one, so a
+        # caller listing fifty documents paid for fifty content reads
+        # and used none of them. content_of() is for the callers that
+        # want the bytes, one at a time, freshly.
 
-        # Step 4: Splice metadata and content together into Documents
         result: dict[str, Document | None] = {}
         for document_id in document_ids:
             metadata = metadata_results.get(document_id)
@@ -333,19 +320,8 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                 result[document_id] = None
                 continue
 
-            # A stream of this document's own, over the shared bytes.
-            content_multihash = metadata.content_multihash
-            content_stream = None
-            if content_multihash and content_multihash in content_bytes_by_hash:
-                content_stream = ContentStream(
-                    io.BytesIO(content_bytes_by_hash[content_multihash])
-                )
-
             try:
-                # Convert RawMetadata to dict and add content
-                metadata_dict = metadata.model_dump()
-                metadata_dict["content"] = content_stream
-                result[document_id] = Document(**metadata_dict)
+                result[document_id] = Document(**metadata.model_dump())
             except Exception as e:
                 self.logger.error(
                     "Failed to create Document from metadata",
@@ -415,108 +391,12 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
         """Generate a unique document identifier."""
         return self.generate_id_with_prefix("doc")
 
-    async def _store_content(self, document: Document) -> str:
-        """Store document content to content-addressable storage and return
-        multihash."""
-        if not document.content:
-            raise ValueError(f"Document {document.document_id} has no content")
-
-        # Read the content once. It used to be read twice — once to
-        # hash and once to upload — with a seek(0) in between to make
-        # the second read possible.
-        #
-        # A document being transferred from another repository carries
-        # the response it was fetched over, and that cannot be rewound:
-        # the seek raised io.UnsupportedOperation and the save failed
-        # (#90). Reading once needs no rewind and works whatever the
-        # stream is.
-        content_data = document.content.read()
-        calculated_multihash = content_multihash(content_data)
-        object_name = calculated_multihash
-
-        try:
-            # Check if content already exists (deduplication)
-            try:
-                self.client.stat_object(
-                    bucket_name=self.content_bucket, object_name=object_name
-                )
-                # Content already exists, no need to store again
-                self.logger.debug(
-                    "Content already exists, skipping storage",
-                    extra={
-                        "document_id": document.document_id,
-                        "content_multihash": calculated_multihash,
-                    },
-                )
-                return calculated_multihash
-
-            except S3Error as e:
-                if getattr(e, "code", None) == "NoSuchKey":
-                    # Content doesn't exist, continue to store it
-                    pass
-                else:
-                    raise  # Re-raise if it's another S3 error
-
-            # Store the content using calculated multihash
-            self.client.put_object(
-                bucket_name=self.content_bucket,
-                object_name=object_name,
-                data=io.BytesIO(content_data),
-                length=len(content_data),
-                content_type=document.content_type or "application/octet-stream",
-                metadata={
-                    "document_id": document.document_id,
-                    "original_filename": document.original_filename or "",
-                },
-            )
-
-            self.logger.debug(
-                "Content stored successfully",
-                extra={
-                    "document_id": document.document_id,
-                    "content_multihash": calculated_multihash,
-                    "content_size": len(content_data),
-                },
-            )
-
-            return calculated_multihash
-
-        except Exception as e:
-            self.logger.error(
-                "Failed to store content",
-                extra={
-                    "document_id": document.document_id,
-                    "error": str(e),
-                },
-            )
-            raise
-
-    def _normalize_document_content(self, document: Document) -> Document:
-        """Ensure document has a ContentStream in content"""
-        if document.content is not None:
-            return document
-
-        content_bytes = document.content_bytes
-        if content_bytes is not None:
-            if isinstance(content_bytes, str):
-                content_bytes = content_bytes.encode("utf-8")
-
-            stream = ContentStream(io.BytesIO(content_bytes))
-            size_bytes = len(content_bytes)
-            return document.evolve(content=stream, size_bytes=size_bytes)
-
-        raise ValueError(
-            f"Document {document.document_id} has no content, content_bytes"
-        )
-
     async def _store_metadata(self, document: Document) -> None:
         """Store document metadata to Minio with idempotency check."""
         object_name = document.document_id
 
         # Serialize metadata (content stream and content_string excluded)
-        metadata_json = document.model_dump_json(
-            exclude={"content", "content_string", "content_bytes"}
-        ).encode("utf-8")
+        metadata_json = document.model_dump_json().encode("utf-8")
 
         try:
             # Check if metadata already exists and is identical (idempotency)

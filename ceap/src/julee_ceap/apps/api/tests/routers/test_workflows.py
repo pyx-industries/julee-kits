@@ -364,7 +364,6 @@ class TestWorkflowValidation:
         """Test workflow start with invalid JSON."""
         response = client.post(
             "/workflows/extract-assemble",
-            content="invalid json",
             headers={"Content-Type": "application/json"},
         )
 

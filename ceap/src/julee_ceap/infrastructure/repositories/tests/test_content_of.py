@@ -46,8 +46,16 @@ def repository(request: pytest.FixtureRequest) -> DocumentRepository:
     return MinioDocumentRepository(FakeMinioClient())
 
 
-def a_document(content: bytes = CONTENT) -> Document:
-    """A document naming this content, with the content attached to save."""
+async def a_stored_document(
+    repository: DocumentRepository, content: bytes = CONTENT
+) -> Document:
+    """Content in the store, and a document naming it.
+
+    In that order, which is the order the shape requires: content is
+    addressed by what it is, so it has to be stored before anything can
+    name it.
+    """
+    await repository.store_content(ContentStream(io.BytesIO(content)))
     return Document(
         document_id="doc-1",
         original_filename="spec.txt",
@@ -55,7 +63,6 @@ def a_document(content: bytes = CONTENT) -> Document:
         size_bytes=len(content),
         content_multihash=content_multihash(content),
         status=DocumentStatus.CAPTURED,
-        content=ContentStream(io.BytesIO(content)),
     )
 
 
@@ -64,7 +71,7 @@ class TestReadingContentThroughThePort:
     async def test_it_gives_back_what_was_stored(
         self, repository: DocumentRepository
     ) -> None:
-        document = a_document()
+        document = await a_stored_document(repository)
         await repository.save(document)
 
         assert (await repository.content_of(document)).read() == CONTENT
@@ -76,7 +83,7 @@ class TestReadingContentThroughThePort:
         """julee#124: one stream handed to two readers left the second
         with nothing. Asking twice is the answer, and it only works if
         asking twice is cheap and complete."""
-        document = a_document()
+        document = await a_stored_document(repository)
         await repository.save(document)
 
         first = await repository.content_of(document)
@@ -92,7 +99,7 @@ class TestReadingContentThroughThePort:
         """julee#90: callers used to seek(0) before reading, which works
         on a BytesIO and raises on a response off a socket. Nothing has
         to seek if nothing is second-hand."""
-        document = a_document()
+        document = await a_stored_document(repository)
         await repository.save(document)
 
         stream = await repository.content_of(document)
@@ -105,7 +112,7 @@ class TestReadingContentThroughThePort:
     ) -> None:
         """Metadata naming content that is not there is an integrity
         failure, not an empty result. A partial write looks like this."""
-        document = a_document()
+        document = await a_stored_document(repository)
         await repository.save(document)
         never_stored = document.evolve(content_multihash=content_multihash(b"other"))
 
