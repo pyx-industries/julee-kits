@@ -11,9 +11,9 @@ import os
 
 from julee.integrations.minio.client import MinioClient
 from julee.integrations.temporal.activities import collect_activities_from_instances
-from julee.integrations.temporal.data_converter import temporal_data_converter
 from minio import Minio
 from temporalio.client import Client
+from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.service import RPCError
 from temporalio.worker import Worker
 
@@ -75,11 +75,15 @@ async def get_temporal_client_with_retries(
 
     for attempt in range(attempts):
         try:
-            # Use the proper Pydantic v2 data converter and connect to the
-            # 'default' namespace
+            # The same converter the API uses. They were different
+            # until #84: the API took temporalio's pydantic_data_converter
+            # and the worker took julee's, which wrapped it to add a
+            # validation context that no entity has read since
+            # julee-kits#69 removed the one validator that looked at it.
+            # Two converters that happen to agree is not the same as one.
             client = await Client.connect(
                 endpoint,
-                data_converter=temporal_data_converter,
+                data_converter=pydantic_data_converter,
                 namespace="default",
             )
             logger.info(
