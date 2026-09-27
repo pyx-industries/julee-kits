@@ -106,8 +106,7 @@ class MemoryKnowledgeServiceQueryRepository(
         entities.sort(key=lambda x: x.query_id)
 
         self.logger.info(
-            "MemoryKnowledgeServiceQueryRepository: Retrieved "
-            f"{len(entities)} queries",
+            f"MemoryKnowledgeServiceQueryRepository: Retrieved {len(entities)} queries",
             extra={"count": len(entities)},
         )
 

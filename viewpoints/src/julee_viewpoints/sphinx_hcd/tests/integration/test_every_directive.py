@@ -75,17 +75,17 @@ def test_every_registered_directive_is_exercised(directive: str) -> None:
     This is the test that keeps the file above honest: register a new
     directive without adding it, and this fails.
     """
-    assert (
-        f".. {directive}::" in built_source()
-    ), f"{directive} is registered but never used in the test project"
+    assert f".. {directive}::" in built_source(), (
+        f"{directive} is registered but never used in the test project"
+    )
 
 
 @pytest.mark.parametrize("role", ALL_ROLES)
 def test_every_registered_role_is_exercised(role: str) -> None:
     """Same, for roles."""
-    assert (
-        f":{role}:`" in built_source()
-    ), f":{role}: is registered but never used in the test project"
+    assert f":{role}:`" in built_source(), (
+        f":{role}: is registered but never used in the test project"
+    )
 
 
 def built_source() -> str:

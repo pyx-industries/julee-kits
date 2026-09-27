@@ -67,7 +67,7 @@ class MinioDocumentPolicyValidationRepository(
             bucket_name=self.validations_bucket,
             object_name=validation.validation_id,
             model=validation,
-            success_log_message="Document policy validation saved " "successfully",
+            success_log_message="Document policy validation saved successfully",
             error_log_message="Error saving document policy validation",
             extra_log_data={
                 "validation_id": validation.validation_id,

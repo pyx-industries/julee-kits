@@ -32,7 +32,7 @@ To customize, use the factory function and override specific values:
 from julee_viewpoints.sphinx_hcd import config_factory
 
 sphinx_hcd = config_factory()
-sphinx_hcd['paths']['feature_files'] = 'tests/bdd/'
+sphinx_hcd["paths"]["feature_files"] = "tests/bdd/"
 ```
 
 ### Configuration Keys

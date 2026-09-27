@@ -136,7 +136,7 @@ class Policy(Entity):
                 raise ValueError("Required score must be an integer between 0 and 100")
             if required_score < 0 or required_score > 100:
                 raise ValueError(
-                    f"Required score {required_score} must be between " f"0 and 100"
+                    f"Required score {required_score} must be between 0 and 100"
                 )
 
             validated_scores.append((query_id, required_score))
@@ -171,7 +171,7 @@ class Policy(Entity):
             # Check for duplicate query IDs
             if query_id in query_ids_seen:
                 raise ValueError(
-                    f"Duplicate query ID '{query_id}' in transformation " f"queries"
+                    f"Duplicate query ID '{query_id}' in transformation queries"
                 )
             query_ids_seen.add(query_id)
 

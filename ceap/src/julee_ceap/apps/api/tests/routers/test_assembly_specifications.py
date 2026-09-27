@@ -42,8 +42,8 @@ def app_with_router(
     app = FastAPI()
 
     # Override the dependency with our memory repository
-    app.dependency_overrides[get_assembly_specification_repository] = (
-        lambda: memory_repo
+    app.dependency_overrides[get_assembly_specification_repository] = lambda: (
+        memory_repo
     )
 
     # Add pagination support (required for the paginate function)

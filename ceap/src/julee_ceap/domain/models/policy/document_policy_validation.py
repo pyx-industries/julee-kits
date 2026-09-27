@@ -207,8 +207,7 @@ class DocumentPolicyValidation(Entity):
             # Validate actual score
             if not isinstance(actual_score, int):
                 raise ValueError(
-                    f"Actual score in {field_name} must be an integer "
-                    f"between 0 and 100"
+                    f"Actual score in {field_name} must be an integer between 0 and 100"
                 )
             if actual_score < 0 or actual_score > 100:
                 raise ValueError(

@@ -25,8 +25,7 @@ class Authored(Entity):
     solution_slug: str = Field(
         default="",
         description=(
-            "Slug of the solution this belongs to, for a site documenting "
-            "more than one"
+            "Slug of the solution this belongs to, for a site documenting more than one"
         ),
     )
     docname: str = Field(

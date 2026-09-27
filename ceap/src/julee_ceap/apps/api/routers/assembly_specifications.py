@@ -71,7 +71,7 @@ async def get_assembly_specifications(
         )
         raise HTTPException(
             status_code=500,
-            detail="Failed to retrieve specifications due to an internal " "error.",
+            detail="Failed to retrieve specifications due to an internal error.",
         )
 
 
@@ -145,7 +145,7 @@ async def get_assembly_specification(
         )
         raise HTTPException(
             status_code=500,
-            detail="Failed to retrieve specification due to an internal " "error.",
+            detail="Failed to retrieve specification due to an internal error.",
         )
 
 

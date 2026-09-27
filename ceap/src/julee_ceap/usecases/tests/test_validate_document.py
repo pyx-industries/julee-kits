@@ -423,16 +423,14 @@ class TestValidateDocumentUseCase:
             [
                 QueryResult(
                     query_id="result-1",
-                    query_text="Rate the quality of this document on a "
-                    "scale of 0-100",
+                    query_text="Rate the quality of this document on a scale of 0-100",
                     result_data={"response": "85"},  # Passes requirement of 80
                     execution_time_ms=100,
                     created_at=datetime.now(UTC),
                 ),
                 QueryResult(
                     query_id="result-2",
-                    query_text="Rate the clarity of this document on a "
-                    "scale of 0-100",
+                    query_text="Rate the clarity of this document on a scale of 0-100",
                     result_data={"response": "75"},  # Passes requirement of 70
                     execution_time_ms=150,
                     created_at=datetime.now(UTC),
@@ -538,7 +536,7 @@ class TestValidateDocumentUseCase:
         memory_service.add_canned_query_result(
             QueryResult(
                 query_id="result-1",
-                query_text="Rate the quality of this document on a " "scale of 0-100",
+                query_text="Rate the quality of this document on a scale of 0-100",
                 result_data={"response": "60"},  # Fails requirement of 90
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
@@ -637,7 +635,7 @@ class TestValidateDocumentUseCase:
         memory_service.add_canned_query_result(
             QueryResult(
                 query_id="initial-validation",
-                query_text="Rate the quality of this document on a scale " "of 0-100",
+                query_text="Rate the quality of this document on a scale of 0-100",
                 result_data={"response": "60"},  # Initial score fails
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
@@ -663,7 +661,7 @@ class TestValidateDocumentUseCase:
         memory_service.add_canned_query_result(
             QueryResult(
                 query_id="post-transform-validation",
-                query_text="Rate the quality of this document on a scale " "of 0-100",
+                query_text="Rate the quality of this document on a scale of 0-100",
                 result_data={"response": "85"},  # Post-transform score passes
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
@@ -741,7 +739,7 @@ class TestValidateDocumentUseCase:
         policy = Policy(
             policy_id="policy-transform-2",
             title="High Standards Transform Policy",
-            description="Policy with very high standards even after " "transformation",
+            description="Policy with very high standards even after transformation",
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 95),),  # Very high requirement
             transformation_queries=("improvement-query",),
@@ -788,7 +786,7 @@ class TestValidateDocumentUseCase:
         memory_service.add_canned_query_result(
             QueryResult(
                 query_id="initial-validation",
-                query_text="Rate the quality of this document on a scale " "of 0-100",
+                query_text="Rate the quality of this document on a scale of 0-100",
                 result_data={"response": "40"},  # Initial score fails
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
@@ -813,7 +811,7 @@ class TestValidateDocumentUseCase:
         memory_service.add_canned_query_result(
             QueryResult(
                 query_id="post-transform-validation",
-                query_text="Rate the quality of this document on a scale " "of 0-100",
+                query_text="Rate the quality of this document on a scale of 0-100",
                 result_data={"response": "70"},  # Still fails requirement of 95
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
@@ -923,7 +921,7 @@ class TestValidateDocumentUseCase:
         memory_service.add_canned_query_result(
             QueryResult(
                 query_id="validation-only",
-                query_text="Rate the quality of this document on a scale " "of 0-100",
+                query_text="Rate the quality of this document on a scale of 0-100",
                 result_data={"response": "90"},  # Passes initial validation
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
@@ -984,7 +982,7 @@ class TestValidateDocumentUseCase:
         policy = Policy(
             policy_id="policy-invalid-json",
             title="Invalid JSON Transform Policy",
-            description="Policy that will get invalid JSON from " "transformation",
+            description="Policy that will get invalid JSON from transformation",
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 80),),
             transformation_queries=("bad-transform-query",),
@@ -1031,7 +1029,7 @@ class TestValidateDocumentUseCase:
         memory_service.add_canned_query_result(
             QueryResult(
                 query_id="initial-validation",
-                query_text="Rate the quality of this document on a scale " "of 0-100",
+                query_text="Rate the quality of this document on a scale of 0-100",
                 result_data={"response": "50"},  # Fails, triggers transformation
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),

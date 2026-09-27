@@ -47,11 +47,11 @@ def client(
 ) -> Generator[TestClient, None, None]:
     """Create a test client with memory repository."""
     # Override the dependencies with our memory repositories
-    app.dependency_overrides[get_knowledge_service_query_repository] = (
-        lambda: memory_repo
+    app.dependency_overrides[get_knowledge_service_query_repository] = lambda: (
+        memory_repo
     )
-    app.dependency_overrides[get_knowledge_service_config_repository] = (
-        lambda: memory_config_repo
+    app.dependency_overrides[get_knowledge_service_config_repository] = lambda: (
+        memory_config_repo
     )
 
     with (

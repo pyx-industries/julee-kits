@@ -34,8 +34,8 @@ def mock_repository() -> AsyncMock:
 @pytest.fixture
 def client(mock_repository: AsyncMock) -> Generator[TestClient, None, None]:
     """Create test client with mocked dependencies."""
-    app.dependency_overrides[get_knowledge_service_config_repository] = (
-        lambda: mock_repository
+    app.dependency_overrides[get_knowledge_service_config_repository] = lambda: (
+        mock_repository
     )
 
     with TestClient(app) as test_client:
