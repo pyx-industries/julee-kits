@@ -9,6 +9,7 @@ external dependencies during testing.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.knowledge_service_config import (
@@ -40,9 +41,9 @@ def knowledge_service_config_repo(
 def sample_knowledge_service_config() -> KnowledgeServiceConfig:
     """Create a sample knowledge service config for testing."""
     return KnowledgeServiceConfig(
-        knowledge_service_id="ks-test-123",
-        name="Test Anthropic Service",
-        description="A test knowledge service using Anthropic API",
+        knowledge_service_id=NonEmptyText("ks-test-123"),
+        name=Name("Test Anthropic Service"),
+        description=NonEmptyText("A test knowledge service using Anthropic API"),
         service_api=ServiceApi.ANTHROPIC,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
@@ -166,9 +167,9 @@ class TestMinioKnowledgeServiceConfigRepositoryUpdates:
         """Test that save operations set created_at for new configurations."""
         # Create config without created_at
         config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-new-test",
-            name="New Test Service",
-            description="A new test service",
+            knowledge_service_id=NonEmptyText("ks-new-test"),
+            name=Name("New Test Service"),
+            description=NonEmptyText("A new test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=None,  # Explicitly set to None
             updated_at=None,  # Explicitly set to None
@@ -235,9 +236,9 @@ class TestMinioKnowledgeServiceConfigRepositoryServiceApiTypes:
     ) -> None:
         """Test saving and retrieving config with Anthropic service API."""
         config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-anthropic-test",
-            name="Anthropic Service",
-            description="Service using Anthropic API",
+            knowledge_service_id=NonEmptyText("ks-anthropic-test"),
+            name=Name("Anthropic Service"),
+            description=NonEmptyText("Service using Anthropic API"),
             service_api=ServiceApi.ANTHROPIC,
         )
 
@@ -263,9 +264,9 @@ class TestMinioKnowledgeServiceConfigRepositoryRoundtrip:
 
         # Create and save initial config
         config = KnowledgeServiceConfig(
-            knowledge_service_id=config_id,
-            name="Lifecycle Test Service",
-            description="Testing full lifecycle",
+            knowledge_service_id=NonEmptyText(config_id),
+            name=Name("Lifecycle Test Service"),
+            description=NonEmptyText("Testing full lifecycle"),
             service_api=ServiceApi.ANTHROPIC,
         )
         await knowledge_service_config_repo.save(config)
@@ -303,16 +304,16 @@ class TestMinioKnowledgeServiceConfigRepositoryRoundtrip:
         independently."""
         # Create multiple configs
         config1 = KnowledgeServiceConfig(
-            knowledge_service_id="ks-test-1",
-            name="Service One",
-            description="First test service",
+            knowledge_service_id=NonEmptyText("ks-test-1"),
+            name=Name("Service One"),
+            description=NonEmptyText("First test service"),
             service_api=ServiceApi.ANTHROPIC,
         )
 
         config2 = KnowledgeServiceConfig(
-            knowledge_service_id="ks-test-2",
-            name="Service Two",
-            description="Second test service",
+            knowledge_service_id=NonEmptyText("ks-test-2"),
+            name=Name("Service Two"),
+            description=NonEmptyText("Second test service"),
             service_api=ServiceApi.ANTHROPIC,
         )
 
@@ -369,9 +370,9 @@ class TestMinioKnowledgeServiceConfigRepositoryEdgeCases:
         special_id = "ks-test-with-dashes-and-numbers-123"
 
         config = KnowledgeServiceConfig(
-            knowledge_service_id=special_id,
-            name="Special ID Service",
-            description="Service with special characters in ID",
+            knowledge_service_id=NonEmptyText(special_id),
+            name=Name("Special ID Service"),
+            description=NonEmptyText("Service with special characters in ID"),
             service_api=ServiceApi.ANTHROPIC,
         )
 

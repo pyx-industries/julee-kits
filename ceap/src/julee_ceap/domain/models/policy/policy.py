@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import Field, field_validator
 
 
@@ -47,9 +48,9 @@ class Policy(Entity):
     """
 
     # Core policy identification
-    policy_id: str = Field(description="Unique identifier for this policy")
-    title: str = Field(description="Human-readable title for the policy")
-    description: str = Field(
+    policy_id: NonEmptyText = Field(description="Unique identifier for this policy")
+    title: Name = Field(description="Human-readable title for the policy")
+    description: NonEmptyText = Field(
         description="Detailed description of what this policy validates "
         "and optionally transforms"
     )
@@ -69,30 +70,11 @@ class Policy(Entity):
     )
 
     # Policy metadata
-    version: str = Field(default="0.1.0", description="Policy version")
+    version: NonEmptyText = Field(
+        default=NonEmptyText("0.1.0"), description="Policy version"
+    )
     created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime | None = Field(default=None)
-
-    @field_validator("policy_id")
-    @classmethod
-    def policy_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Policy ID cannot be empty")
-        return v.strip()
-
-    @field_validator("title")
-    @classmethod
-    def title_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Policy title cannot be empty")
-        return v.strip()
-
-    @field_validator("description")
-    @classmethod
-    def description_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Policy description cannot be empty")
-        return v.strip()
 
     @field_validator("validation_scores")
     @classmethod
@@ -178,13 +160,6 @@ class Policy(Entity):
             validated_queries.append(query_id)
 
         return tuple(validated_queries)
-
-    @field_validator("version")
-    @classmethod
-    def version_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Policy version cannot be empty")
-        return v.strip()
 
     @property
     def is_validation_only(self) -> bool:

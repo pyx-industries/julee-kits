@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models import (
     Assembly,
@@ -24,6 +25,7 @@ from julee_ceap.domain.models import (
     KnowledgeServiceConfig,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.infrastructure.repositories.http.schema import (
@@ -94,9 +96,9 @@ class TestExtractAssembleDataUseCase:
     def knowledge_service(self) -> MemoryKnowledgeService:
         """Create a memory KnowledgeService for testing."""
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-test",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-test"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -108,9 +110,9 @@ class TestExtractAssembleDataUseCase:
         """Create a configured memory KnowledgeService for full workflow
         tests."""
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-123",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-123"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -215,9 +217,9 @@ class TestExtractAssembleDataUseCase:
         """Test that assemble_data fails when document doesn't exist."""
         # Arrange - Create assembly specification but no document
         assembly_spec = AssemblySpecification(
-            assembly_specification_id="spec-123",
-            name="Test Assembly",
-            applicability="Test documents",
+            assembly_specification_id=NonEmptyText("spec-123"),
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test documents"),
             jsonschema={"type": "object", "properties": {}},
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={},
@@ -275,11 +277,13 @@ class TestExtractAssembleDataUseCase:
         content_text = "Sample meeting transcript for testing"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test_transcript.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test_transcript.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -297,9 +301,9 @@ class TestExtractAssembleDataUseCase:
         }
 
         assembly_spec = AssemblySpecification(
-            assembly_specification_id="spec-123",
-            name="Test Assembly",
-            applicability="Test documents",
+            assembly_specification_id=NonEmptyText("spec-123"),
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test documents"),
             jsonschema=schema,
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={
@@ -313,9 +317,9 @@ class TestExtractAssembleDataUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-123",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-123"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -324,19 +328,19 @@ class TestExtractAssembleDataUseCase:
 
         # Create knowledge service queries
         query1 = KnowledgeServiceQuery(
-            query_id="query-1",
-            name="Extract Title",
-            knowledge_service_id="ks-123",
-            prompt="Extract the title from this document",
+            query_id=NonEmptyText("query-1"),
+            name=Name("Extract Title"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText("Extract the title from this document"),
             query_metadata={"max_tokens": 100},
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
         query2 = KnowledgeServiceQuery(
-            query_id="query-2",
-            name="Extract Summary",
-            knowledge_service_id="ks-123",
-            prompt="Extract a summary from this document",
+            query_id=NonEmptyText("query-2"),
+            name=Name("Extract Summary"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText("Extract a summary from this document"),
             query_metadata={"max_tokens": 200},
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -388,11 +392,13 @@ class TestExtractAssembleDataUseCase:
         content_text = "Sample meeting transcript for testing"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test_transcript.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test_transcript.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -409,9 +415,9 @@ class TestExtractAssembleDataUseCase:
         }
 
         assembly_spec = AssemblySpecification(
-            assembly_specification_id="spec-123",
-            name="Test Assembly",
-            applicability="Test documents",
+            assembly_specification_id=NonEmptyText("spec-123"),
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test documents"),
             jsonschema=schema,
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={
@@ -424,9 +430,9 @@ class TestExtractAssembleDataUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-123",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-123"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -435,10 +441,10 @@ class TestExtractAssembleDataUseCase:
 
         # Create knowledge service query
         query1 = KnowledgeServiceQuery(
-            query_id="query-1",
-            name="Extract Title",
-            knowledge_service_id="ks-123",
-            prompt="Extract the title from this document",
+            query_id=NonEmptyText("query-1"),
+            name=Name("Extract Title"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText("Extract the title from this document"),
             query_metadata={"max_tokens": 100, "temperature": 0.1},
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -531,9 +537,9 @@ class TestExtractAssembleDataUseCase:
         """Test that assembly fails when input document is not found."""
         # Arrange - Create assembly specification but no document
         assembly_spec = AssemblySpecification(
-            assembly_specification_id="spec-123",
-            name="Test Assembly",
-            applicability="Test documents",
+            assembly_specification_id=NonEmptyText("spec-123"),
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test documents"),
             jsonschema={"type": "object", "properties": {}},
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={},
@@ -561,11 +567,13 @@ class TestExtractAssembleDataUseCase:
         content_text = "Sample content"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -573,9 +581,9 @@ class TestExtractAssembleDataUseCase:
         await document_repo.save(document)
 
         assembly_spec = AssemblySpecification(
-            assembly_specification_id="spec-123",
-            name="Test Assembly",
-            applicability="Test documents",
+            assembly_specification_id=NonEmptyText("spec-123"),
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test documents"),
             jsonschema={
                 "type": "object",
                 "properties": {"title": {"type": "string"}},
@@ -608,11 +616,13 @@ class TestExtractAssembleDataUseCase:
         content_text = "Sample content"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -630,9 +640,9 @@ class TestExtractAssembleDataUseCase:
         }
 
         assembly_spec = AssemblySpecification(
-            assembly_specification_id="spec-123",
-            name="Test Assembly",
-            applicability="Test documents",
+            assembly_specification_id=NonEmptyText("spec-123"),
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test documents"),
             jsonschema=schema,
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={"/properties/title": "query-1"},
@@ -643,9 +653,9 @@ class TestExtractAssembleDataUseCase:
 
         # Create knowledge service config and query
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-123",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-123"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -653,10 +663,10 @@ class TestExtractAssembleDataUseCase:
         await knowledge_service_config_repo.save(ks_config)
 
         query = KnowledgeServiceQuery(
-            query_id="query-1",
-            name="Extract Title",
-            knowledge_service_id="ks-123",
-            prompt="Extract the title",
+            query_id=NonEmptyText("query-1"),
+            name=Name("Extract Title"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText("Extract the title"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

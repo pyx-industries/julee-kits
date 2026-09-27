@@ -9,6 +9,7 @@ dependencies during testing.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.assembly import Assembly, AssemblyStatus
@@ -35,10 +36,10 @@ def assembly_repo(fake_client: FakeMinioClient) -> MinioAssemblyRepository:
 def sample_assembly() -> Assembly:
     """Create a sample assembly for testing."""
     return Assembly(
-        assembly_id="test-assembly-123",
-        assembly_specification_id="spec-456",
-        input_document_id="input-doc-789",
-        execution_id="test-execution-123",
+        assembly_id=NonEmptyText("test-assembly-123"),
+        assembly_specification_id=NonEmptyText("spec-456"),
+        input_document_id=NonEmptyText("input-doc-789"),
+        execution_id=NonEmptyText("test-execution-123"),
         status=AssemblyStatus.PENDING,
         assembled_document_id=None,
         created_at=datetime.now(UTC),
@@ -342,10 +343,10 @@ class TestMinioAssemblyRepositoryRoundtrip:
 
         # Create and save initial assembly
         assembly = Assembly(
-            assembly_id=assembly_id,
-            assembly_specification_id="spec-test",
-            input_document_id="input-test",
-            execution_id="test-execution-success",
+            assembly_id=NonEmptyText(assembly_id),
+            assembly_specification_id=NonEmptyText("spec-test"),
+            input_document_id=NonEmptyText("input-test"),
+            execution_id=NonEmptyText("test-execution-success"),
             status=AssemblyStatus.PENDING,
             assembled_document_id=None,
             created_at=datetime.now(UTC),
@@ -389,10 +390,10 @@ class TestMinioAssemblyRepositoryRoundtrip:
 
         # Create and save initial assembly
         assembly = Assembly(
-            assembly_id=assembly_id,
-            assembly_specification_id="spec-test",
-            input_document_id="input-test",
-            execution_id="test-execution-failure",
+            assembly_id=NonEmptyText(assembly_id),
+            assembly_specification_id=NonEmptyText("spec-test"),
+            input_document_id=NonEmptyText("input-test"),
+            execution_id=NonEmptyText("test-execution-failure"),
             status=AssemblyStatus.PENDING,
             assembled_document_id=None,
             created_at=datetime.now(UTC),

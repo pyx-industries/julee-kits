@@ -12,6 +12,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.domain.models import (
@@ -20,6 +21,7 @@ from julee_ceap.domain.models import (
     KnowledgeServiceConfig,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidation,
@@ -92,9 +94,9 @@ class TestValidateDocumentUseCase:
     def knowledge_service(self) -> MemoryKnowledgeService:
         """Create a memory KnowledgeService for testing."""
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-test",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-test"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -170,11 +172,13 @@ class TestValidateDocumentUseCase:
         content_text = "Sample document for testing"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test_document.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test_document.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -225,11 +229,13 @@ class TestValidateDocumentUseCase:
         content_text = "Sample content"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -237,9 +243,9 @@ class TestValidateDocumentUseCase:
         await document_repo.save(document)
 
         policy = Policy(
-            policy_id="policy-123",
-            title="Test Policy",
-            description="Policy with non-existent query",
+            policy_id=NonEmptyText("policy-123"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Policy with non-existent query"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("nonexistent-query", 80),),
             created_at=datetime.now(UTC),
@@ -268,11 +274,13 @@ class TestValidateDocumentUseCase:
         content_text = "Sample document content"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -281,9 +289,9 @@ class TestValidateDocumentUseCase:
 
         # Create policy
         policy = Policy(
-            policy_id="policy-123",
-            title="Test Policy",
-            description="Policy for testing score parsing",
+            policy_id=NonEmptyText("policy-123"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Policy for testing score parsing"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("query-1", 80),),
             created_at=datetime.now(UTC),
@@ -293,9 +301,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config and query
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-123",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-123"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -303,10 +311,10 @@ class TestValidateDocumentUseCase:
         await knowledge_service_config_repo.save(ks_config)
 
         query = KnowledgeServiceQuery(
-            query_id="query-1",
-            name="Quality Check",
-            knowledge_service_id="ks-123",
-            prompt="Rate the quality of this document",
+            query_id=NonEmptyText("query-1"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText("Rate the quality of this document"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -358,11 +366,13 @@ class TestValidateDocumentUseCase:
         content_text = "High quality document for testing validation"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-123",
-            original_filename="test_document.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-123"),
+            original_filename=NonEmptyText("test_document.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -371,9 +381,9 @@ class TestValidateDocumentUseCase:
 
         # Create policy with validation criteria
         policy = Policy(
-            policy_id="policy-123",
-            title="Quality Policy",
-            description="Validates document quality",
+            policy_id=NonEmptyText("policy-123"),
+            title=Name("Quality Policy"),
+            description=NonEmptyText("Validates document quality"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(
                 ("quality-query", 80),
@@ -386,9 +396,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-123",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-123"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -397,19 +407,23 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service queries
         quality_query = KnowledgeServiceQuery(
-            query_id="quality-query",
-            name="Quality Check",
-            knowledge_service_id="ks-123",
-            prompt="Rate the quality of this document on a scale of 0-100",
+            query_id=NonEmptyText("quality-query"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText(
+                "Rate the quality of this document on a scale of 0-100"
+            ),
             query_metadata={"max_tokens": 10},
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
         clarity_query = KnowledgeServiceQuery(
-            query_id="clarity-query",
-            name="Clarity Check",
-            knowledge_service_id="ks-123",
-            prompt="Rate the clarity of this document on a scale of 0-100",
+            query_id=NonEmptyText("clarity-query"),
+            name=Name("Clarity Check"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText(
+                "Rate the clarity of this document on a scale of 0-100"
+            ),
             query_metadata={"max_tokens": 10},
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -487,11 +501,13 @@ class TestValidateDocumentUseCase:
         content_text = "Poor quality document"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-456",
-            original_filename="poor_document.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-456"),
+            original_filename=NonEmptyText("poor_document.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -500,9 +516,9 @@ class TestValidateDocumentUseCase:
 
         # Create policy with high standards
         policy = Policy(
-            policy_id="policy-456",
-            title="High Standards Policy",
-            description="Requires high quality scores",
+            policy_id=NonEmptyText("policy-456"),
+            title=Name("High Standards Policy"),
+            description=NonEmptyText("Requires high quality scores"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 90),),  # High requirement
             created_at=datetime.now(UTC),
@@ -512,9 +528,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config and query
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-456",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-456"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -522,10 +538,12 @@ class TestValidateDocumentUseCase:
         await knowledge_service_config_repo.save(ks_config)
 
         quality_query = KnowledgeServiceQuery(
-            query_id="quality-query",
-            name="Quality Check",
-            knowledge_service_id="ks-456",
-            prompt="Rate the quality of this document on a scale of 0-100",
+            query_id=NonEmptyText("quality-query"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-456"),
+            prompt=NonEmptyText(
+                "Rate the quality of this document on a scale of 0-100"
+            ),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -573,11 +591,13 @@ class TestValidateDocumentUseCase:
         content_text = "Poor quality document that can be improved"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-transform-1",
-            original_filename="transform_test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-transform-1"),
+            original_filename=NonEmptyText("transform_test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -586,9 +606,9 @@ class TestValidateDocumentUseCase:
 
         # Create policy with transformation queries
         policy = Policy(
-            policy_id="policy-transform-1",
-            title="Transformation Policy",
-            description="Policy with transformation capabilities",
+            policy_id=NonEmptyText("policy-transform-1"),
+            title=Name("Transformation Policy"),
+            description=NonEmptyText("Policy with transformation capabilities"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 80),),
             transformation_queries=("improvement-query",),
@@ -599,9 +619,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-transform-1",
-            name="Transform Knowledge Service",
-            description="Service with transformation capability",
+            knowledge_service_id=NonEmptyText("ks-transform-1"),
+            name=Name("Transform Knowledge Service"),
+            description=NonEmptyText("Service with transformation capability"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -610,18 +630,20 @@ class TestValidateDocumentUseCase:
 
         # Create validation and transformation queries
         quality_query = KnowledgeServiceQuery(
-            query_id="quality-query",
-            name="Quality Check",
-            knowledge_service_id="ks-transform-1",
-            prompt="Rate the quality of this document on a scale of 0-100",
+            query_id=NonEmptyText("quality-query"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-transform-1"),
+            prompt=NonEmptyText(
+                "Rate the quality of this document on a scale of 0-100"
+            ),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
         improvement_query = KnowledgeServiceQuery(
-            query_id="improvement-query",
-            name="Document Improvement",
-            knowledge_service_id="ks-transform-1",
-            prompt="Improve this document to make it higher quality",
+            query_id=NonEmptyText("improvement-query"),
+            name=Name("Document Improvement"),
+            knowledge_service_id=NonEmptyText("ks-transform-1"),
+            prompt=NonEmptyText("Improve this document to make it higher quality"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -724,11 +746,13 @@ class TestValidateDocumentUseCase:
         content_text = "Very poor quality document"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-transform-2",
-            original_filename="poor_transform_test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-transform-2"),
+            original_filename=NonEmptyText("poor_transform_test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -737,9 +761,11 @@ class TestValidateDocumentUseCase:
 
         # Create policy with high standards and transformation
         policy = Policy(
-            policy_id="policy-transform-2",
-            title="High Standards Transform Policy",
-            description="Policy with very high standards even after transformation",
+            policy_id=NonEmptyText("policy-transform-2"),
+            title=Name("High Standards Transform Policy"),
+            description=NonEmptyText(
+                "Policy with very high standards even after transformation"
+            ),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 95),),  # Very high requirement
             transformation_queries=("improvement-query",),
@@ -750,9 +776,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-transform-2",
-            name="Transform Knowledge Service",
-            description="Service with transformation capability",
+            knowledge_service_id=NonEmptyText("ks-transform-2"),
+            name=Name("Transform Knowledge Service"),
+            description=NonEmptyText("Service with transformation capability"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -761,18 +787,20 @@ class TestValidateDocumentUseCase:
 
         # Create validation and transformation queries
         quality_query = KnowledgeServiceQuery(
-            query_id="quality-query",
-            name="Quality Check",
-            knowledge_service_id="ks-transform-2",
-            prompt="Rate the quality of this document on a scale of 0-100",
+            query_id=NonEmptyText("quality-query"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-transform-2"),
+            prompt=NonEmptyText(
+                "Rate the quality of this document on a scale of 0-100"
+            ),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
         improvement_query = KnowledgeServiceQuery(
-            query_id="improvement-query",
-            name="Document Improvement",
-            knowledge_service_id="ks-transform-2",
-            prompt="Try to improve this document",
+            query_id=NonEmptyText("improvement-query"),
+            name=Name("Document Improvement"),
+            knowledge_service_id=NonEmptyText("ks-transform-2"),
+            prompt=NonEmptyText("Try to improve this document"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -860,11 +888,13 @@ class TestValidateDocumentUseCase:
         content_text = "Excellent high quality document"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-no-transform",
-            original_filename="excellent_doc.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-no-transform"),
+            original_filename=NonEmptyText("excellent_doc.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -873,9 +903,9 @@ class TestValidateDocumentUseCase:
 
         # Create policy with transformation available but not needed
         policy = Policy(
-            policy_id="policy-no-transform",
-            title="Policy with Unnecessary Transform",
-            description="Policy with transformation that won't be used",
+            policy_id=NonEmptyText("policy-no-transform"),
+            title=Name("Policy with Unnecessary Transform"),
+            description=NonEmptyText("Policy with transformation that won't be used"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 80),),
             transformation_queries=("improvement-query",),  # Available but unused
@@ -886,9 +916,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-no-transform",
-            name="Knowledge Service",
-            description="Service description",
+            knowledge_service_id=NonEmptyText("ks-no-transform"),
+            name=Name("Knowledge Service"),
+            description=NonEmptyText("Service description"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -897,18 +927,20 @@ class TestValidateDocumentUseCase:
 
         # Create queries (transformation query won't be used)
         quality_query = KnowledgeServiceQuery(
-            query_id="quality-query",
-            name="Quality Check",
-            knowledge_service_id="ks-no-transform",
-            prompt="Rate the quality of this document on a scale of 0-100",
+            query_id=NonEmptyText("quality-query"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-no-transform"),
+            prompt=NonEmptyText(
+                "Rate the quality of this document on a scale of 0-100"
+            ),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
         improvement_query = KnowledgeServiceQuery(
-            query_id="improvement-query",
-            name="Document Improvement",
-            knowledge_service_id="ks-no-transform",
-            prompt="This query should not be called",
+            query_id=NonEmptyText("improvement-query"),
+            name=Name("Document Improvement"),
+            knowledge_service_id=NonEmptyText("ks-no-transform"),
+            prompt=NonEmptyText("This query should not be called"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -967,11 +999,13 @@ class TestValidateDocumentUseCase:
         content_text = "Document needing transformation"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-invalid-json",
-            original_filename="invalid_json_test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-invalid-json"),
+            original_filename=NonEmptyText("invalid_json_test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -980,9 +1014,11 @@ class TestValidateDocumentUseCase:
 
         # Create policy with transformation
         policy = Policy(
-            policy_id="policy-invalid-json",
-            title="Invalid JSON Transform Policy",
-            description="Policy that will get invalid JSON from transformation",
+            policy_id=NonEmptyText("policy-invalid-json"),
+            title=Name("Invalid JSON Transform Policy"),
+            description=NonEmptyText(
+                "Policy that will get invalid JSON from transformation"
+            ),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 80),),
             transformation_queries=("bad-transform-query",),
@@ -993,9 +1029,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-invalid-json",
-            name="Invalid JSON Service",
-            description="Service that returns invalid JSON",
+            knowledge_service_id=NonEmptyText("ks-invalid-json"),
+            name=Name("Invalid JSON Service"),
+            description=NonEmptyText("Service that returns invalid JSON"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -1004,18 +1040,20 @@ class TestValidateDocumentUseCase:
 
         # Create queries
         quality_query = KnowledgeServiceQuery(
-            query_id="quality-query",
-            name="Quality Check",
-            knowledge_service_id="ks-invalid-json",
-            prompt="Rate the quality of this document on a scale of 0-100",
+            query_id=NonEmptyText("quality-query"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-invalid-json"),
+            prompt=NonEmptyText(
+                "Rate the quality of this document on a scale of 0-100"
+            ),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
         bad_transform_query = KnowledgeServiceQuery(
-            query_id="bad-transform-query",
-            name="Bad Transform Query",
-            knowledge_service_id="ks-invalid-json",
-            prompt="Transform this document",
+            query_id=NonEmptyText("bad-transform-query"),
+            name=Name("Bad Transform Query"),
+            knowledge_service_id=NonEmptyText("ks-invalid-json"),
+            prompt=NonEmptyText("Transform this document"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -1082,11 +1120,13 @@ class TestValidateDocumentUseCase:
         content_text = "Document needing transformation"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-missing-query",
-            original_filename="missing_query_test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-missing-query"),
+            original_filename=NonEmptyText("missing_query_test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -1095,9 +1135,9 @@ class TestValidateDocumentUseCase:
 
         # Create policy with non-existent transformation query
         policy = Policy(
-            policy_id="policy-missing-query",
-            title="Missing Query Policy",
-            description="Policy with missing transformation query",
+            policy_id=NonEmptyText("policy-missing-query"),
+            title=Name("Missing Query Policy"),
+            description=NonEmptyText("Policy with missing transformation query"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("quality-query", 80),),
             transformation_queries=("nonexistent-transform-query",),
@@ -1108,9 +1148,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-missing-query",
-            name="Missing Query Service",
-            description="Service config",
+            knowledge_service_id=NonEmptyText("ks-missing-query"),
+            name=Name("Missing Query Service"),
+            description=NonEmptyText("Service config"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -1119,10 +1159,12 @@ class TestValidateDocumentUseCase:
 
         # Create only the validation query (transformation query is missing)
         quality_query = KnowledgeServiceQuery(
-            query_id="quality-query",
-            name="Quality Check",
-            knowledge_service_id="ks-missing-query",
-            prompt="Rate the quality of this document on a scale of 0-100",
+            query_id=NonEmptyText("quality-query"),
+            name=Name("Quality Check"),
+            knowledge_service_id=NonEmptyText("ks-missing-query"),
+            prompt=NonEmptyText(
+                "Rate the quality of this document on a scale of 0-100"
+            ),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -1152,11 +1194,13 @@ class TestValidateDocumentUseCase:
         content_text = "Test document"
         content_bytes = content_text.encode("utf-8")
         document = Document(
-            document_id="doc-789",
-            original_filename="test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-789"),
+            original_filename=NonEmptyText("test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=await stored_name(document_repo, content_bytes),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content_bytes)
+            ),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -1165,9 +1209,9 @@ class TestValidateDocumentUseCase:
 
         # Create policy
         policy = Policy(
-            policy_id="policy-789",
-            title="Test Policy",
-            description="Test policy for out-of-range scores",
+            policy_id=NonEmptyText("policy-789"),
+            title=Name("Test Policy"),
+            description=NonEmptyText("Test policy for out-of-range scores"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(("test-query", 80),),
             created_at=datetime.now(UTC),
@@ -1177,9 +1221,9 @@ class TestValidateDocumentUseCase:
 
         # Create knowledge service config and query
         ks_config = KnowledgeServiceConfig(
-            knowledge_service_id="ks-789",
-            name="Test Knowledge Service",
-            description="Test service",
+            knowledge_service_id=NonEmptyText("ks-789"),
+            name=Name("Test Knowledge Service"),
+            description=NonEmptyText("Test service"),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -1187,10 +1231,10 @@ class TestValidateDocumentUseCase:
         await knowledge_service_config_repo.save(ks_config)
 
         test_query = KnowledgeServiceQuery(
-            query_id="test-query",
-            name="Test Query",
-            knowledge_service_id="ks-789",
-            prompt="Rate this document",
+            query_id=NonEmptyText("test-query"),
+            name=Name("Test Query"),
+            knowledge_service_id=NonEmptyText("ks-789"),
+            prompt=NonEmptyText("Rate this document"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

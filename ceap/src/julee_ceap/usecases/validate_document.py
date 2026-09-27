@@ -14,6 +14,7 @@ from collections.abc import Callable, Sequence
 from datetime import datetime
 
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol
 from pydantic import BaseModel
@@ -25,6 +26,7 @@ from julee_ceap.domain.models import (
     KnowledgeServiceQuery,
     Policy,
 )
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidationStatus,
 )
@@ -194,8 +196,8 @@ class ValidateDocumentUseCase:
         # Step 3: Create and store initial validation record
         validation = DocumentPolicyValidation(
             validation_id=validation_id,
-            input_document_id=document_id,
-            policy_id=policy_id,
+            input_document_id=NonEmptyText(document_id),
+            policy_id=NonEmptyText(policy_id),
             status=DocumentPolicyValidationStatus.PENDING,
             validation_scores=(),
             started_at=self.now_fn(),
@@ -466,7 +468,7 @@ class ValidateDocumentUseCase:
             Dict mapping knowledge_service_id to service_file_id
 
         """
-        registrations = {}
+        registrations: dict[str, str] = {}
         required_service_ids = {
             query.knowledge_service_id for query in queries.values()
         }
@@ -717,11 +719,11 @@ class ValidateDocumentUseCase:
         )
 
         transformed_document = Document(
-            document_id=transformed_document_id,
-            original_filename=f"transformed_{document.original_filename}",
+            document_id=NonEmptyText(transformed_document_id),
+            original_filename=NonEmptyText(f"transformed_{document.original_filename}"),
             content_type=document.content_type,
             size_bytes=len(transformed_bytes),
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
             created_at=self.now_fn(),
             updated_at=self.now_fn(),

@@ -9,6 +9,7 @@ behavior (like field copying and conversion methods) functions as expected.
 from datetime import datetime
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.apps.api.requests import (
@@ -30,8 +31,8 @@ class TestCreateAssemblySpecificationRequest:
     def test_valid_request_creation(self) -> None:
         """Test that a valid request can be created."""
         request = CreateAssemblySpecificationRequest(
-            name="Meeting Minutes",
-            applicability="Online video meeting transcripts",
+            name=Name("Meeting Minutes"),
+            applicability=NonEmptyText("Online video meeting transcripts"),
             jsonschema={
                 "type": "object",
                 "properties": {"title": {"type": "string"}},
@@ -47,28 +48,37 @@ class TestCreateAssemblySpecificationRequest:
         assert request.knowledge_service_queries == {}  # Default empty dict
         assert request.version == "0.1.0"  # Default version
 
-    def test_validation_delegation_to_domain_model(self) -> None:
-        """Test that validation is properly delegated to domain model."""
-        # Test that domain model validation errors are raised
+    def test_a_request_refuses_what_the_entity_would(self) -> None:
+        """The request and the entity share the field's type.
+
+        This used to call the entity's validator classmethods from the
+        request's own validators, to borrow the rules. The rules travel
+        with Name and NonEmptyText now, so there is nothing to borrow
+        and nothing that can drift apart (#71).
+
+        Asserting on ``loc`` rather than only on the message, because a
+        field-level error is what the API hands back to a client.
+        """
         with pytest.raises(ValidationError) as err:
-            CreateAssemblySpecificationRequest(
-                name="",  # Invalid empty name
-                applicability="Valid applicability",
-                jsonschema={"type": "object"},
+            CreateAssemblySpecificationRequest.model_validate(
+                {
+                    "name": "",
+                    "applicability": "Valid applicability",
+                    "jsonschema": {"type": "object"},
+                }
             )
-        errors = err.value.errors()
-        # Check that the error is for the 'name' field and is a value error
+
         assert any(
             e["loc"] == ("name",)
             and e["type"].startswith("value_error")
-            and "name cannot be empty" in e["msg"]
-            for e in errors
+            and "cannot be empty" in e["msg"]
+            for e in err.value.errors()
         )
 
         with pytest.raises(ValidationError) as err:
             CreateAssemblySpecificationRequest(
-                name="Valid Name",
-                applicability="Valid applicability",
+                name=Name("Valid Name"),
+                applicability=NonEmptyText("Valid applicability"),
                 jsonschema={"invalid": "schema"},  # Missing 'type' field
             )
         errors = err.value.errors()
@@ -83,14 +93,14 @@ class TestCreateAssemblySpecificationRequest:
     def test_to_domain_model_conversion(self) -> None:
         """Test conversion from request model to domain model."""
         request = CreateAssemblySpecificationRequest(
-            name="Test Assembly",
-            applicability="Test documents",
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test documents"),
             jsonschema={
                 "type": "object",
                 "properties": {"content": {"type": "string"}},
             },
             knowledge_service_queries={"/properties/content": "query-123"},
-            version="1.0.0",
+            version=NonEmptyText("1.0.0"),
         )
 
         domain_model = request.to_domain_model("spec-456")
@@ -150,9 +160,11 @@ class TestCreateKnowledgeServiceQueryRequest:
     def test_valid_request_creation(self) -> None:
         """Test that a valid request can be created."""
         request = CreateKnowledgeServiceQueryRequest(
-            name="Extract Meeting Summary",
-            knowledge_service_id="anthropic-claude",
-            prompt="Extract the main summary from this meeting transcript",
+            name=Name("Extract Meeting Summary"),
+            knowledge_service_id=NonEmptyText("anthropic-claude"),
+            prompt=NonEmptyText(
+                "Extract the main summary from this meeting transcript"
+            ),
         )
 
         assert request.name == "Extract Meeting Summary"
@@ -161,45 +173,46 @@ class TestCreateKnowledgeServiceQueryRequest:
         assert request.query_metadata == {}  # Default empty dict
         assert request.assistant_prompt is None  # Default None
 
-    def test_validation_delegation_to_domain_model(self) -> None:
-        """Test that validation is properly delegated to domain model."""
-        # Test that domain model validation errors are raised
+    def test_a_request_refuses_what_the_entity_would(self) -> None:
+        """The request and the entity share the field's type (#71)."""
         with pytest.raises(ValidationError) as err:
-            CreateKnowledgeServiceQueryRequest(
-                name="",  # Invalid empty name
-                knowledge_service_id="valid-service",
-                prompt="Valid prompt",
+            CreateKnowledgeServiceQueryRequest.model_validate(
+                {
+                    "name": "",
+                    "knowledge_service_id": "valid-service",
+                    "prompt": "Valid prompt",
+                }
             )
-        errors = err.value.errors()
-        # Check that the error is for the 'name' field
+
         assert any(
             e["loc"] == ("name",)
             and e["type"].startswith("value_error")
-            and "name cannot be empty" in e["msg"]
-            for e in errors
+            and "cannot be empty" in e["msg"]
+            for e in err.value.errors()
         )
 
         with pytest.raises(ValidationError) as err:
-            CreateKnowledgeServiceQueryRequest(
-                name="Valid Name",
-                knowledge_service_id="",  # Invalid empty service ID
-                prompt="Valid prompt",
+            CreateKnowledgeServiceQueryRequest.model_validate(
+                {
+                    "name": "Valid Name",
+                    "knowledge_service_id": "",
+                    "prompt": "Valid prompt",
+                }
             )
-        errors = err.value.errors()
-        # Check that the error is for the 'knowledge_service_id' field
+
         assert any(
             e["loc"] == ("knowledge_service_id",)
             and e["type"].startswith("value_error")
-            and "service ID cannot be empty" in e["msg"]
-            for e in errors
+            and "cannot be empty" in e["msg"]
+            for e in err.value.errors()
         )
 
     def test_to_domain_model_conversion(self) -> None:
         """Test conversion from request model to domain model."""
         request = CreateKnowledgeServiceQueryRequest(
-            name="Test Query",
-            knowledge_service_id="test-service",
-            prompt="Test prompt for extraction",
+            name=Name("Test Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test prompt for extraction"),
             query_metadata={"model": "claude-3", "temperature": 0.2},
             assistant_prompt="Please format as JSON",
         )

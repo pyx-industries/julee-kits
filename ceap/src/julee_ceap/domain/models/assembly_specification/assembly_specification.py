@@ -21,6 +21,7 @@ from typing import Any
 import jsonpointer
 import jsonschema
 from julee.core.entities.entity import Entity
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import Field, field_validator
 
 
@@ -48,11 +49,11 @@ class AssemblySpecification(Entity):
     """
 
     # Core assembly identification
-    assembly_specification_id: str = Field(
+    assembly_specification_id: NonEmptyText = Field(
         description="Unique identifier for this assembly specification"
     )
-    name: str = Field(description="Human-readable name like 'meeting minutes'")
-    applicability: str = Field(
+    name: Name = Field(description="Human-readable name like 'meeting minutes'")
+    applicability: NonEmptyText = Field(
         description="Text description identifying to what type of "
         "information this assembly applies, such as an online transcript "
         "of a video meeting. This information may be used by knowledge "
@@ -75,32 +76,13 @@ class AssemblySpecification(Entity):
     )
 
     # AssemblySpecification metadata
-    version: str = Field(default="0.1.0", description="Assembly definition version")
+    version: NonEmptyText = Field(
+        default=NonEmptyText("0.1.0"), description="Assembly definition version"
+    )
     created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
     # May later add a detailed description, change log, additional metadata
     # Timestamps
-
-    @field_validator("assembly_specification_id")
-    @classmethod
-    def assembly_specification_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("AssemblySpecification ID cannot be empty")
-        return v.strip()
-
-    @field_validator("name")
-    @classmethod
-    def name_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("AssemblySpecification name cannot be empty")
-        return v.strip()
-
-    @field_validator("applicability")
-    @classmethod
-    def applicability_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("AssemblySpecification applicability cannot be empty")
-        return v.strip()
 
     @field_validator("jsonschema")
     @classmethod
@@ -178,10 +160,3 @@ class AssemblySpecification(Entity):
             cleaned_queries[schema_pointer] = query_id.strip()
 
         return cleaned_queries
-
-    @field_validator("version")
-    @classmethod
-    def version_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("AssemblySpecification version cannot be empty")
-        return v.strip()

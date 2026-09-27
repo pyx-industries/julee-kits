@@ -23,9 +23,11 @@ import hashlib
 import json
 
 import pytest
+from julee.core.entities.text import NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.document.multihash import (
     content_multihash as multihash_of,
 )
@@ -174,11 +176,11 @@ class TestDocumentInstantiation:
         if expected_success:
             # Should create successfully
             doc = Document(
-                document_id=document_id,
-                original_filename=original_filename,
-                content_type=content_type,
+                document_id=NonEmptyText(document_id),
+                original_filename=NonEmptyText(original_filename),
+                content_type=NonEmptyText(content_type),
                 size_bytes=size_bytes,
-                content_multihash=multihash,
+                content_multihash=ContentMultihash(multihash),
             )
             assert doc.document_id == document_id
             assert doc.original_filename.strip() == original_filename.strip()
@@ -189,11 +191,11 @@ class TestDocumentInstantiation:
             # Should raise validation error
             with pytest.raises((ValueError, ValidationError)):
                 Document(
-                    document_id=document_id,
-                    original_filename=original_filename,
-                    content_type=content_type,
+                    document_id=NonEmptyText(document_id),
+                    original_filename=NonEmptyText(original_filename),
+                    content_type=NonEmptyText(content_type),
                     size_bytes=size_bytes,
-                    content_multihash=multihash,
+                    content_multihash=ContentMultihash(multihash),
                 )
 
 
@@ -245,11 +247,11 @@ class TestDocumentNeedsNoContentToBeValid:
     def test_a_document_is_valid_with_no_content_attached(self) -> None:
         """The case that used to raise, and is now ordinary."""
         doc = Document(
-            document_id="test-doc",
-            original_filename="spec.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-doc"),
+            original_filename=NonEmptyText("spec.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=100,
-            content_multihash=multihash_of(b"test_hash"),
+            content_multihash=ContentMultihash(multihash_of(b"test_hash")),
         )
 
         assert doc.document_id == "test-doc"
@@ -275,11 +277,11 @@ class TestDocumentNeedsNoContentToBeValid:
         nothing can put a stream back on an entity and have it mean
         something."""
         doc = Document(
-            document_id="test-doc",
-            original_filename="spec.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-doc"),
+            original_filename=NonEmptyText("spec.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=100,
-            content_multihash=multihash_of(b"test_hash"),
+            content_multihash=ContentMultihash(multihash_of(b"test_hash")),
         )
 
         assert not hasattr(doc, "content")

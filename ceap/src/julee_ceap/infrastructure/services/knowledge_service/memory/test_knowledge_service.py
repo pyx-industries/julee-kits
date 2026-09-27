@@ -11,8 +11,10 @@ from datetime import UTC, datetime
 
 import pytest
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.document.multihash import (
     content_multihash as multihash_of,
 )
@@ -34,11 +36,11 @@ def test_document() -> Document:
     content_bytes = content_text.encode("utf-8")
 
     return Document(
-        document_id="test-doc-123",
-        original_filename="test_document.txt",
-        content_type="text/plain",
+        document_id=NonEmptyText("test-doc-123"),
+        original_filename=NonEmptyText("test_document.txt"),
+        content_type=NonEmptyText("text/plain"),
         size_bytes=len(content_bytes),
-        content_multihash=multihash_of(b"test-hash-123"),
+        content_multihash=ContentMultihash(multihash_of(b"test-hash-123")),
         status=DocumentStatus.CAPTURED,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
@@ -49,9 +51,9 @@ def test_document() -> Document:
 def knowledge_service_config() -> KnowledgeServiceConfig:
     """Create a test KnowledgeServiceConfig."""
     return KnowledgeServiceConfig(
-        knowledge_service_id="ks-memory-test",
-        name="Test Memory Service",
-        description="Memory service for testing",
+        knowledge_service_id=NonEmptyText("ks-memory-test"),
+        name=Name("Test Memory Service"),
+        description=NonEmptyText("Memory service for testing"),
         service_api=ServiceApi.ANTHROPIC,
     )
 
@@ -169,11 +171,11 @@ class TestMemoryKnowledgeService:
         content_bytes = content_text.encode("utf-8")
 
         doc2 = Document(
-            document_id="test-doc-2",
-            original_filename="test_document_2.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("test-doc-2"),
+            original_filename=NonEmptyText("test_document_2.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=multihash_of(b"test-hash-2"),
+            content_multihash=ContentMultihash(multihash_of(b"test-hash-2")),
             status=DocumentStatus.CAPTURED,
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),

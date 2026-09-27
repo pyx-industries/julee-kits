@@ -8,8 +8,10 @@ KnowledgeService implementations based on configuration.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.document.multihash import (
     content_multihash as multihash_of,
 )
@@ -37,11 +39,11 @@ def test_document() -> Document:
     content_bytes = content_text.encode("utf-8")
 
     return Document(
-        document_id="test-doc-123",
-        original_filename="test_document.txt",
-        content_type="text/plain",
+        document_id=NonEmptyText("test-doc-123"),
+        original_filename=NonEmptyText("test_document.txt"),
+        content_type=NonEmptyText("text/plain"),
         size_bytes=len(content_bytes),
-        content_multihash=multihash_of(b"test-hash-123"),
+        content_multihash=ContentMultihash(multihash_of(b"test-hash-123")),
         status=DocumentStatus.CAPTURED,
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
@@ -52,9 +54,9 @@ def test_document() -> Document:
 def anthropic_config() -> KnowledgeServiceConfig:
     """Create a test KnowledgeServiceConfig for Anthropic."""
     return KnowledgeServiceConfig(
-        knowledge_service_id="ks-anthropic-test",
-        name="Test Anthropic Service",
-        description="Anthropic service for testing",
+        knowledge_service_id=NonEmptyText("ks-anthropic-test"),
+        name=Name("Test Anthropic Service"),
+        description=NonEmptyText("Anthropic service for testing"),
         service_api=ServiceApi.ANTHROPIC,
     )
 

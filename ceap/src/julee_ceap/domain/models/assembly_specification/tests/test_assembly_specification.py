@@ -22,6 +22,7 @@ import json
 from typing import Any
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.domain.models.assembly_specification import (
@@ -151,9 +152,9 @@ class TestAssemblyInstantiation:
         if expected_success:
             # Should create successfully
             assembly = AssemblySpecification(
-                assembly_specification_id=assembly_specification_id,
-                name=name,
-                applicability=applicability,
+                assembly_specification_id=NonEmptyText(assembly_specification_id),
+                name=Name(name),
+                applicability=NonEmptyText(applicability),
                 jsonschema=jsonschema,
             )
             assert (
@@ -168,9 +169,9 @@ class TestAssemblyInstantiation:
             # Should raise validation error
             with pytest.raises((ValueError, ValidationError)):
                 AssemblySpecification(
-                    assembly_specification_id=assembly_specification_id,
-                    name=name,
-                    applicability=applicability,
+                    assembly_specification_id=NonEmptyText(assembly_specification_id),
+                    name=Name(name),
+                    applicability=NonEmptyText(applicability),
                     jsonschema=jsonschema,
                 )
 
@@ -209,9 +210,9 @@ class TestAssemblyKnowledgeServiceQueriesValidation:
         if expected_success:
             # Should create successfully
             assembly = AssemblySpecification(
-                assembly_specification_id="test-id",
-                name="Test Assembly",
-                applicability="Test applicability",
+                assembly_specification_id=NonEmptyText("test-id"),
+                name=Name("Test Assembly"),
+                applicability=NonEmptyText("Test applicability"),
                 jsonschema={
                     "type": "object",
                     "properties": {"test": {"type": "string"}},
@@ -223,9 +224,9 @@ class TestAssemblyKnowledgeServiceQueriesValidation:
             # Should raise validation error
             with pytest.raises((ValueError, ValidationError)):
                 AssemblySpecification(
-                    assembly_specification_id="test-id",
-                    name="Test Assembly",
-                    applicability="Test applicability",
+                    assembly_specification_id=NonEmptyText("test-id"),
+                    name=Name("Test Assembly"),
+                    applicability=NonEmptyText("Test applicability"),
                     jsonschema={
                         "type": "object",
                         "properties": {"test": {"type": "string"}},
@@ -313,9 +314,9 @@ class TestAssemblyJsonSchemaValidation:
         if error_message_contains is None:
             # Should create successfully
             assembly = AssemblySpecification(
-                assembly_specification_id="test-id",
-                name="Test Assembly",
-                applicability="Test applicability",
+                assembly_specification_id=NonEmptyText("test-id"),
+                name=Name("Test Assembly"),
+                applicability=NonEmptyText("Test applicability"),
                 jsonschema=jsonschema,
             )
             assert assembly.jsonschema == jsonschema
@@ -323,9 +324,9 @@ class TestAssemblyJsonSchemaValidation:
             # Should raise validation error
             with pytest.raises(Exception) as exc_info:
                 AssemblySpecification(
-                    assembly_specification_id="test-id",
-                    name="Test Assembly",
-                    applicability="Test applicability",
+                    assembly_specification_id=NonEmptyText("test-id"),
+                    name=Name("Test Assembly"),
+                    applicability=NonEmptyText("Test applicability"),
                     jsonschema=jsonschema,
                 )
 
@@ -423,9 +424,9 @@ class TestAssemblyDefaults:
     def test_assembly_default_values(self) -> None:
         """Test that AssemblySpecification has correct default values."""
         minimal_assembly = AssemblySpecification(
-            assembly_specification_id="test-id",
-            name="Test Assembly",
-            applicability="Test applicability",
+            assembly_specification_id=NonEmptyText("test-id"),
+            name=Name("Test Assembly"),
+            applicability=NonEmptyText("Test applicability"),
             jsonschema={
                 "type": "object",
                 "properties": {"test": {"type": "string"}},
@@ -440,15 +441,15 @@ class TestAssemblyDefaults:
     def test_assembly_custom_values(self) -> None:
         """Test AssemblySpecification with custom non-default values."""
         custom_assembly = AssemblySpecification(
-            assembly_specification_id="custom-id",
-            name="Custom Assembly",
-            applicability="Custom applicability",
+            assembly_specification_id=NonEmptyText("custom-id"),
+            name=Name("Custom Assembly"),
+            applicability=NonEmptyText("Custom applicability"),
             jsonschema={
                 "type": "object",
                 "properties": {"custom": {"type": "string"}},
             },
             status=AssemblySpecificationStatus.DRAFT,
-            version="2.0.0",
+            version=NonEmptyText("2.0.0"),
             knowledge_service_queries={"/properties/custom": "custom-query-1"},
         )
 
@@ -509,9 +510,9 @@ class TestAssemblyRefSchemaValidation:
             {"type": "object", "properties": {"name": {"type": "string"}}},
         )
         spec = AssemblySpecification(
-            assembly_specification_id="ref-test",
-            name="Ref Test",
-            applicability="Testing $ref support",
+            assembly_specification_id=NonEmptyText("ref-test"),
+            name=Name("Ref Test"),
+            applicability=NonEmptyText("Testing $ref support"),
             jsonschema={"$ref": url},
         )
         assert spec.jsonschema == {"$ref": url}
@@ -532,9 +533,9 @@ class TestAssemblyRefSchemaValidation:
         )
         ref = f"{url}#/$defs/Item"
         spec = AssemblySpecification(
-            assembly_specification_id="fragment-test",
-            name="Fragment Test",
-            applicability="Testing fragment $ref support",
+            assembly_specification_id=NonEmptyText("fragment-test"),
+            name=Name("Fragment Test"),
+            applicability=NonEmptyText("Testing fragment $ref support"),
             jsonschema={"$ref": ref},
         )
         assert spec.jsonschema == {"$ref": ref}
@@ -546,9 +547,9 @@ class TestAssemblyRefSchemaValidation:
         the domain model does not fetch remote schemas during construction.
         """
         spec = AssemblySpecification(
-            assembly_specification_id="bad-ref-test",
-            name="Bad Ref Test",
-            applicability="Testing invalid $ref",
+            assembly_specification_id=NonEmptyText("bad-ref-test"),
+            name=Name("Bad Ref Test"),
+            applicability=NonEmptyText("Testing invalid $ref"),
             jsonschema={"$ref": _UNRESOLVABLE_URL},
         )
         assert spec.jsonschema == {"$ref": _UNRESOLVABLE_URL}
@@ -561,9 +562,9 @@ class TestAssemblyRefSchemaValidation:
             {"type": "object", "properties": {"x": {"type": "integer"}}},
         )
         original = AssemblySpecification(
-            assembly_specification_id="roundtrip-test",
-            name="Roundtrip Test",
-            applicability="Testing serialisation roundtrip",
+            assembly_specification_id=NonEmptyText("roundtrip-test"),
+            name=Name("Roundtrip Test"),
+            applicability=NonEmptyText("Testing serialisation roundtrip"),
             jsonschema={"$ref": url},
         )
         data = json.loads(original.model_dump_json())
@@ -575,9 +576,9 @@ class TestAssemblyRefSchemaValidation:
         for bare $ref schemas; existence against the resolved schema is deferred
         to assembly time via SchemaOracle."""
         spec = AssemblySpecification(
-            assembly_specification_id="ksq-ref-test",
-            name="KSQ Ref Test",
-            applicability="Testing pointer validation against $ref",
+            assembly_specification_id=NonEmptyText("ksq-ref-test"),
+            name=Name("KSQ Ref Test"),
+            applicability=NonEmptyText("Testing pointer validation against $ref"),
             jsonschema={"$ref": _UNRESOLVABLE_URL},
             knowledge_service_queries={"/properties/sku": "extract-sku"},
         )
@@ -590,9 +591,9 @@ class TestAssemblyRefSchemaValidation:
         still accepted at construction time; existence checking is deferred to
         assembly time when the remote schema can actually be fetched."""
         spec = AssemblySpecification(
-            assembly_specification_id="deferred-pointer-test",
-            name="Deferred Pointer Test",
-            applicability="Testing pointer deferral for $ref schemas",
+            assembly_specification_id=NonEmptyText("deferred-pointer-test"),
+            name=Name("Deferred Pointer Test"),
+            applicability=NonEmptyText("Testing pointer deferral for $ref schemas"),
             jsonschema={"$ref": _UNRESOLVABLE_URL},
             knowledge_service_queries={"/properties/nonexistent": "query-1"},
         )
@@ -605,9 +606,9 @@ class TestAssemblyRefSchemaValidation:
         bare $ref schemas, since format validation still applies."""
         with pytest.raises(ValidationError):
             AssemblySpecification(
-                assembly_specification_id="bad-format-test",
-                name="Bad Format Test",
-                applicability="Testing malformed pointer rejection",
+                assembly_specification_id=NonEmptyText("bad-format-test"),
+                name=Name("Bad Format Test"),
+                applicability=NonEmptyText("Testing malformed pointer rejection"),
                 jsonschema={"$ref": _UNRESOLVABLE_URL},
                 knowledge_service_queries={"not-a-pointer": "query-1"},
             )

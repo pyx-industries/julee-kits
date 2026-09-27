@@ -9,6 +9,7 @@ dependencies during testing.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.assembly_specification import (
@@ -39,10 +40,10 @@ def query_repo(
 def sample_query() -> KnowledgeServiceQuery:
     """Create a sample knowledge service query for testing."""
     return KnowledgeServiceQuery(
-        query_id="test-query-123",
-        name="Test Query",
-        knowledge_service_id="anthropic-claude",
-        prompt="Extract key information from the document",
+        query_id=NonEmptyText("test-query-123"),
+        name=Name("Test Query"),
+        knowledge_service_id=NonEmptyText("anthropic-claude"),
+        prompt=NonEmptyText("Extract key information from the document"),
         assistant_prompt="Format the response as JSON",
         query_metadata={"temperature": 0.2, "max_tokens": 1000},
         created_at=datetime.now(UTC),
@@ -56,30 +57,30 @@ def sample_queries() -> list[KnowledgeServiceQuery]:
     now = datetime.now(UTC)
     return [
         KnowledgeServiceQuery(
-            query_id="query-001",
-            name="Meeting Summary Query",
-            knowledge_service_id="anthropic-claude",
-            prompt="Extract meeting summary",
+            query_id=NonEmptyText("query-001"),
+            name=Name("Meeting Summary Query"),
+            knowledge_service_id=NonEmptyText("anthropic-claude"),
+            prompt=NonEmptyText("Extract meeting summary"),
             assistant_prompt="Format as bullet points",
             query_metadata={},
             created_at=now,
             updated_at=now,
         ),
         KnowledgeServiceQuery(
-            query_id="query-002",
-            name="Document Analysis Query",
-            knowledge_service_id="openai-gpt4",
-            prompt="Analyze document content",
+            query_id=NonEmptyText("query-002"),
+            name=Name("Document Analysis Query"),
+            knowledge_service_id=NonEmptyText("openai-gpt4"),
+            prompt=NonEmptyText("Analyze document content"),
             assistant_prompt=None,
             query_metadata={"temperature": 0.1},
             created_at=now,
             updated_at=now,
         ),
         KnowledgeServiceQuery(
-            query_id="query-003",
-            name="Risk Assessment Query",
-            knowledge_service_id="memory-service",
-            prompt="Identify risks in the document",
+            query_id=NonEmptyText("query-003"),
+            name=Name("Risk Assessment Query"),
+            knowledge_service_id=NonEmptyText("memory-service"),
+            prompt=NonEmptyText("Identify risks in the document"),
             assistant_prompt="Categorize by severity",
             query_metadata={"max_tokens": 500},
             created_at=now,
@@ -255,7 +256,7 @@ class TestMinioKnowledgeServiceQueryRepositoryGetMany:
             await query_repo.save(query)
 
         # Get many with all IDs
-        query_ids = [query.query_id for query in sample_queries]
+        query_ids: list[str] = [query.query_id for query in sample_queries]
         result = await query_repo.get_many(query_ids)
 
         assert len(result) == len(sample_queries)
@@ -292,10 +293,10 @@ class TestMinioKnowledgeServiceQueryRepositoryEdgeCases:
     ) -> None:
         """Test handling query with None assistant_prompt."""
         query = KnowledgeServiceQuery(
-            query_id="test-query-no-assistant",
-            name="Query without assistant prompt",
-            knowledge_service_id="test-service",
-            prompt="Main prompt only",
+            query_id=NonEmptyText("test-query-no-assistant"),
+            name=Name("Query without assistant prompt"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Main prompt only"),
             assistant_prompt=None,
             query_metadata={},
             created_at=datetime.now(UTC),
@@ -314,10 +315,10 @@ class TestMinioKnowledgeServiceQueryRepositoryEdgeCases:
     ) -> None:
         """Test handling query with empty metadata."""
         query = KnowledgeServiceQuery(
-            query_id="test-query-empty-metadata",
-            name="Query with empty metadata",
-            knowledge_service_id="test-service",
-            prompt="Test prompt",
+            query_id=NonEmptyText("test-query-empty-metadata"),
+            name=Name("Query with empty metadata"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test prompt"),
             assistant_prompt="Test assistant prompt",
             query_metadata={},
             created_at=datetime.now(UTC),
@@ -343,10 +344,10 @@ class TestMinioKnowledgeServiceQueryRepositoryEdgeCases:
         }
 
         query = KnowledgeServiceQuery(
-            query_id="test-query-complex-metadata",
-            name="Query with complex metadata",
-            knowledge_service_id="test-service",
-            prompt="Test prompt",
+            query_id=NonEmptyText("test-query-complex-metadata"),
+            name=Name("Query with complex metadata"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test prompt"),
             assistant_prompt="Test assistant prompt",
             query_metadata=complex_metadata,
             created_at=datetime.now(UTC),
@@ -372,10 +373,10 @@ class TestMinioKnowledgeServiceQueryRepositoryFullWorkflow:
         query_id = await query_repo.generate_id()
 
         query = KnowledgeServiceQuery(
-            query_id=query_id,
-            name="Initial Query",
-            knowledge_service_id="initial-service",
-            prompt="Initial prompt",
+            query_id=NonEmptyText(query_id),
+            name=Name("Initial Query"),
+            knowledge_service_id=NonEmptyText("initial-service"),
+            prompt=NonEmptyText("Initial prompt"),
             assistant_prompt="Initial assistant prompt",
             query_metadata={"version": 1},
             created_at=datetime.now(UTC),
@@ -429,7 +430,10 @@ class TestMinioKnowledgeServiceQueryRepositoryFullWorkflow:
         assert len(all_queries) == len(sample_queries)
 
         # Test get_many with subset
-        subset_ids = [sample_queries[0].query_id, sample_queries[2].query_id]
+        subset_ids: list[str] = [
+            sample_queries[0].query_id,
+            sample_queries[2].query_id,
+        ]
         subset_result = await query_repo.get_many(subset_ids)
         assert len(subset_result) == 2
         assert all(result is not None for result in subset_result.values())

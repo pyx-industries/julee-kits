@@ -23,6 +23,7 @@ import json
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.domain.models.assembly import Assembly, AssemblyStatus
@@ -70,10 +71,10 @@ class TestAssemblyInstantiation:
         if expected_success:
             # Should create successfully
             assembly = Assembly(
-                assembly_id=assembly_id,
-                assembly_specification_id=assembly_specification_id,
-                input_document_id=input_document_id,
-                execution_id="test-execution-123",
+                assembly_id=NonEmptyText(assembly_id),
+                assembly_specification_id=NonEmptyText(assembly_specification_id),
+                input_document_id=NonEmptyText(input_document_id),
+                execution_id=NonEmptyText("test-execution-123"),
                 created_at=_NOW,
                 updated_at=_NOW,
             )
@@ -90,10 +91,10 @@ class TestAssemblyInstantiation:
             # Should raise validation error
             with pytest.raises((ValueError, ValidationError)):
                 Assembly(
-                    assembly_id=assembly_id,
-                    assembly_specification_id=assembly_specification_id,
-                    input_document_id=input_document_id,
-                    execution_id="test-execution-123",
+                    assembly_id=NonEmptyText(assembly_id),
+                    assembly_specification_id=NonEmptyText(assembly_specification_id),
+                    input_document_id=NonEmptyText(input_document_id),
+                    execution_id=NonEmptyText("test-execution-123"),
                 )
 
 
@@ -167,10 +168,10 @@ class TestAssemblyDefaults:
         (ADR 004). The entity itself has no default for these fields.
         """
         minimal_assembly = Assembly(
-            assembly_id="test-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="test-execution-123",
+            assembly_id=NonEmptyText("test-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
         )
 
         assert minimal_assembly.status == AssemblyStatus.PENDING
@@ -181,10 +182,10 @@ class TestAssemblyDefaults:
     def test_assembly_with_explicit_timestamps(self) -> None:
         """Test Assembly with explicit timestamps provided by use case."""
         assembly = Assembly(
-            assembly_id="test-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="test-execution-123",
+            assembly_id=NonEmptyText("test-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
             created_at=_NOW,
             updated_at=_NOW,
         )
@@ -200,12 +201,12 @@ class TestAssemblyDefaults:
         custom_updated_at = datetime(2023, 1, 2, 12, 0, 0, tzinfo=UTC)
 
         custom_assembly = Assembly(
-            assembly_id="custom-id",
-            assembly_specification_id="custom-spec",
-            input_document_id="custom-doc",
-            execution_id="custom-execution-456",
+            assembly_id=NonEmptyText("custom-id"),
+            assembly_specification_id=NonEmptyText("custom-spec"),
+            input_document_id=NonEmptyText("custom-doc"),
+            execution_id=NonEmptyText("custom-execution-456"),
             status=AssemblyStatus.COMPLETED,
-            assembled_document_id="custom-output-doc",
+            assembled_document_id=NonEmptyText("custom-output-doc"),
             created_at=custom_created_at,
             updated_at=custom_updated_at,
         )
@@ -238,93 +239,93 @@ class TestAssemblyFieldValidation:
         """Test assembly_id field validation."""
         # Valid cases
         valid_assembly = Assembly(
-            assembly_id="valid-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="test-execution-123",
+            assembly_id=NonEmptyText("valid-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
         )
         assert valid_assembly.assembly_id == "valid-id"
 
         # Invalid cases
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="",
-                assembly_specification_id="spec-id",
-                input_document_id="doc-id",
-                execution_id="test-execution-123",
+                assembly_id=NonEmptyText(""),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText("test-execution-123"),
             )
 
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="   ",
-                assembly_specification_id="spec-id",
-                input_document_id="doc-id",
-                execution_id="test-execution-123",
+                assembly_id=NonEmptyText("   "),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText("test-execution-123"),
             )
 
     def test_assembly_specification_id_validation(self) -> None:
         """Test assembly_specification_id field validation."""
         # Valid cases
         valid_assembly = Assembly(
-            assembly_id="asm-id",
-            assembly_specification_id="valid-spec-id",
-            input_document_id="doc-id",
-            execution_id="test-execution-123",
+            assembly_id=NonEmptyText("asm-id"),
+            assembly_specification_id=NonEmptyText("valid-spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
         )
         assert valid_assembly.assembly_specification_id == "valid-spec-id"
 
         # Invalid cases
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="",
-                input_document_id="doc-id",
-                execution_id="test-execution-123",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText(""),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText("test-execution-123"),
             )
 
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="   ",
-                input_document_id="doc-id",
-                execution_id="test-execution-123",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("   "),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText("test-execution-123"),
             )
 
     def test_input_document_id_validation(self) -> None:
         """Test input_document_id field validation."""
         # Valid cases
         valid_assembly = Assembly(
-            assembly_id="asm-id",
-            assembly_specification_id="spec-id",
-            input_document_id="valid-doc-id",
-            execution_id="test-execution-123",
+            assembly_id=NonEmptyText("asm-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("valid-doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
         )
         assert valid_assembly.input_document_id == "valid-doc-id"
 
         # Invalid cases
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="spec-id",
-                input_document_id="",
-                execution_id="test-execution-123",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText(""),
+                execution_id=NonEmptyText("test-execution-123"),
             )
 
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="spec-id",
-                input_document_id="   ",
-                execution_id="test-execution-123",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("   "),
+                execution_id=NonEmptyText("test-execution-123"),
             )
 
     def test_field_trimming(self) -> None:
         """Test that string fields are properly trimmed."""
         assembly = Assembly(
-            assembly_id="  trim-asm  ",
-            assembly_specification_id="  trim-spec  ",
-            input_document_id="  trim-doc  ",
-            execution_id="  trim-execution  ",
+            assembly_id=NonEmptyText("  trim-asm  "),
+            assembly_specification_id=NonEmptyText("  trim-spec  "),
+            input_document_id=NonEmptyText("  trim-doc  "),
+            execution_id=NonEmptyText("  trim-execution  "),
         )
 
         assert assembly.assembly_id == "trim-asm"
@@ -350,20 +351,20 @@ class TestAssemblyDocumentManagement:
         """Test assembled_document_id field validation."""
         # Valid cases
         valid_assembly = Assembly(
-            assembly_id="asm-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="test-execution-123",
-            assembled_document_id="valid-output-doc",
+            assembly_id=NonEmptyText("asm-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
+            assembled_document_id=NonEmptyText("valid-output-doc"),
         )
         assert valid_assembly.assembled_document_id == "valid-output-doc"
 
         # None is valid
         none_assembly = Assembly(
-            assembly_id="asm-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="test-execution-123",
+            assembly_id=NonEmptyText("asm-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
             assembled_document_id=None,
         )
         assert none_assembly.assembled_document_id is None
@@ -371,31 +372,31 @@ class TestAssemblyDocumentManagement:
         # Invalid cases - empty string
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="spec-id",
-                input_document_id="doc-id",
-                execution_id="test-execution-123",
-                assembled_document_id="",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText("test-execution-123"),
+                assembled_document_id=NonEmptyText(""),
             )
 
         # Invalid cases - whitespace only
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="spec-id",
-                input_document_id="doc-id",
-                execution_id="test-execution-123",
-                assembled_document_id="   ",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText("test-execution-123"),
+                assembled_document_id=NonEmptyText("   "),
             )
 
     def test_assembled_document_id_trimming(self) -> None:
         """Test that assembled_document_id is properly trimmed."""
         assembly = Assembly(
-            assembly_id="asm-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="test-execution-123",
-            assembled_document_id="  trim-output-doc  ",
+            assembly_id=NonEmptyText("asm-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("test-execution-123"),
+            assembled_document_id=NonEmptyText("  trim-output-doc  "),
         )
         assert assembly.assembled_document_id == "trim-output-doc"
 
@@ -407,38 +408,38 @@ class TestAssemblyExecutionIdValidation:
         """Test execution_id field validation."""
         # Valid cases
         valid_assembly = Assembly(
-            assembly_id="asm-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="valid-execution-id",
+            assembly_id=NonEmptyText("asm-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("valid-execution-id"),
         )
         assert valid_assembly.execution_id == "valid-execution-id"
 
         # Invalid cases - empty string
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="spec-id",
-                input_document_id="doc-id",
-                execution_id="",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText(""),
             )
 
         # Invalid cases - whitespace only
         with pytest.raises((ValueError, ValidationError)):
             Assembly(
-                assembly_id="asm-id",
-                assembly_specification_id="spec-id",
-                input_document_id="doc-id",
-                execution_id="   ",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("doc-id"),
+                execution_id=NonEmptyText("   "),
             )
 
     def test_execution_id_trimming(self) -> None:
         """Test that execution_id is properly trimmed."""
         assembly = Assembly(
-            assembly_id="asm-id",
-            assembly_specification_id="spec-id",
-            input_document_id="doc-id",
-            execution_id="  trim-execution-id  ",
+            assembly_id=NonEmptyText("asm-id"),
+            assembly_specification_id=NonEmptyText("spec-id"),
+            input_document_id=NonEmptyText("doc-id"),
+            execution_id=NonEmptyText("  trim-execution-id  "),
         )
         assert assembly.execution_id == "trim-execution-id"
 
@@ -446,8 +447,8 @@ class TestAssemblyExecutionIdValidation:
         """Test that execution_id is required."""
         with pytest.raises((ValueError, ValidationError)):
             Assembly(  # type: ignore[call-arg]
-                assembly_id="asm-id",
-                assembly_specification_id="spec-id",
-                input_document_id="doc-id",
+                assembly_id=NonEmptyText("asm-id"),
+                assembly_specification_id=NonEmptyText("spec-id"),
+                input_document_id=NonEmptyText("doc-id"),
                 # execution_id is missing - should fail
             )

@@ -12,6 +12,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from fastapi_pagination import add_pagination
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.apps.api.dependencies import (
     get_knowledge_service_query_repository,
@@ -69,10 +70,10 @@ def client(
 def sample_knowledge_service_query() -> KnowledgeServiceQuery:
     """Create a sample knowledge service query for testing."""
     return KnowledgeServiceQuery(
-        query_id="test-query-123",
-        name="Extract Meeting Summary",
-        knowledge_service_id="anthropic-claude",
-        prompt="Extract the main summary from this meeting transcript",
+        query_id=NonEmptyText("test-query-123"),
+        name=Name("Extract Meeting Summary"),
+        knowledge_service_id=NonEmptyText("anthropic-claude"),
+        prompt=NonEmptyText("Extract the main summary from this meeting transcript"),
         query_metadata={"model": "claude-3", "temperature": 0.2},
         assistant_prompt="Please format as JSON",
     )
@@ -131,10 +132,10 @@ class TestGetKnowledgeServiceQueries:
         """Test getting queries when repository contains data."""
         # Create a second query for testing
         query2 = KnowledgeServiceQuery(
-            query_id="test-query-456",
-            name="Extract Attendees",
-            knowledge_service_id="openai-service",
-            prompt="Extract all attendees from this meeting",
+            query_id=NonEmptyText("test-query-456"),
+            name=Name("Extract Attendees"),
+            knowledge_service_id=NonEmptyText("openai-service"),
+            prompt=NonEmptyText("Extract all attendees from this meeting"),
             query_metadata={"model": "gpt-4", "temperature": 0.1},
             assistant_prompt="Format as JSON array",
         )
@@ -183,10 +184,10 @@ class TestGetKnowledgeServiceQueries:
         queries = []
         for i in range(5):
             query = KnowledgeServiceQuery(
-                query_id=f"query-{i:03d}",
-                name=f"Query {i}",
-                knowledge_service_id="test-service",
-                prompt=f"Test prompt {i}",
+                query_id=NonEmptyText(f"query-{i:03d}"),
+                name=Name(f"Query {i}"),
+                knowledge_service_id=NonEmptyText("test-service"),
+                prompt=NonEmptyText(f"Test prompt {i}"),
             )
             queries.append(query)
             await memory_repo.save(query)
@@ -444,10 +445,10 @@ class TestBulkGetKnowledgeServiceQueries:
         queries = []
         for i in range(3):
             query = KnowledgeServiceQuery(
-                query_id=f"bulk-query-{i}",
-                name=f"Bulk Query {i}",
-                knowledge_service_id="test-service",
-                prompt=f"Test prompt {i}",
+                query_id=NonEmptyText(f"bulk-query-{i}"),
+                name=Name(f"Bulk Query {i}"),
+                knowledge_service_id=NonEmptyText("test-service"),
+                prompt=NonEmptyText(f"Test prompt {i}"),
             )
             queries.append(query)
             await memory_repo.save(query)
@@ -478,10 +479,10 @@ class TestBulkGetKnowledgeServiceQueries:
         """Test bulk retrieval when only some IDs are found."""
         # Create one query
         query = KnowledgeServiceQuery(
-            query_id="existing-query",
-            name="Existing Query",
-            knowledge_service_id="test-service",
-            prompt="Test prompt",
+            query_id=NonEmptyText("existing-query"),
+            name=Name("Existing Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test prompt"),
         )
         await memory_repo.save(query)
 
@@ -548,10 +549,10 @@ class TestBulkGetKnowledgeServiceQueries:
         queries = []
         for i in range(2):
             query = KnowledgeServiceQuery(
-                query_id=f"space-query-{i}",
-                name=f"Space Query {i}",
-                knowledge_service_id="test-service",
-                prompt=f"Test prompt {i}",
+                query_id=NonEmptyText(f"space-query-{i}"),
+                name=Name(f"Space Query {i}"),
+                knowledge_service_id=NonEmptyText("test-service"),
+                prompt=NonEmptyText(f"Test prompt {i}"),
             )
             queries.append(query)
             await memory_repo.save(query)
@@ -580,10 +581,10 @@ class TestBulkGetKnowledgeServiceQueries:
     ) -> None:
         """Test bulk retrieval with a single ID."""
         query = KnowledgeServiceQuery(
-            query_id="single-query",
-            name="Single Query",
-            knowledge_service_id="test-service",
-            prompt="Single test prompt",
+            query_id=NonEmptyText("single-query"),
+            name=Name("Single Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Single test prompt"),
         )
         await memory_repo.save(query)
 
@@ -629,10 +630,10 @@ class TestBulkGetKnowledgeServiceQueries:
         queries = []
         for json_pointer, query_id in query_mappings.items():
             query = KnowledgeServiceQuery(
-                query_id=query_id,
-                name=f"Query for {json_pointer}",
-                knowledge_service_id="test-service",
-                prompt=f"Extract data for {json_pointer}",
+                query_id=NonEmptyText(query_id),
+                name=Name(f"Query for {json_pointer}"),
+                knowledge_service_id=NonEmptyText("test-service"),
+                prompt=NonEmptyText(f"Extract data for {json_pointer}"),
             )
             queries.append(query)
             await memory_repo.save(query)
@@ -671,10 +672,10 @@ class TestGetIndividualKnowledgeServiceQuery:
         """Test successfully retrieving an individual query."""
         # Create a test query
         query = KnowledgeServiceQuery(
-            query_id="test-query-123",
-            name="Test Query",
-            knowledge_service_id="test-service",
-            prompt="Extract test data",
+            query_id=NonEmptyText("test-query-123"),
+            name=Name("Test Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Extract test data"),
             assistant_prompt="Assistant instructions",
             query_metadata={"max_tokens": 100, "temperature": 0.7},
         )
@@ -722,10 +723,10 @@ class TestGetIndividualKnowledgeServiceQuery:
         """Test retrieving a query that doesn't have optional fields."""
         # Create a minimal query without assistant_prompt
         query = KnowledgeServiceQuery(
-            query_id="minimal-query",
-            name="Minimal Query",
-            knowledge_service_id="test-service",
-            prompt="Basic prompt",
+            query_id=NonEmptyText("minimal-query"),
+            name=Name("Minimal Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Basic prompt"),
             query_metadata={},
         )
         await memory_repo.save(query)

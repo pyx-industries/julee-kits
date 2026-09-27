@@ -38,8 +38,11 @@ that is not one.
 import hashlib
 import re
 
+from julee.core.entities.text import NonEmptyText
+
 __all__ = [
     "SHA2_256_PREFIX",
+    "ContentMultihash",
     "content_multihash",
     "is_content_multihash",
 ]
@@ -83,3 +86,50 @@ def is_content_multihash(value: str) -> bool:
         True if it has the shape :func:`content_multihash` produces
     """
     return bool(_WELL_FORMED.match(value))
+
+
+class ContentMultihash(NonEmptyText):
+    """A content multihash, refused unless it is one.
+
+    The rule was a field validator on :class:`Document`, which meant
+    every other place that handles one — a repository's object key, a
+    use case passing it along, a port returning it — held a ``str`` and
+    took the shape on trust. Now the rule travels with the value.
+
+    This is what julee-kits#69 wanted and could not have. It tried a
+    ``StoredContent`` value object under ``domain/models/``, and
+    doctrine objected that ``DocumentRepository`` referenced two entity
+    types — correctly, by its own rules, because everything there is
+    read as an entity. A ``str`` subclass is not a ``BaseModel``, so it
+    is not read as one, and a port can return it.
+
+    :meth:`of` is how one is made from content. The name cannot be known
+    before the bytes have been read, which is why storing content comes
+    before saving the document that names it.
+    """
+
+    __slots__ = ()
+
+    _what = "content multihash"
+
+    def __new__(cls, value: str) -> "ContentMultihash":
+        candidate = str(value).strip()
+        if not is_content_multihash(candidate):
+            raise ValueError(
+                f"A content multihash is {SHA2_256_PREFIX!r} and 64 hex "
+                f"characters, not {candidate!r}. ContentMultihash.of() "
+                f"computes one from content."
+            )
+        return str.__new__(cls, candidate)
+
+    @classmethod
+    def of(cls, content: bytes) -> "ContentMultihash":
+        """The multihash naming this content.
+
+        Args:
+            content: The document's bytes
+
+        Returns:
+            The name those bytes are stored under
+        """
+        return cls(content_multihash(content))

@@ -116,7 +116,9 @@ class AnthropicKnowledgeService(KnowledgeService):
 
             # Anthropic only supports PDF and plaintext files
             # Convert JSON content type to text/plain for compatibility
-            content_type = document.content_type
+            # Plain str from here: what goes to the API is a header
+            # value, not the document's own content type.
+            content_type = str(document.content_type)
             if content_type == "application/json":
                 content_type = "text/plain"
 

@@ -9,6 +9,7 @@ external dependencies during testing.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.assembly_specification import (
@@ -40,9 +41,9 @@ def specification_repo(
 def sample_specification() -> AssemblySpecification:
     """Create a sample assembly specification for testing."""
     return AssemblySpecification(
-        assembly_specification_id="spec-123",
-        name="Meeting Minutes",
-        applicability="Corporate meeting recordings and transcripts",
+        assembly_specification_id=NonEmptyText("spec-123"),
+        name=Name("Meeting Minutes"),
+        applicability=NonEmptyText("Corporate meeting recordings and transcripts"),
         jsonschema={
             "type": "object",
             "properties": {
@@ -68,7 +69,7 @@ def sample_specification() -> AssemblySpecification:
             "/properties/attendees": "extract-attendees",
             "/properties/action_items": "extract-action-items",
         },
-        version="1.0.0",
+        version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -78,15 +79,15 @@ def sample_specification() -> AssemblySpecification:
 def inactive_specification() -> AssemblySpecification:
     """Create an inactive assembly specification for testing."""
     return AssemblySpecification(
-        assembly_specification_id="spec-inactive-456",
-        name="Inactive Spec",
-        applicability="This is an inactive specification",
+        assembly_specification_id=NonEmptyText("spec-inactive-456"),
+        name=Name("Inactive Spec"),
+        applicability=NonEmptyText("This is an inactive specification"),
         jsonschema={
             "type": "object",
             "properties": {"test": {"type": "string"}},
         },
         status=AssemblySpecificationStatus.INACTIVE,
-        version="1.0.0",
+        version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -223,9 +224,9 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
 
         # Create and save new specification
         specification = AssemblySpecification(
-            assembly_specification_id=spec_id,
-            name="Test Lifecycle Spec",
-            applicability="Test specification for lifecycle testing",
+            assembly_specification_id=NonEmptyText(spec_id),
+            name=Name("Test Lifecycle Spec"),
+            applicability=NonEmptyText("Test specification for lifecycle testing"),
             jsonschema={
                 "type": "object",
                 "properties": {"test_field": {"type": "string"}},
@@ -233,7 +234,7 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
             },
             status=AssemblySpecificationStatus.DRAFT,
             knowledge_service_queries={"/properties/test_field": "test-query"},
-            version="0.1.0",
+            version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -338,13 +339,15 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
         }
 
         specification = AssemblySpecification(
-            assembly_specification_id="complex-spec",
-            name="Complex Meeting Assembly",
-            applicability="Detailed meeting documentation with full metadata",
+            assembly_specification_id=NonEmptyText("complex-spec"),
+            name=Name("Complex Meeting Assembly"),
+            applicability=NonEmptyText(
+                "Detailed meeting documentation with full metadata"
+            ),
             jsonschema=complex_schema,
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries=complex_queries,
-            version="2.0.0",
+            version=NonEmptyText("2.0.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -364,9 +367,9 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
     ) -> None:
         """Test specification with unicode content survives roundtrip."""
         unicode_specification = AssemblySpecification(
-            assembly_specification_id="unicode-spec",
-            name="Spécification avec caractères spéciaux",
-            applicability="Документы с unicode содержанием и émojis 🚀📝",
+            assembly_specification_id=NonEmptyText("unicode-spec"),
+            name=Name("Spécification avec caractères spéciaux"),
+            applicability=NonEmptyText("Документы с unicode содержанием и émojis 🚀📝"),
             jsonschema={
                 "type": "object",
                 "properties": {
@@ -383,7 +386,7 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
                 "/properties/título": "query-título",
                 "/properties/метаданные": "query-metadata",
             },
-            version="1.0.0",
+            version=NonEmptyText("1.0.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

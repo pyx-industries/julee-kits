@@ -13,10 +13,12 @@ from unittest.mock import Mock
 
 import pytest
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 from minio.error import S3Error
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.document.multihash import (
     content_multihash as multihash_of,
 )
@@ -56,11 +58,11 @@ def sample_document(sample_content: ContentStream) -> Document:
     actual_multihash = multihash_of(content_bytes)
 
     return Document(
-        document_id="test-doc-123",
-        original_filename="test.txt",
-        content_type="text/plain",
+        document_id=NonEmptyText("test-doc-123"),
+        original_filename=NonEmptyText("test.txt"),
+        content_type=NonEmptyText("text/plain"),
         size_bytes=len(content_bytes),
-        content_multihash=actual_multihash,
+        content_multihash=ContentMultihash(actual_multihash),
         status=DocumentStatus.CAPTURED,
     )
 
@@ -177,11 +179,13 @@ class TestMinioDocumentRepositoryStore:
         await repository.store_content(ContentStream(io.BytesIO(content_bytes)))
 
         second_document = Document(
-            document_id="different-doc-456",
-            original_filename="different.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("different-doc-456"),
+            original_filename=NonEmptyText("different.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content_bytes),
-            content_multihash=stored_multihash,  # Same calculated multihash
+            content_multihash=ContentMultihash(
+                stored_multihash
+            ),  # Same calculated multihash
             status=DocumentStatus.CAPTURED,
         )
 
@@ -218,11 +222,11 @@ class TestMinioDocumentRepositoryStore:
 
         stored = await repository.store_content(ContentStream(io.BytesIO(content)))
         document = Document(
-            document_id="test-doc-123",
-            original_filename="test.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("test-doc-123"),
+            original_filename=NonEmptyText("test.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content),
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
         )
         await repository.save(document)
@@ -537,11 +541,11 @@ class TestMinioDocumentRepositorySavingAStreamItCannotRewind:
         content = b"content handed in as bytes, not fetched"
         stored = await repository.store_content(ContentStream(io.BytesIO(content)))
         document = Document(
-            document_id="doc-fresh",
-            original_filename="fresh.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-fresh"),
+            original_filename=NonEmptyText("fresh.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=len(content),
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
         )
 
         await repository.save(document)
@@ -564,11 +568,11 @@ class TestMinioDocumentRepositorySavingAStreamItCannotRewind:
         """
         stored = await repository.store_content(ContentStream(io.BytesIO(b"")))
         document = Document(
-            document_id="doc-empty",
-            original_filename="empty.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-empty"),
+            original_filename=NonEmptyText("empty.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=1,
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
         )
 
         await repository.save(document)
@@ -593,11 +597,11 @@ class TestMinioDocumentRepositoryContentBytes:
             ContentStream(io.BytesIO(content.encode("utf-8")))
         )
         document = Document(
-            document_id="test-doc-content-string",
-            original_filename="assembled.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-doc-content-string"),
+            original_filename=NonEmptyText("assembled.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=len(content.encode("utf-8")),
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
         )
 
@@ -625,11 +629,11 @@ class TestMinioDocumentRepositoryContentBytes:
         )
 
         document = Document(
-            document_id="test-doc-unicode",
-            original_filename="unicode.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-doc-unicode"),
+            original_filename=NonEmptyText("unicode.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=100,
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
         )
 
@@ -656,11 +660,11 @@ class TestMinioDocumentRepositoryContentBytes:
         )
 
         document = Document(
-            document_id="test-metadata-exclusion",
-            original_filename="test.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-metadata-exclusion"),
+            original_filename=NonEmptyText("test.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=100,
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
         )
 

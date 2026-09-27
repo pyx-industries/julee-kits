@@ -9,6 +9,7 @@ testing.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.policy import Policy, PolicyStatus
@@ -35,16 +36,16 @@ def policy_repo(fake_client: FakeMinioClient) -> MinioPolicyRepository:
 def sample_policy() -> Policy:
     """Create a sample policy for testing."""
     return Policy(
-        policy_id="policy-test-123",
-        title="Content Quality Policy",
-        description="Validates content meets quality standards",
+        policy_id=NonEmptyText("policy-test-123"),
+        title=Name("Content Quality Policy"),
+        description=NonEmptyText("Validates content meets quality standards"),
         status=PolicyStatus.ACTIVE,
         validation_scores=(
             ("quality-check-query", 80),
             ("completeness-check", 90),
         ),
         transformation_queries=("improve-quality", "fix-grammar"),
-        version="1.0.0",
+        version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -54,13 +55,13 @@ def sample_policy() -> Policy:
 def validation_only_policy() -> Policy:
     """Create a validation-only policy (no transformations) for testing."""
     return Policy(
-        policy_id="policy-validation-only",
-        title="Validation Only Policy",
-        description="Only validates content without transformations",
+        policy_id=NonEmptyText("policy-validation-only"),
+        title=Name("Validation Only Policy"),
+        description=NonEmptyText("Only validates content without transformations"),
         status=PolicyStatus.ACTIVE,
         validation_scores=(("basic-validation", 70),),
         transformation_queries=(),  # Empty tuple - validation only
-        version="1.0.0",
+        version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -160,9 +161,9 @@ class TestMinioPolicyRepositoryPolicyTypes:
     ) -> None:
         """Test policy with None transformation queries."""
         policy = Policy(
-            policy_id="policy-none-transforms",
-            title="Policy with None Transformations",
-            description="Policy where transformation_queries is None",
+            policy_id=NonEmptyText("policy-none-transforms"),
+            title=Name("Policy with None Transformations"),
+            description=NonEmptyText("Policy where transformation_queries is None"),
             validation_scores=(("test-query", 75),),
             transformation_queries=None,  # Explicitly None
         )
@@ -279,9 +280,9 @@ class TestMinioPolicyRepositoryComplexScenarios:
     ) -> None:
         """Test policy with many validation scores."""
         policy = Policy(
-            policy_id="complex-policy",
-            title="Complex Validation Policy",
-            description="Policy with multiple validation criteria",
+            policy_id=NonEmptyText("complex-policy"),
+            title=Name("Complex Validation Policy"),
+            description=NonEmptyText("Policy with multiple validation criteria"),
             validation_scores=(
                 ("grammar-check", 80),
                 ("completeness-check", 85),
@@ -311,13 +312,13 @@ class TestMinioPolicyRepositoryComplexScenarios:
 
         # Create and save initial policy
         policy = Policy(
-            policy_id=policy_id,
-            title="Lifecycle Test Policy",
-            description="Testing full lifecycle",
+            policy_id=NonEmptyText(policy_id),
+            title=Name("Lifecycle Test Policy"),
+            description=NonEmptyText("Testing full lifecycle"),
             status=PolicyStatus.DRAFT,
             validation_scores=(("lifecycle-check", 80),),
             transformation_queries=("lifecycle-transform",),
-            version="0.1.0",
+            version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -346,16 +347,16 @@ class TestMinioPolicyRepositoryComplexScenarios:
         independently."""
         # Create multiple policies
         policy1 = Policy(
-            policy_id="policy-test-1",
-            title="First Policy",
-            description="First test policy",
+            policy_id=NonEmptyText("policy-test-1"),
+            title=Name("First Policy"),
+            description=NonEmptyText("First test policy"),
             validation_scores=(("check-1", 80),),
         )
 
         policy2 = Policy(
-            policy_id="policy-test-2",
-            title="Second Policy",
-            description="Second test policy",
+            policy_id=NonEmptyText("policy-test-2"),
+            title=Name("Second Policy"),
+            description=NonEmptyText("Second test policy"),
             validation_scores=(("check-2", 90),),
             transformation_queries=("transform-2",),
         )
@@ -395,15 +396,15 @@ class TestMinioPolicyRepositoryComplexScenarios:
     ) -> None:
         """Test policy with unicode content survives roundtrip."""
         unicode_policy = Policy(
-            policy_id="unicode-policy",
-            title="Política de Calidad 品質ポリシー",
-            description="Política con contenido unicode 🚀📝 и кириллица",
+            policy_id=NonEmptyText("unicode-policy"),
+            title=Name("Política de Calidad 品質ポリシー"),
+            description=NonEmptyText("Política con contenido unicode 🚀📝 и кириллица"),
             validation_scores=(
                 ("验证查询", 85),  # Chinese
                 ("проверка", 90),  # Russian
             ),
             transformation_queries=("transformación", "преобразование"),
-            version="1.0.0",
+            version=NonEmptyText("1.0.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -468,13 +469,13 @@ class TestMinioPolicyRepositoryRoundtrip:
 
         # Create and save initial policy
         policy = Policy(
-            policy_id=policy_id,
-            title="Round-trip Test Policy",
-            description="Testing complete policy round-trip",
+            policy_id=NonEmptyText(policy_id),
+            title=Name("Round-trip Test Policy"),
+            description=NonEmptyText("Testing complete policy round-trip"),
             status=PolicyStatus.DRAFT,
             validation_scores=(("round-trip-check", 85),),
             transformation_queries=("round-trip-transform",),
-            version="0.1.0",
+            version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -503,9 +504,9 @@ class TestMinioPolicyRepositoryRoundtrip:
         correctly."""
         # Create policy with all field types
         policy = Policy(
-            policy_id="json-test-policy",
-            title="JSON Test Policy",
-            description="Testing JSON serialization",
+            policy_id=NonEmptyText("json-test-policy"),
+            title=Name("JSON Test Policy"),
+            description=NonEmptyText("Testing JSON serialization"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(
                 ("test-1", 80),
@@ -513,7 +514,7 @@ class TestMinioPolicyRepositoryRoundtrip:
                 ("test-3", 75),
             ),
             transformation_queries=("transform-1", "transform-2"),
-            version="2.0.0",
+            version=NonEmptyText("2.0.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -558,9 +559,9 @@ class TestMinioPolicyRepositoryErrorHandling:
         special_id = "policy-test-with-dashes-and-numbers-123"
 
         policy = Policy(
-            policy_id=special_id,
-            title="Special ID Policy",
-            description="Policy with special characters in ID",
+            policy_id=NonEmptyText(special_id),
+            title=Name("Special ID Policy"),
+            description=NonEmptyText("Policy with special characters in ID"),
             validation_scores=(("test-check", 80),),
         )
 

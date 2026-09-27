@@ -12,6 +12,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 from fastapi.testclient import TestClient
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.apps.api.app import app
 from julee_ceap.apps.api.dependencies import (
@@ -50,25 +51,27 @@ def sample_configs() -> list[KnowledgeServiceConfig]:
     """Sample knowledge service configurations for testing."""
     return [
         KnowledgeServiceConfig(
-            knowledge_service_id="anthropic-claude",
-            name="Anthropic Claude",
-            description="Claude 3 for general text analysis and extraction",
+            knowledge_service_id=NonEmptyText("anthropic-claude"),
+            name=Name("Anthropic Claude"),
+            description=NonEmptyText(
+                "Claude 3 for general text analysis and extraction"
+            ),
             service_api=ServiceApi.ANTHROPIC,
             created_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
         ),
         KnowledgeServiceConfig(
-            knowledge_service_id="openai-gpt4",
-            name="OpenAI GPT-4",
-            description="GPT-4 for comprehensive text understanding",
+            knowledge_service_id=NonEmptyText("openai-gpt4"),
+            name=Name("OpenAI GPT-4"),
+            description=NonEmptyText("GPT-4 for comprehensive text understanding"),
             service_api=ServiceApi.ANTHROPIC,  # Only enum value available
             created_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
         ),
         KnowledgeServiceConfig(
-            knowledge_service_id="memory-service",
-            name="Memory Service",
-            description="In-memory service for testing and development",
+            knowledge_service_id=NonEmptyText("memory-service"),
+            name=Name("Memory Service"),
+            description=NonEmptyText("In-memory service for testing and development"),
             service_api=ServiceApi.ANTHROPIC,  # Only enum value available
             created_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),

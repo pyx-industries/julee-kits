@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import pytest
+from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidation,
@@ -33,14 +34,14 @@ def sample_validation() -> DocumentPolicyValidation:
     """Create a sample document policy validation for testing."""
     return DocumentPolicyValidation(
         validation_id="validation-test-123",
-        input_document_id="doc-123",
-        policy_id="policy-456",
+        input_document_id=NonEmptyText("doc-123"),
+        policy_id=NonEmptyText("policy-456"),
         status=DocumentPolicyValidationStatus.PASSED,
         validation_scores=(
             ("quality-check-query", 85),
             ("completeness-check", 92),
         ),
-        transformed_document_id="doc-123-transformed",
+        transformed_document_id=NonEmptyText("doc-123-transformed"),
         post_transform_validation_scores=(
             ("quality-check-query", 95),
             ("completeness-check", 88),
@@ -96,11 +97,11 @@ class TestMemoryDocumentPolicyValidationRepositorySpecific:
         present."""
         validation_with_error = DocumentPolicyValidation(
             validation_id="validation-error-123",
-            input_document_id="doc-456",
-            policy_id="policy-789",
+            input_document_id=NonEmptyText("doc-456"),
+            policy_id=NonEmptyText("policy-789"),
             status=DocumentPolicyValidationStatus.ERROR,
             validation_scores=(),
-            error_message="Something went wrong",
+            error_message=NonEmptyText("Something went wrong"),
             passed=False,
         )
 
@@ -118,8 +119,8 @@ class TestMemoryDocumentPolicyValidationRepositorySpecific:
         transformations."""
         validation_no_transform = DocumentPolicyValidation(
             validation_id="validation-no-transform-123",
-            input_document_id="doc-789",
-            policy_id="policy-abc",
+            input_document_id=NonEmptyText("doc-789"),
+            policy_id=NonEmptyText("policy-abc"),
             status=DocumentPolicyValidationStatus.VALIDATION_COMPLETE,
             validation_scores=(("basic-check", 75),),
             transformed_document_id=None,
@@ -139,8 +140,8 @@ class TestMemoryDocumentPolicyValidationRepositorySpecific:
         """Test logging data handles None passed value correctly."""
         validation_in_progress = DocumentPolicyValidation(
             validation_id="validation-progress-123",
-            input_document_id="doc-progress",
-            policy_id="policy-progress",
+            input_document_id=NonEmptyText("doc-progress"),
+            policy_id=NonEmptyText("policy-progress"),
             status=DocumentPolicyValidationStatus.IN_PROGRESS,
             validation_scores=(),
             passed=None,  # Still in progress

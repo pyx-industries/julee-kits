@@ -10,6 +10,7 @@ duplication while maintaining single source of truth in the domain layer.
 from datetime import UTC, datetime
 from typing import Any
 
+from julee.core.entities.text import Name, NonEmptyText
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from julee_ceap.domain.models import (
@@ -33,10 +34,10 @@ class CreateAssemblySpecificationRequest(BaseModel):
     """
 
     # Field definitions with descriptions reused from domain model
-    name: str = Field(
+    name: Name = Field(
         description=AssemblySpecification.model_fields["name"].description
     )
-    applicability: str = Field(
+    applicability: NonEmptyText = Field(
         description=AssemblySpecification.model_fields["applicability"].description
     )
     jsonschema: dict[str, Any] = Field(
@@ -48,22 +49,15 @@ class CreateAssemblySpecificationRequest(BaseModel):
             "knowledge_service_queries"
         ].description,
     )
-    version: str = Field(
+    version: NonEmptyText = Field(
         default=AssemblySpecification.model_fields["version"].default,
         description=AssemblySpecification.model_fields["version"].description,
     )
 
-    # Delegate validation to domain model class methods
-    @field_validator("name")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        return AssemblySpecification.name_must_not_be_empty(v)
-
-    @field_validator("applicability")
-    @classmethod
-    def validate_applicability(cls, v: str) -> str:
-        return AssemblySpecification.applicability_must_not_be_empty(v)
-
+    # The rules that are a field's shape travel with its type now.
+    # What is left here are the two that are not: a JSON Schema
+    # that has to compile, and queries that have to name real
+    # ones (#71).
     @field_validator("jsonschema")
     @classmethod
     def validate_jsonschema(cls, v: dict[str, Any]) -> dict[str, Any]:
@@ -76,11 +70,6 @@ class CreateAssemblySpecificationRequest(BaseModel):
     ) -> dict[str, str]:
         return AssemblySpecification.knowledge_service_queries_must_be_valid(v, info)
 
-    @field_validator("version")
-    @classmethod
-    def validate_version(cls, v: str) -> str:
-        return AssemblySpecification.version_must_not_be_empty(v)
-
     def to_domain_model(self, assembly_specification_id: str) -> AssemblySpecification:
         """Convert this request to a complete AssemblySpecification object.
 
@@ -92,7 +81,7 @@ class CreateAssemblySpecificationRequest(BaseModel):
         """
         now = datetime.now(UTC)
         return AssemblySpecification(
-            assembly_specification_id=assembly_specification_id,
+            assembly_specification_id=NonEmptyText(assembly_specification_id),
             name=self.name,
             applicability=self.applicability,
             jsonschema=self.jsonschema,
@@ -118,15 +107,15 @@ class CreateKnowledgeServiceQueryRequest(BaseModel):
     """
 
     # Field definitions with descriptions reused from domain model
-    name: str = Field(
+    name: Name = Field(
         description=KnowledgeServiceQuery.model_fields["name"].description
     )
-    knowledge_service_id: str = Field(
+    knowledge_service_id: NonEmptyText = Field(
         description=KnowledgeServiceQuery.model_fields[
             "knowledge_service_id"
         ].description
     )
-    prompt: str = Field(
+    prompt: NonEmptyText = Field(
         description=KnowledgeServiceQuery.model_fields["prompt"].description
     )
     query_metadata: dict[str, Any] = Field(
@@ -138,22 +127,10 @@ class CreateKnowledgeServiceQueryRequest(BaseModel):
         description=KnowledgeServiceQuery.model_fields["assistant_prompt"].description,
     )
 
-    # Delegate validation to domain model class methods
-    @field_validator("name")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        return KnowledgeServiceQuery.name_must_not_be_empty(v)
-
-    @field_validator("knowledge_service_id")
-    @classmethod
-    def validate_knowledge_service_id(cls, v: str) -> str:
-        return KnowledgeServiceQuery.knowledge_service_id_must_not_be_empty(v)
-
-    @field_validator("prompt")
-    @classmethod
-    def validate_prompt(cls, v: str) -> str:
-        return KnowledgeServiceQuery.prompt_must_not_be_empty(v)
-
+    # The rules that are a field's shape travel with its type now.
+    # What is left here are the two that are not: a JSON Schema
+    # that has to compile, and queries that have to name real
+    # ones (#71).
     def to_domain_model(self, query_id: str) -> KnowledgeServiceQuery:
         """Convert this request to a complete KnowledgeServiceQuery object.
 
@@ -165,7 +142,7 @@ class CreateKnowledgeServiceQueryRequest(BaseModel):
         """
         now = datetime.now(UTC)
         return KnowledgeServiceQuery(
-            query_id=query_id,
+            query_id=NonEmptyText(query_id),
             name=self.name,
             knowledge_service_id=self.knowledge_service_id,
             prompt=self.prompt,

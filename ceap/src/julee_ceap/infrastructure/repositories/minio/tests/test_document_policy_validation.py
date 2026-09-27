@@ -10,6 +10,7 @@ avoid external dependencies during testing.
 from datetime import UTC, datetime
 
 import pytest
+from julee.core.entities.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.policy import (
@@ -42,14 +43,14 @@ def sample_validation() -> DocumentPolicyValidation:
     """Create a sample document policy validation for testing."""
     return DocumentPolicyValidation(
         validation_id="validation-test-123",
-        input_document_id="doc-123",
-        policy_id="policy-456",
+        input_document_id=NonEmptyText("doc-123"),
+        policy_id=NonEmptyText("policy-456"),
         status=DocumentPolicyValidationStatus.PASSED,
         validation_scores=(
             ("quality-check-query", 85),
             ("completeness-check", 92),
         ),
-        transformed_document_id="doc-123-transformed",
+        transformed_document_id=NonEmptyText("doc-123-transformed"),
         post_transform_validation_scores=(
             ("quality-check-query", 95),
             ("completeness-check", 88),
@@ -141,8 +142,8 @@ class TestMinioDocumentPolicyValidationRepositorySpecific:
         original_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
         validation = DocumentPolicyValidation(
             validation_id="validation-timestamp-test",
-            input_document_id="doc-timestamp",
-            policy_id="policy-timestamp",
+            input_document_id=NonEmptyText("doc-timestamp"),
+            policy_id=NonEmptyText("policy-timestamp"),
             status=DocumentPolicyValidationStatus.PENDING,
             validation_scores=(),
             started_at=original_time,
@@ -165,11 +166,11 @@ class TestMinioDocumentPolicyValidationRepositorySpecific:
         """Test saving and retrieving validation with transformation data."""
         validation_with_transforms = DocumentPolicyValidation(
             validation_id="validation-transform-test",
-            input_document_id="doc-original",
-            policy_id="policy-transform",
+            input_document_id=NonEmptyText("doc-original"),
+            policy_id=NonEmptyText("policy-transform"),
             status=DocumentPolicyValidationStatus.TRANSFORMATION_COMPLETE,
             validation_scores=(("initial-check", 70),),
-            transformed_document_id="doc-transformed",
+            transformed_document_id=NonEmptyText("doc-transformed"),
             post_transform_validation_scores=(("final-check", 85),),
             passed=True,
         )

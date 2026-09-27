@@ -14,10 +14,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from fastapi_pagination import add_pagination
 from julee.core.entities.content_stream import ContentStream
+from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.apps.api.dependencies import get_document_repository
 from julee_ceap.apps.api.routers.documents import router
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.document.multihash import (
     content_multihash as multihash_of,
 )
@@ -61,22 +63,22 @@ def sample_documents() -> list[Document]:
     """Create sample documents for testing."""
     return [
         Document(
-            document_id="doc-1",
-            original_filename="test-document-1.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-1"),
+            original_filename=NonEmptyText("test-document-1.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=1024,
-            content_multihash=multihash_of(b"QmTest1"),
+            content_multihash=ContentMultihash(multihash_of(b"QmTest1")),
             status=DocumentStatus.CAPTURED,
             created_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
             additional_metadata={"type": "test"},
         ),
         Document(
-            document_id="doc-2",
-            original_filename="test-document-2.pdf",
-            content_type="application/pdf",
+            document_id=NonEmptyText("doc-2"),
+            original_filename=NonEmptyText("test-document-2.pdf"),
+            content_type=NonEmptyText("application/pdf"),
             size_bytes=2048,
-            content_multihash=multihash_of(b"QmTest2"),
+            content_multihash=ContentMultihash(multihash_of(b"QmTest2")),
             status=DocumentStatus.REGISTERED,
             created_at=datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC),
             updated_at=datetime(2024, 1, 2, 12, 0, 0, tzinfo=UTC),
@@ -293,11 +295,11 @@ class TestGetDocumentContent:
         what a partial write or a reaped object actually looks like.
         """
         doc = Document(
-            document_id="doc-no-content",
-            original_filename="empty.txt",
-            content_type="text/plain",
+            document_id=NonEmptyText("doc-no-content"),
+            original_filename=NonEmptyText("empty.txt"),
+            content_type=NonEmptyText("text/plain"),
             size_bytes=1,
-            content_multihash=multihash_of(b"empty_hash"),
+            content_multihash=ContentMultihash(multihash_of(b"empty_hash")),
             status=DocumentStatus.CAPTURED,
             additional_metadata={"type": "empty"},
         )

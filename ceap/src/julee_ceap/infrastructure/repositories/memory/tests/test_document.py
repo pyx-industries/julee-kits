@@ -12,8 +12,10 @@ import pytest
 from julee.core.entities.content_stream import (
     ContentStream,
 )
+from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.document.multihash import (
     content_multihash as multihash_of,
 )
@@ -41,11 +43,11 @@ def sample_content() -> ContentStream:
 def sample_document(sample_content: ContentStream) -> Document:
     """Sample document for testing."""
     return Document(
-        document_id="test-doc-123",
-        original_filename="test.txt",
-        content_type="text/plain",
+        document_id=NonEmptyText("test-doc-123"),
+        original_filename=NonEmptyText("test.txt"),
+        content_type=NonEmptyText("text/plain"),
         size_bytes=41,
-        content_multihash=multihash_of(b"test_hash_placeholder"),
+        content_multihash=ContentMultihash(multihash_of(b"test_hash_placeholder")),
         status=DocumentStatus.CAPTURED,
     )
 
@@ -64,11 +66,11 @@ class TestMemoryDocumentRepositoryContentBytes:
             ContentStream(io.BytesIO(content.encode("utf-8")))
         )
         document = Document(
-            document_id="test-doc-content-string",
-            original_filename="assembled.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-doc-content-string"),
+            original_filename=NonEmptyText("assembled.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=len(content.encode("utf-8")),
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
         )
 
@@ -96,11 +98,11 @@ class TestMemoryDocumentRepositoryContentBytes:
         )
 
         document = Document(
-            document_id="test-doc-unicode",
-            original_filename="unicode.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-doc-unicode"),
+            original_filename=NonEmptyText("unicode.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=100,
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
         )
 
@@ -125,11 +127,11 @@ class TestMemoryDocumentRepositoryContentBytes:
         )
 
         document = Document(
-            document_id="test-storage-exclusion",
-            original_filename="test.json",
-            content_type="application/json",
+            document_id=NonEmptyText("test-storage-exclusion"),
+            original_filename=NonEmptyText("test.json"),
+            content_type=NonEmptyText("application/json"),
             size_bytes=100,
-            content_multihash=stored,
+            content_multihash=ContentMultihash(stored),
             status=DocumentStatus.CAPTURED,
         )
 
@@ -193,13 +195,13 @@ class TestMemoryDocumentRepositoryErrorHandling:
         self, repository: MemoryDocumentRepository
     ) -> None:
         """Test error handling for empty document ID."""
-        with pytest.raises(ValueError, match="Document ID cannot be empty"):
+        with pytest.raises(ValueError, match="cannot be empty"):
             Document(
-                document_id="",
-                original_filename="test.txt",
-                content_type="text/plain",
+                document_id=NonEmptyText(""),
+                original_filename=NonEmptyText("test.txt"),
+                content_type=NonEmptyText("text/plain"),
                 size_bytes=100,
-                content_multihash=multihash_of(b"test_hash"),
+                content_multihash=ContentMultihash(multihash_of(b"test_hash")),
                 status=DocumentStatus.CAPTURED,
             )
 
@@ -207,12 +209,12 @@ class TestMemoryDocumentRepositoryErrorHandling:
         self, repository: MemoryDocumentRepository
     ) -> None:
         """Test error handling for empty filename."""
-        with pytest.raises(ValueError, match="Original filename cannot be empty"):
+        with pytest.raises(ValueError, match="cannot be empty"):
             Document(
-                document_id="test-123",
-                original_filename="",
-                content_type="text/plain",
+                document_id=NonEmptyText("test-123"),
+                original_filename=NonEmptyText(""),
+                content_type=NonEmptyText("text/plain"),
                 size_bytes=100,
-                content_multihash=multihash_of(b"test_hash"),
+                content_multihash=ContentMultihash(multihash_of(b"test_hash")),
                 status=DocumentStatus.CAPTURED,
             )

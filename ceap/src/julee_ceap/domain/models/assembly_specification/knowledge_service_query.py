@@ -20,7 +20,8 @@ from datetime import UTC, datetime
 from typing import Any
 
 from julee.core.entities.entity import Entity
-from pydantic import Field, field_validator
+from julee.core.entities.text import Name, NonEmptyText
+from pydantic import Field
 
 
 class KnowledgeServiceQuery(Entity):
@@ -67,14 +68,14 @@ class KnowledgeServiceQuery(Entity):
     """
 
     # Core query identification
-    query_id: str = Field(description="Unique identifier for this query")
-    name: str = Field(description="Human-readable name describing the query purpose")
+    query_id: NonEmptyText = Field(description="Unique identifier for this query")
+    name: Name = Field(description="Human-readable name describing the query purpose")
 
     # Knowledge service configuration
-    knowledge_service_id: str = Field(
+    knowledge_service_id: NonEmptyText = Field(
         description="Identifier of the knowledge service to query"
     )
-    prompt: str = Field(
+    prompt: NonEmptyText = Field(
         description="The specific prompt to send to the knowledge service "
         "for this extraction"
     )
@@ -96,31 +97,3 @@ class KnowledgeServiceQuery(Entity):
 
     created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
-
-    @field_validator("query_id")
-    @classmethod
-    def query_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Query ID cannot be empty")
-        return v.strip()
-
-    @field_validator("name")
-    @classmethod
-    def name_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Query name cannot be empty")
-        return v.strip()
-
-    @field_validator("knowledge_service_id")
-    @classmethod
-    def knowledge_service_id_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Knowledge service ID cannot be empty")
-        return v.strip()
-
-    @field_validator("prompt")
-    @classmethod
-    def prompt_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("Query prompt cannot be empty")
-        return v.strip()
