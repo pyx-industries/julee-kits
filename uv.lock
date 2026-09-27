@@ -1102,14 +1102,14 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.11.0"
+version = "0.11.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b3/6c/266869aa42f6d167b95a63bea53c3eda6a2c0156cf4d29d6f9cf4c2865b0/julee-0.11.0.tar.gz", hash = "sha256:ff5d62cc0d146628df5a5231571269a6417f531961b5c15276c8841c8e2ebefc", size = 208543, upload-time = "2026-09-26T12:22:19.992Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/bc/d77fd379449b5425d0a81a7083137e852c775c0efb071bdea4dae0bf9dc6/julee-0.11.3.tar.gz", hash = "sha256:06b6e85c2cdaf7ec9fac8b6c31fdd1678f085b743ca154a93b17cc11c7f65b19", size = 221283, upload-time = "2026-09-27T02:01:29.499Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/1b/2ee9877f505108d4118dd3f559aeca4ac1934f4efdbf867bb2cffd3ac4e2/julee-0.11.0-py3-none-any.whl", hash = "sha256:b5e9e351780e44834202ae6a8f33da5c208a16a0640451c21a9be5013c3445f9", size = 267797, upload-time = "2026-09-26T12:22:18.748Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/7e/dffa1200e350f82a19c1fa9cdee60de76e6c52169559932cdedea7adce22/julee-0.11.3-py3-none-any.whl", hash = "sha256:47651486ae1894dec03b93fa3ef66af5e9ff793dcaad21568d68f3e9e08fdf32", size = 281094, upload-time = "2026-09-27T02:01:27.56Z" },
 ]
 
 [package.optional-dependencies]
@@ -1289,8 +1289,8 @@ dev = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.0.0" },
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.11,<0.12" },
-    { name = "julee", extras = ["temporal"], specifier = ">=0.11,<0.12" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.11.3,<0.12" },
+    { name = "julee", extras = ["temporal"], specifier = ">=0.11.3,<0.12" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },

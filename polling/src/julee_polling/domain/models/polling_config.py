@@ -11,7 +11,7 @@ from enum import StrEnum
 from typing import Any
 
 from julee.core.entities.entity import Entity
-from pydantic import Field, field_validator
+from pydantic import Field
 
 
 class PollingProtocol(StrEnum):
@@ -50,20 +50,3 @@ class PollingResult(Entity):
     polled_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     content_hash: str | None = None
     error_message: str | None = None
-
-    @field_validator("content", mode="before")
-    @classmethod
-    def validate_content(cls, v):
-        """Convert list of integers to bytes (for Temporal serialization compatibility)."""
-        if isinstance(v, list):
-            # Temporal may serialize bytes as list of integers
-            return bytes(v)
-        elif isinstance(v, str):
-            # Handle string input
-            return v.encode("utf-8")
-        elif isinstance(v, bytes):
-            return v
-        else:
-            raise ValueError(
-                f"Content must be bytes, string, or list of integers, got {type(v)}"
-            )
