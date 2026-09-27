@@ -9,7 +9,7 @@ install:
 # Linting
 lint:
 	@echo "Linting..."
-	uv run black --check c4/src/ ceap/src/ hcd/src/ polling/src/ viewpoints/src/
+	uv run ruff format --check c4/src/ ceap/src/ hcd/src/ polling/src/ viewpoints/src/
 	uv run ruff check c4/src/ ceap/src/ hcd/src/ polling/src/ viewpoints/src/
 
 # Type checking
@@ -65,7 +65,7 @@ check: lint typecheck test test-integration test-doctrine
 
 # Format
 format:
-	uv run black c4/src/ ceap/src/ hcd/src/ polling/src/ viewpoints/src/
+	uv run ruff format c4/src/ ceap/src/ hcd/src/ polling/src/ viewpoints/src/
 	uv run ruff check --fix c4/src/ ceap/src/ hcd/src/ polling/src/ viewpoints/src/
 
 clean:
@@ -75,11 +75,11 @@ help:
 	@echo "Available targets:"
 	@echo "  check         - The checks CI runs (lint, types, unit, doctrine)"
 	@echo "  install       - Install every kit with dev dependencies"
-	@echo "  lint          - black and ruff"
+	@echo "  lint          - ruff format --check and ruff check"
 	@echo "  typecheck     - mypy"
 	@echo "  test          - Tests that need nothing but Python"
 	@echo "  test-integration - Tests that build something wide but need no service"
 	@echo "  test-e2e      - Tests that need a service (MINIO_ENDPOINT)"
 	@echo "  test-doctrine - julee's doctrine, against each kit"
-	@echo "  format        - Reformat with black and ruff"
+	@echo "  format        - Reformat with ruff"
 	@echo "  clean         - Remove caches"

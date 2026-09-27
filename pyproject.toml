@@ -8,7 +8,6 @@ members = ["c4", "ceap", "hcd", "polling", "viewpoints"]
 package = false
 
 [tool.ruff]
-# Ruff is used for linting only. Formatting is handled by black.
 line-length = 88
 target-version = "py311"
 exclude = [".git", ".venv", "__pycache__", "*.pyc", ".pytest_cache", ".mypy_cache"]
