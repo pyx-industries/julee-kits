@@ -247,7 +247,7 @@ class TestValidateDocumentUseCase:
             title=Name("Test Policy"),
             description=NonEmptyText("Policy with non-existent query"),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("nonexistent-query", 80),),
+            validation_scores=((NonEmptyText("nonexistent-query"), 80),),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -293,7 +293,7 @@ class TestValidateDocumentUseCase:
             title=Name("Test Policy"),
             description=NonEmptyText("Policy for testing score parsing"),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("query-1", 80),),
+            validation_scores=((NonEmptyText("query-1"), 80),),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -386,8 +386,8 @@ class TestValidateDocumentUseCase:
             description=NonEmptyText("Validates document quality"),
             status=PolicyStatus.ACTIVE,
             validation_scores=(
-                ("quality-query", 80),
-                ("clarity-query", 70),
+                (NonEmptyText("quality-query"), 80),
+                (NonEmptyText("clarity-query"), 70),
             ),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -520,7 +520,9 @@ class TestValidateDocumentUseCase:
             title=Name("High Standards Policy"),
             description=NonEmptyText("Requires high quality scores"),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("quality-query", 90),),  # High requirement
+            validation_scores=(
+                (NonEmptyText("quality-query"), 90),
+            ),  # High requirement
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -610,8 +612,8 @@ class TestValidateDocumentUseCase:
             title=Name("Transformation Policy"),
             description=NonEmptyText("Policy with transformation capabilities"),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("quality-query", 80),),
-            transformation_queries=("improvement-query",),
+            validation_scores=((NonEmptyText("quality-query"), 80),),
+            transformation_queries=(NonEmptyText("improvement-query"),),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -767,8 +769,10 @@ class TestValidateDocumentUseCase:
                 "Policy with very high standards even after transformation"
             ),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("quality-query", 95),),  # Very high requirement
-            transformation_queries=("improvement-query",),
+            validation_scores=(
+                (NonEmptyText("quality-query"), 95),
+            ),  # Very high requirement
+            transformation_queries=(NonEmptyText("improvement-query"),),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -907,8 +911,10 @@ class TestValidateDocumentUseCase:
             title=Name("Policy with Unnecessary Transform"),
             description=NonEmptyText("Policy with transformation that won't be used"),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("quality-query", 80),),
-            transformation_queries=("improvement-query",),  # Available but unused
+            validation_scores=((NonEmptyText("quality-query"), 80),),
+            transformation_queries=(
+                NonEmptyText("improvement-query"),
+            ),  # Available but unused
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -1020,8 +1026,8 @@ class TestValidateDocumentUseCase:
                 "Policy that will get invalid JSON from transformation"
             ),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("quality-query", 80),),
-            transformation_queries=("bad-transform-query",),
+            validation_scores=((NonEmptyText("quality-query"), 80),),
+            transformation_queries=(NonEmptyText("bad-transform-query"),),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -1139,8 +1145,8 @@ class TestValidateDocumentUseCase:
             title=Name("Missing Query Policy"),
             description=NonEmptyText("Policy with missing transformation query"),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("quality-query", 80),),
-            transformation_queries=("nonexistent-transform-query",),
+            validation_scores=((NonEmptyText("quality-query"), 80),),
+            transformation_queries=(NonEmptyText("nonexistent-transform-query"),),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -1213,7 +1219,7 @@ class TestValidateDocumentUseCase:
             title=Name("Test Policy"),
             description=NonEmptyText("Test policy for out-of-range scores"),
             status=PolicyStatus.ACTIVE,
-            validation_scores=(("test-query", 80),),
+            validation_scores=((NonEmptyText("test-query"), 80),),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

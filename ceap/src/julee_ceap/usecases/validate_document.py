@@ -431,7 +431,7 @@ class ValidateDocumentUseCase:
     ) -> dict[str, KnowledgeServiceQuery]:
         """Retrieve all knowledge service queries needed for validation and
         transformation."""
-        all_queries = {}
+        all_queries: dict[str, KnowledgeServiceQuery] = {}
 
         # Get validation queries
         for query_id, _required_score in policy.validation_scores:
@@ -497,7 +497,7 @@ class ValidateDocumentUseCase:
         policy: Policy,
         document_registrations: dict[str, str],
         queries: dict[str, KnowledgeServiceQuery],
-    ) -> tuple[tuple[str, int], ...]:
+    ) -> tuple[tuple[NonEmptyText, int], ...]:
         """
         Execute all validation queries and return the actual scores achieved.
 
@@ -511,7 +511,7 @@ class ValidateDocumentUseCase:
             Tuple of (query_id, actual_score) tuples
 
         """
-        validation_scores: list[tuple[str, int]] = []
+        validation_scores: list[tuple[NonEmptyText, int]] = []
 
         # Execute each validation query defined in the policy
         for query_id, required_score in policy.validation_scores:

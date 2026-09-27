@@ -58,9 +58,15 @@ class TestDocumentPolicyValidationValidation:
             input_document_id=NonEmptyText("doc-123"),
             policy_id=NonEmptyText("policy-456"),
             status=DocumentPolicyValidationStatus.PASSED,
-            validation_scores=(("query1", 85), ("query2", 92)),
+            validation_scores=(
+                (NonEmptyText("query1"), 85),
+                (NonEmptyText("query2"), 92),
+            ),
             transformed_document_id=NonEmptyText("doc-123-transformed"),
-            post_transform_validation_scores=(("query1", 95), ("query2", 88)),
+            post_transform_validation_scores=(
+                (NonEmptyText("query1"), 95),
+                (NonEmptyText("query2"), 88),
+            ),
             started_at=started_at,
             completed_at=completed_at,
             error_message=None,
@@ -227,7 +233,11 @@ class TestValidationScores:
 
     def test_valid_validation_scores(self) -> None:
         """Test valid validation_scores."""
-        scores = (("query1", 85), ("query2", 92), ("query3", 78))
+        scores = (
+            (NonEmptyText("query1"), 85),
+            (NonEmptyText("query2"), 92),
+            (NonEmptyText("query3"), 78),
+        )
         validation = DocumentPolicyValidation(
             validation_id="val-123",
             input_document_id=NonEmptyText("doc-123"),
@@ -242,38 +252,37 @@ class TestValidationScores:
             validation_id="val-123",
             input_document_id=NonEmptyText("doc-123"),
             policy_id=NonEmptyText("policy-456"),
-            validation_scores=(("query1", 85), ("query2", 92)),
+            validation_scores=(
+                (NonEmptyText("query1"), 85),
+                (NonEmptyText("query2"), 92),
+            ),
         )
         assert validation.validation_scores == (
             ("query1", 85),
             ("query2", 92),
         )
 
-    def test_validation_scores_query_id_validation(self) -> None:
-        """Test validation_scores query_id validation."""
-        # Empty query_id should fail
+    @pytest.mark.parametrize("query_id", ["", "   "])
+    def test_validation_scores_query_id_validation(self, query_id: str) -> None:
+        """A score has to say which query it is the score of.
+
+        The rule used to be in the field validator, alongside a strip
+        and a rebuild of the whole tuple to carry the stripped ids. It
+        is the element type's now, so it holds wherever one of these
+        goes rather than only where a DocumentPolicyValidation is built
+        (#306).
+        """
         with pytest.raises(ValidationError) as exc_info:
-            DocumentPolicyValidation(
-                validation_id="val-123",
-                input_document_id=NonEmptyText("doc-123"),
-                policy_id=NonEmptyText("policy-456"),
-                validation_scores=(("", 85),),
+            DocumentPolicyValidation.model_validate(
+                {
+                    "validation_id": "val-123",
+                    "input_document_id": "doc-123",
+                    "policy_id": "policy-456",
+                    "validation_scores": ((query_id, 85),),
+                }
             )
 
-        errors = exc_info.value.errors()
-        assert any("must be a non-empty string" in str(error) for error in errors)
-
-        # Whitespace-only query_id should fail
-        with pytest.raises(ValidationError) as exc_info:
-            DocumentPolicyValidation(
-                validation_id="val-123",
-                input_document_id=NonEmptyText("doc-123"),
-                policy_id=NonEmptyText("policy-456"),
-                validation_scores=(("   ", 85),),
-            )
-
-        errors = exc_info.value.errors()
-        assert any("must be a non-empty string" in str(error) for error in errors)
+        assert any("cannot be empty" in str(error) for error in exc_info.value.errors())
 
     def test_validation_scores_score_range(self) -> None:
         """Test validation_scores score range validation."""
@@ -283,7 +292,7 @@ class TestValidationScores:
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
                 policy_id=NonEmptyText("policy-456"),
-                validation_scores=(("query1", -1),),
+                validation_scores=((NonEmptyText("query1"), -1),),
             )
 
         errors = exc_info.value.errors()
@@ -295,7 +304,7 @@ class TestValidationScores:
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
                 policy_id=NonEmptyText("policy-456"),
-                validation_scores=(("query1", 101),),
+                validation_scores=((NonEmptyText("query1"), 101),),
             )
 
         errors = exc_info.value.errors()
@@ -306,7 +315,10 @@ class TestValidationScores:
             validation_id="val-123",
             input_document_id=NonEmptyText("doc-123"),
             policy_id=NonEmptyText("policy-456"),
-            validation_scores=(("query1", 0), ("query2", 100)),
+            validation_scores=(
+                (NonEmptyText("query1"), 0),
+                (NonEmptyText("query2"), 100),
+            ),
         )
         assert validation.validation_scores == (
             ("query1", 0),
@@ -320,7 +332,10 @@ class TestValidationScores:
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
                 policy_id=NonEmptyText("policy-456"),
-                validation_scores=(("query1", 85), ("query1", 92)),
+                validation_scores=(
+                    (NonEmptyText("query1"), 85),
+                    (NonEmptyText("query1"), 92),
+                ),
             )
 
         errors = exc_info.value.errors()
@@ -352,7 +367,7 @@ class TestPostTransformValidationScores:
 
     def test_valid_post_transform_scores(self) -> None:
         """Test valid post_transform_validation_scores."""
-        scores = (("query1", 95), ("query2", 88))
+        scores = ((NonEmptyText("query1"), 95), (NonEmptyText("query2"), 88))
         validation = DocumentPolicyValidation(
             validation_id="val-123",
             input_document_id=NonEmptyText("doc-123"),
@@ -370,7 +385,7 @@ class TestPostTransformValidationScores:
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
                 policy_id=NonEmptyText("policy-456"),
-                post_transform_validation_scores=(("query1", -5),),
+                post_transform_validation_scores=((NonEmptyText("query1"), -5),),
             )
 
         errors = exc_info.value.errors()
@@ -383,8 +398,8 @@ class TestPostTransformValidationScores:
                 input_document_id=NonEmptyText("doc-123"),
                 policy_id=NonEmptyText("policy-456"),
                 post_transform_validation_scores=(
-                    ("query1", 85),
-                    ("query1", 92),
+                    (NonEmptyText("query1"), 85),
+                    (NonEmptyText("query1"), 92),
                 ),
             )
 

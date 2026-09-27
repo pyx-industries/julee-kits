@@ -99,7 +99,9 @@ class TestCreateAssemblySpecificationRequest:
                 "type": "object",
                 "properties": {"content": {"type": "string"}},
             },
-            knowledge_service_queries={"/properties/content": "query-123"},
+            knowledge_service_queries={
+                "/properties/content": NonEmptyText("query-123")
+            },
             version=NonEmptyText("1.0.0"),
         )
 

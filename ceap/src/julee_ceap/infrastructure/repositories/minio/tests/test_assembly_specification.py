@@ -65,9 +65,9 @@ def sample_specification() -> AssemblySpecification:
         },
         status=AssemblySpecificationStatus.ACTIVE,
         knowledge_service_queries={
-            "/properties/title": "extract-meeting-title",
-            "/properties/attendees": "extract-attendees",
-            "/properties/action_items": "extract-action-items",
+            "/properties/title": NonEmptyText("extract-meeting-title"),
+            "/properties/attendees": NonEmptyText("extract-attendees"),
+            "/properties/action_items": NonEmptyText("extract-action-items"),
         },
         version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
@@ -233,7 +233,9 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
                 "required": ["test_field"],
             },
             status=AssemblySpecificationStatus.DRAFT,
-            knowledge_service_queries={"/properties/test_field": "test-query"},
+            knowledge_service_queries={
+                "/properties/test_field": NonEmptyText("test-query")
+            },
             version=NonEmptyText("0.1.0"),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -332,10 +334,14 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
         }
 
         complex_queries = {
-            "/properties/metadata/properties/title": "extract-title",
-            "/properties/metadata/properties/participants": ("extract-participants"),
-            "/properties/content/properties/action_items": ("extract-action-items"),
-            "/properties/content/properties/summary": "extract-summary",
+            "/properties/metadata/properties/title": NonEmptyText("extract-title"),
+            "/properties/metadata/properties/participants": NonEmptyText(
+                "extract-participants"
+            ),
+            "/properties/content/properties/action_items": NonEmptyText(
+                "extract-action-items"
+            ),
+            "/properties/content/properties/summary": NonEmptyText("extract-summary"),
         }
 
         specification = AssemblySpecification(
@@ -383,8 +389,8 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
             },
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={
-                "/properties/título": "query-título",
-                "/properties/метаданные": "query-metadata",
+                "/properties/título": NonEmptyText("query-título"),
+                "/properties/метаданные": NonEmptyText("query-metadata"),
             },
             version=NonEmptyText("1.0.0"),
             created_at=datetime.now(UTC),

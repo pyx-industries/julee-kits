@@ -67,7 +67,7 @@ class AssemblySpecification(Entity):
 
     # AssemblySpecification configuration
     status: AssemblySpecificationStatus = AssemblySpecificationStatus.ACTIVE
-    knowledge_service_queries: Mapping[str, str] = Field(
+    knowledge_service_queries: Mapping[str, NonEmptyText] = Field(
         default_factory=dict,
         description="Mapping from JSON Pointer paths to "
         "KnowledgeServiceQuery IDs. Keys are JSON Pointer strings "
@@ -110,8 +110,19 @@ class AssemblySpecification(Entity):
     @field_validator("knowledge_service_queries")
     @classmethod
     def knowledge_service_queries_must_be_valid(
-        cls, v: dict[str, str], info: Any
-    ) -> dict[str, str]:
+        cls, v: Mapping[str, NonEmptyText], info: Any
+    ) -> Mapping[str, NonEmptyText]:
+        """Every key must be a JSON Pointer into this spec's schema.
+
+        A rule, and one no type can carry: whether a pointer resolves
+        depends on the jsonschema field beside it. The part that was a
+        normalisation — stripping each query id, and rebuilding the
+        mapping to hold the stripped ones — is NonEmptyText's now
+        (#306).
+
+        The keys stay plain str. An empty pointer is the root of the
+        schema and legitimate, so NonEmptyText would refuse a valid one.
+        """
         if not isinstance(v, dict):
             raise ValueError("Knowledge service queries must be a dictionary")
 
@@ -126,12 +137,7 @@ class AssemblySpecification(Entity):
             and "$ref" in jsonschema_value
         )
 
-        cleaned_queries = {}
-        for schema_pointer, query_id in v.items():
-            # Validate schema pointer keys are strings
-            if not isinstance(schema_pointer, str):
-                raise ValueError("Schema pointer keys must be strings")
-
+        for schema_pointer in v:
             # Validate JSON Pointer format; existence against the resolved
             # schema is only possible for inline schemas (not bare $refs —
             # those are resolved at assembly time via SchemaOracle).
@@ -153,10 +159,4 @@ class AssemblySpecification(Entity):
                     f"JSON Pointer '{schema_pointer}' does not exist in schema"
                 )
 
-            # Validate query ID values
-            if not isinstance(query_id, str) or not query_id.strip():
-                raise ValueError("Query ID values must be non-empty strings")
-
-            cleaned_queries[schema_pointer] = query_id.strip()
-
-        return cleaned_queries
+        return v

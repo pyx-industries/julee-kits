@@ -307,8 +307,8 @@ class TestExtractAssembleDataUseCase:
             jsonschema=schema,
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={
-                "/properties/title": "query-1",
-                "/properties/summary": "query-2",
+                "/properties/title": NonEmptyText("query-1"),
+                "/properties/summary": NonEmptyText("query-2"),
             },
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -421,7 +421,7 @@ class TestExtractAssembleDataUseCase:
             jsonschema=schema,
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={
-                "/properties/title": "query-1",
+                "/properties/title": NonEmptyText("query-1"),
             },
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
@@ -589,7 +589,9 @@ class TestExtractAssembleDataUseCase:
                 "properties": {"title": {"type": "string"}},
             },
             status=AssemblySpecificationStatus.ACTIVE,
-            knowledge_service_queries={"/properties/title": "nonexistent-query"},
+            knowledge_service_queries={
+                "/properties/title": NonEmptyText("nonexistent-query")
+            },
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -645,7 +647,7 @@ class TestExtractAssembleDataUseCase:
             applicability=NonEmptyText("Test documents"),
             jsonschema=schema,
             status=AssemblySpecificationStatus.ACTIVE,
-            knowledge_service_queries={"/properties/title": "query-1"},
+            knowledge_service_queries={"/properties/title": NonEmptyText("query-1")},
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

@@ -72,7 +72,7 @@ class DocumentPolicyValidation(Entity):
     status: DocumentPolicyValidationStatus = DocumentPolicyValidationStatus.PENDING
 
     # Initial validation results
-    validation_scores: tuple[tuple[str, int], ...] = Field(
+    validation_scores: tuple[tuple[NonEmptyText, int], ...] = Field(
         default_factory=tuple,
         description="List of (knowledge_service_query_id, actual_score) "
         "tuples representing the scores achieved during initial validation. "
@@ -86,12 +86,14 @@ class DocumentPolicyValidation(Entity):
         "applied. Only present if the policy includes transformation queries "
         "and they were executed",
     )
-    post_transform_validation_scores: tuple[tuple[str, int], ...] | None = Field(
-        default=None,
-        description="List of (knowledge_service_query_id, actual_score) "
-        "tuples representing scores achieved after transformation. "
-        "Only present if transformations were applied and re-validation "
-        "occurred",
+    post_transform_validation_scores: tuple[tuple[NonEmptyText, int], ...] | None = (
+        Field(
+            default=None,
+            description="List of (knowledge_service_query_id, actual_score) "
+            "tuples representing scores achieved after transformation. "
+            "Only present if transformations were applied and re-validation "
+            "occurred",
+        )
     )
 
     # Validation metadata
@@ -116,41 +118,38 @@ class DocumentPolicyValidation(Entity):
     @field_validator("validation_scores")
     @classmethod
     def validation_scores_must_be_valid(
-        cls, v: list[tuple[str, int]]
-    ) -> tuple[tuple[str, int], ...]:
-        if not isinstance(v, (list, tuple)):
-            raise ValueError("Validation scores must be a list")
+        cls, v: tuple[tuple[NonEmptyText, int], ...]
+    ) -> tuple[tuple[NonEmptyText, int], ...]:
+        """No query scored twice, and every score a percentage.
 
-        # Empty list is valid for pending validations
-        if not v:
-            return ()
-
-        return cls._validate_score_tuples(v, "validation_scores")
+        An empty tuple is valid: a validation that has not run yet has
+        no scores. There is nothing to check in one, which is what
+        asking the helper about it already does.
+        """
+        cls._refuse_bad_score_tuples(v, "validation_scores")
+        return v
 
     @field_validator("post_transform_validation_scores")
     @classmethod
     def post_transform_scores_must_be_valid(
-        cls, v: list[tuple[str, int]] | None
-    ) -> tuple[tuple[str, int], ...] | None:
-        if v is None:
-            return v
-
-        if not isinstance(v, (list, tuple)):
-            raise ValueError("Post-transform validation scores must be a list or None")
-
-        # Empty list is valid
-        if not v:
-            return ()
-
-        return cls._validate_score_tuples(v, "post_transform_validation_scores")
+        cls, v: tuple[tuple[NonEmptyText, int], ...] | None
+    ) -> tuple[tuple[NonEmptyText, int], ...] | None:
+        """The same rules, where None means the transform has not run."""
+        if v is not None:
+            cls._refuse_bad_score_tuples(v, "post_transform_validation_scores")
+        return v
 
     @classmethod
-    def _validate_score_tuples(
-        cls, scores: list[tuple[str, int]], field_name: str
-    ) -> tuple[tuple[str, int], ...]:
-        """Helper method to validate score tuple lists."""
-        validated_scores: list[tuple[str, int]] = []
-        query_ids_seen = set()
+    def _refuse_bad_score_tuples(
+        cls, scores: tuple[tuple[NonEmptyText, int], ...], field_name: str
+    ) -> None:
+        """Raise if these scores break a rule; say nothing otherwise.
+
+        It used to return a rebuilt tuple, because it stripped each
+        query id on the way through. NonEmptyText does that, so there is
+        nothing to hand back and the name says so (#306).
+        """
+        query_ids_seen: set[str] = set()
 
         for item in scores:
             if not isinstance(item, tuple) or len(item) != 2:
@@ -162,10 +161,6 @@ class DocumentPolicyValidation(Entity):
             query_id, actual_score = item
 
             # Validate query ID
-            if not isinstance(query_id, str) or not query_id.strip():
-                raise ValueError(f"Query ID in {field_name} must be a non-empty string")
-            query_id = query_id.strip()
-
             # Check for duplicate query IDs within this field
             if query_id in query_ids_seen:
                 raise ValueError(f"Duplicate query ID '{query_id}' in {field_name}")
@@ -181,7 +176,3 @@ class DocumentPolicyValidation(Entity):
                     f"Actual score {actual_score} in {field_name} must be "
                     f"between 0 and 100"
                 )
-
-            validated_scores.append((query_id, actual_score))
-
-        return tuple(validated_scores)

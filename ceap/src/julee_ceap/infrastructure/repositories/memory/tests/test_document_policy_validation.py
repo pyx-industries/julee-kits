@@ -38,13 +38,13 @@ def sample_validation() -> DocumentPolicyValidation:
         policy_id=NonEmptyText("policy-456"),
         status=DocumentPolicyValidationStatus.PASSED,
         validation_scores=(
-            ("quality-check-query", 85),
-            ("completeness-check", 92),
+            (NonEmptyText("quality-check-query"), 85),
+            (NonEmptyText("completeness-check"), 92),
         ),
         transformed_document_id=NonEmptyText("doc-123-transformed"),
         post_transform_validation_scores=(
-            ("quality-check-query", 95),
-            ("completeness-check", 88),
+            (NonEmptyText("quality-check-query"), 95),
+            (NonEmptyText("completeness-check"), 88),
         ),
         started_at=datetime.now(UTC),
         completed_at=datetime.now(UTC),
@@ -122,7 +122,7 @@ class TestMemoryDocumentPolicyValidationRepositorySpecific:
             input_document_id=NonEmptyText("doc-789"),
             policy_id=NonEmptyText("policy-abc"),
             status=DocumentPolicyValidationStatus.VALIDATION_COMPLETE,
-            validation_scores=(("basic-check", 75),),
+            validation_scores=((NonEmptyText("basic-check"), 75),),
             transformed_document_id=None,
             post_transform_validation_scores=None,
         )

@@ -84,8 +84,8 @@ def sample_assembly_specification() -> AssemblySpecification:
             },
         },
         knowledge_service_queries={
-            "/properties/attendees": "query-123",
-            "/properties/summary": "query-456",
+            "/properties/attendees": NonEmptyText("query-123"),
+            "/properties/summary": NonEmptyText("query-456"),
         },
         status=AssemblySpecificationStatus.ACTIVE,
         version=NonEmptyText("1.0.0"),
@@ -156,8 +156,8 @@ class TestGetAssemblySpecifications:
                 },
             },
             knowledge_service_queries={
-                "/properties/project_name": "query-789",
-                "/properties/status": "query-101",
+                "/properties/project_name": NonEmptyText("query-789"),
+                "/properties/status": NonEmptyText("query-101"),
             },
         )
 
@@ -324,9 +324,9 @@ class TestGetAssemblySpecification:
                 "required": ["metadata", "attendees"],
             },
             knowledge_service_queries={
-                "/properties/metadata/properties/date": "date-query",
-                "/properties/attendees": "attendees-query",
-                "/properties/agenda": "agenda-query",
+                "/properties/metadata/properties/date": NonEmptyText("date-query"),
+                "/properties/attendees": NonEmptyText("attendees-query"),
+                "/properties/agenda": NonEmptyText("agenda-query"),
             },
         )
 

@@ -386,7 +386,7 @@ class ExtractAssembleDataUseCase:
         #
         # Currently using individual get calls to avoid complex type
         # serialization issue
-        queries = {}
+        queries: dict[str, KnowledgeServiceQuery] = {}
         for query_id in query_ids:
             query = await self.knowledge_service_query_repo.get(query_id)
             if not query:
