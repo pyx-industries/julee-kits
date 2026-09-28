@@ -19,6 +19,15 @@ class ElementType(StrEnum):
     COMPONENT = "component"
 
 
+# FIXME: this is a kludge. A field that lies about its type until
+# __post_init__ runs is a hidden turd: the annotation says Slug and the
+# value is a bare str for as long as it takes to construct the entity,
+# and every reader has to know that to trust the annotation. It stands
+# because a pydantic default_factory could read the other fields and a
+# dataclass one cannot, and the alternative — making slug a property —
+# would take away a caller's right to name one, which several exercise.
+# The real fix is to decide whether a derived slug is derived or given,
+# and stop letting it be both.
 DERIVE_IT = cast("Slug", "")
 """A slug default, meaning "work it out from what the entity carries".
 
