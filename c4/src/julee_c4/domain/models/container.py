@@ -3,11 +3,10 @@
 A runtime boundary - application or data store within a software system.
 """
 
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Name, Slug
-from pydantic import Field, computed_field
 
 
 class ContainerType(StrEnum):
@@ -25,7 +24,8 @@ class ContainerType(StrEnum):
     OTHER = "other"
 
 
-class Container(Entity):
+@dataclass(frozen=True)
+class Container:
     """Container entity.
 
     A container is an application or data store - a runtime boundary.
@@ -42,10 +42,9 @@ class Container(Entity):
     container_type: ContainerType = ContainerType.OTHER
     technology: str = ""
     url: str = ""
-    tags: tuple[str, ...] = Field(default_factory=tuple)
+    tags: tuple[str, ...] = field(default_factory=tuple)
     docname: str = ""
 
-    @computed_field  # type: ignore[prop-decorator]
     @property
     def name_normalized(self) -> str:
         """Normalized name for case-insensitive matching."""
@@ -94,4 +93,4 @@ class Container(Entity):
         """
         if self.has_tag(tag):
             return self
-        return self.model_copy(update={"tags": (*self.tags, tag)})
+        return replace(self, tags=(*self.tags, tag))

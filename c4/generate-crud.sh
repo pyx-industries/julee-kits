@@ -48,5 +48,5 @@ gen DeploymentNode deployment_node \
   'name:str environment:str node_type:NodeType description:str technology:str instances:int parent_slug:str|None tags:tuple[str,...] docname:str'
 
 gen DynamicStep dynamic_step \
-  'slug:str="" sequence_name:str step_number:int source_type:ElementType source_slug:str destination_type:ElementType destination_slug:str description:str="" technology:str="" return_value:str="" is_async:bool=False tags:tuple[str,...]=() docname:str=""' \
-  'sequence_name:str step_number:int source_type:ElementType source_slug:str destination_type:ElementType destination_slug:str description:str technology:str return_value:str is_async:bool tags:tuple[str,...] docname:str'
+  'slug:str="" sequence_name:str step_number:int source_type:ElementType source_slug:str destination_type:ElementType destination_slug:str description:str="" technology:str="" return_value:str="" is_async:bool=False docname:str=""' \
+  'sequence_name:str step_number:int source_type:ElementType source_slug:str destination_type:ElementType destination_slug:str description:str technology:str return_value:str is_async:bool docname:str'

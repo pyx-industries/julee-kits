@@ -12,6 +12,7 @@ document has been read.
 """
 
 import os
+from dataclasses import replace
 from typing import TYPE_CHECKING
 
 from docutils import nodes
@@ -310,7 +311,7 @@ def build_system_context_diagram(
 
         persons = enrich_persons_from_hcd(diagram.person_slugs, app)
         if persons:
-            diagram = diagram.model_copy(update={"persons": persons})
+            diagram = replace(diagram, persons=persons)
 
     serializer = PlantUMLSerializer()
     puml = serializer.serialize_system_context(diagram, title)

@@ -3,11 +3,10 @@
 The highest level of abstraction in C4 - something that delivers value to users.
 """
 
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Name, Slug
-from pydantic import Field, computed_field
 
 
 class SystemType(StrEnum):
@@ -18,7 +17,8 @@ class SystemType(StrEnum):
     EXISTING = "existing"  # Legacy systems being integrated
 
 
-class SoftwareSystem(Entity):
+@dataclass(frozen=True)
+class SoftwareSystem:
     """Software System entity.
 
     The highest level of abstraction in C4. Represents something that
@@ -32,10 +32,9 @@ class SoftwareSystem(Entity):
     owner: str = ""
     technology: str = ""
     url: str = ""
-    tags: tuple[str, ...] = Field(default_factory=tuple)
+    tags: tuple[str, ...] = field(default_factory=tuple)
     docname: str = ""
 
-    @computed_field  # type: ignore[prop-decorator]
     @property
     def name_normalized(self) -> str:
         """Normalized name for case-insensitive matching."""
@@ -74,4 +73,4 @@ class SoftwareSystem(Entity):
         """
         if self.has_tag(tag):
             return self
-        return self.model_copy(update={"tags": (*self.tags, tag)})
+        return replace(self, tags=(*self.tags, tag))

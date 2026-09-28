@@ -4,11 +4,10 @@ Infrastructure where containers are deployed.
 """
 
 from collections.abc import Mapping
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Name, Slug
-from pydantic import Field
 
 
 class NodeType(StrEnum):
@@ -30,7 +29,8 @@ class NodeType(StrEnum):
     OTHER = "other"
 
 
-class ContainerInstance(Entity):
+@dataclass(frozen=True)
+class ContainerInstance:
     """A deployed instance of a container.
 
     Represents a container running within a deployment node.
@@ -38,10 +38,11 @@ class ContainerInstance(Entity):
 
     container_slug: Slug
     instance_count: int = 1
-    properties: Mapping[str, str] = Field(default_factory=dict)
+    properties: Mapping[str, str] = field(default_factory=dict)
 
 
-class DeploymentNode(Entity):
+@dataclass(frozen=True)
+class DeploymentNode:
     """DeploymentNode entity.
 
     Represents infrastructure where containers run - physical servers,
@@ -59,9 +60,9 @@ class DeploymentNode(Entity):
     technology: str = ""
     instances: int = 1
     parent_slug: Slug | None = None
-    container_instances: tuple[ContainerInstance, ...] = Field(default_factory=tuple)
-    properties: Mapping[str, str] = Field(default_factory=dict)
-    tags: tuple[str, ...] = Field(default_factory=tuple)
+    container_instances: tuple[ContainerInstance, ...] = field(default_factory=tuple)
+    properties: Mapping[str, str] = field(default_factory=dict)
+    tags: tuple[str, ...] = field(default_factory=tuple)
     docname: str = ""
 
     @property
@@ -117,11 +118,10 @@ class DeploymentNode(Entity):
             if instance.container_slug == wanted:
                 found = True
                 instances.append(
-                    instance.model_copy(
-                        update={
-                            "instance_count": instance.instance_count + instance_count,
-                            "properties": {**instance.properties, **(properties or {})},
-                        }
+                    replace(
+                        instance,
+                        instance_count=instance.instance_count + instance_count,
+                        properties={**instance.properties, **(properties or {})},
                     )
                 )
             else:
@@ -134,7 +134,7 @@ class DeploymentNode(Entity):
                     properties=properties or {},
                 )
             )
-        return self.model_copy(update={"container_instances": tuple(instances)})
+        return replace(self, container_instances=tuple(instances))
 
     def has_tag(self, tag: str) -> bool:
         """Check if node has a specific tag (case-insensitive)."""
@@ -154,4 +154,4 @@ class DeploymentNode(Entity):
         """
         if self.has_tag(tag):
             return self
-        return self.model_copy(update={"tags": (*self.tags, tag)})
+        return replace(self, tags=(*self.tags, tag))

@@ -47,7 +47,6 @@ class CreateDynamicStepRequest(BaseModel):
     technology: str = ""
     return_value: str = ""
     is_async: bool = False
-    tags: tuple[str, ...] = ()
     docname: str = ""
 
 
@@ -75,7 +74,6 @@ class UpdateDynamicStepRequest(BaseModel):
     technology: str | None = None
     return_value: str | None = None
     is_async: bool | None = None
-    tags: tuple[str, ...] | None = None
     docname: str | None = None
 
     def changes(self) -> dict[str, Any]:
