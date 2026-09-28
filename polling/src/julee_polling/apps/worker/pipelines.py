@@ -159,13 +159,34 @@ class NewDataDetectionPipeline:
             self.has_new_data = response.new_items_found
             self.current_step = "completed"
 
-            workflow.logger.info(
-                "New data detection pipeline completed successfully",
-                extra={
-                    "endpoint_id": self.endpoint_id,
-                    "has_new_data": self.has_new_data,
-                },
-            )
+            # The use case reports and does not log. This is the one
+            # place that has both what it reported and the execution
+            # the observability stack is following, so this is where
+            # what happened gets written down.
+            told = {
+                "endpoint_id": response.endpoint_id,
+                "has_new_data": response.new_items_found,
+                "polled_successfully": response.polled_successfully,
+                "handoff": response.handoff.value,
+                "items_notified": response.items_notified,
+                "handoff_info": list(response.handoff_info),
+            }
+            if response.handoff is Handoff.FAILED:
+                workflow.logger.error(
+                    "Nobody was told there was new data; the obligation stands "
+                    "and the baseline is held back so the next run tries again",
+                    extra=told,
+                )
+            elif not response.polled_successfully:
+                workflow.logger.warning(
+                    "The endpoint could not be polled; the baseline is held back",
+                    extra=told,
+                )
+            else:
+                workflow.logger.info(
+                    "New data detection pipeline completed successfully",
+                    extra=told,
+                )
 
             # What gets recorded is this pipeline's decision, not the
             # use case's. A poll that failed saw nothing, and a handoff
