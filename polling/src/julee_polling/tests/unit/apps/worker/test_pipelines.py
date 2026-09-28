@@ -72,7 +72,7 @@ class RecordingHandler:
                 "content_hash": content_hash,
             }
         )
-        return Acknowledgement.wilco()
+        return Acknowledgement.wilco(info=[f"queued {len(new_item_ids)}"])
 
 
 class FailingHandler:
@@ -150,6 +150,26 @@ def poll_endpoint_returning(*contents: bytes) -> Any:
             content=content,
             polled_at=datetime.now(UTC),
             content_hash=content_hash(content),
+        )
+
+    return poll_endpoint
+
+
+def poll_endpoint_failing() -> Any:
+    """A poll_endpoint activity for an endpoint that could not be reached.
+
+    The adapter returns a PollingResult rather than raising: an
+    unreachable endpoint is an answer about the endpoint, not a fault
+    in the polling.
+    """
+
+    @activity.defn(name="julee_polling.poll_endpoint")
+    async def poll_endpoint(config: PollingConfig) -> PollingResult:
+        return PollingResult(
+            success=False,
+            content=b"",
+            polled_at=datetime.now(UTC),
+            error_message="connection refused",
         )
 
     return poll_endpoint
@@ -438,6 +458,103 @@ class TestNewDataDetectionPipelineErrorHandling:
         assert [call["content_hash"] for call in handled] == [
             content_hash(FIRST_CONTENT)
         ]
+
+
+class TestAPollThatFailed:
+    """An endpoint that could not be reached.
+
+    Untested until now, which is how it stayed broken: before the
+    baseline was held back, a failed poll hashed b"" and the resulting
+    hash differed from the last one, so the run reported new data and
+    ran change detection over nothing.
+    """
+
+    async def test_a_failed_poll_is_not_new_data(self, workflow_env, sample_config):
+        """Nothing was seen, so nothing is new."""
+        async with worker(workflow_env, poll_endpoint_failing()):
+            result, handled = await run_pipeline(
+                workflow_env, sample_config, completion_for(FIRST_CONTENT)
+            )
+
+        assert result["detection_result"]["has_new_data"] is False
+        assert result["detection_result"]["handoff"] == Handoff.NOT_NEEDED.value
+
+    async def test_a_failed_poll_tells_nobody(self, workflow_env, sample_config):
+        """There is nothing to tell."""
+        async with worker(workflow_env, poll_endpoint_failing()):
+            _, handled = await run_pipeline(
+                workflow_env, sample_config, completion_for(FIRST_CONTENT)
+            )
+
+        assert handled == []
+
+    async def test_a_failed_poll_keeps_the_previous_baseline(
+        self, workflow_env, sample_config
+    ):
+        """A poll that saw nothing may not overwrite what was seen before.
+
+        Recording the empty content's hash would make the next run
+        compare against something no endpoint ever returned.
+        """
+        previous = completion_for(FIRST_CONTENT)
+
+        async with worker(workflow_env, poll_endpoint_failing()):
+            result, _ = await run_pipeline(workflow_env, sample_config, previous)
+
+        assert result["polling_result"]["content_hash"] == content_hash(FIRST_CONTENT)
+
+    async def test_the_content_is_handed_over_once_polling_recovers(
+        self, workflow_env, sample_config
+    ):
+        """The point of keeping the baseline: a failed poll costs nothing."""
+        async with worker(workflow_env, poll_endpoint_failing()):
+            failed, _ = await run_pipeline(workflow_env, sample_config)
+
+        async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
+            recovered, handled = await run_pipeline(workflow_env, sample_config, failed)
+
+        assert recovered["detection_result"]["has_new_data"] is True
+        assert [call["content_hash"] for call in handled] == [
+            content_hash(FIRST_CONTENT)
+        ]
+
+
+class TestWhatTheHandoffReports:
+    """What comes back when the handler was told and answered.
+
+    Asserted because none of it was: the reporting contract was only
+    ever checked on the path where the handoff failed.
+    """
+
+    async def test_a_handoff_that_happened_is_reported_as_discharged(
+        self, workflow_env, sample_config
+    ):
+        """Wilco means they were told and will act."""
+        async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
+            result, _ = await run_pipeline(workflow_env, sample_config)
+
+        assert result["detection_result"]["handoff"] == Handoff.DISCHARGED.value
+
+    async def test_what_the_handler_said_travels_back(
+        self, workflow_env, sample_config
+    ):
+        """The acknowledgement carries the handler's only payload."""
+        async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
+            result, _ = await run_pipeline(workflow_env, sample_config)
+
+        assert result["detection_result"]["handoff_info"] == ["queued 1"]
+
+    async def test_nothing_new_is_reported_as_nothing_to_do(
+        self, workflow_env, sample_config
+    ):
+        """Unchanged content puts nobody under an obligation."""
+        async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
+            result, handled = await run_pipeline(
+                workflow_env, sample_config, completion_for(FIRST_CONTENT)
+            )
+
+        assert result["detection_result"]["handoff"] == Handoff.NOT_NEEDED.value
+        assert handled == []
 
 
 class TestNewDataDetectionPipelineIntegration:
