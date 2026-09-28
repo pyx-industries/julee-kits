@@ -1,37 +1,29 @@
-"""
-PollDataUseCase — generic polling and new-data detection.
+"""PollDataUseCase — poll an endpoint and report what was found.
 
-This module contains the pure business logic for polling an endpoint
-and detecting whether its content has changed since the last run.
-It has no knowledge of Temporal, workflows, or application infrastructure.
-"""
+Polls, compares what came back against what was seen last time, and
+tells the handler when there is something new. It knows nothing of
+Temporal, workflows or where the previous run was stored.
 
-import hashlib
-import logging
+It also decides nothing. Whether a poll counts as done is the caller's
+call; this reports what happened and lets the caller make it.
+"""
 
 from julee_polling.domain.calculators.new_data import NewDataCalculator
 from julee_polling.domain.handlers.polling_result_handler import (
     PollingResultHandler,
 )
+from julee_polling.domain.models.handoff import Handoff
+from julee_polling.domain.models.polling_config import PollingResult
 from julee_polling.domain.services.poller import PollerService
 from julee_polling.dtos.poll_data import PollDataRequest, PollDataResponse
 
-logger = logging.getLogger(__name__)
-
 
 class PollDataUseCase:
-    """
-    Use case for polling an endpoint and detecting new data.
+    """Poll an endpoint, detect new data, and notify the handler.
 
-    Responsibilities:
-    1. Poll the endpoint via the injected PollerService
-    2. Compute the SHA-256 hash of the response content
-    3. Compare with the previous run's hash (from previous_completion)
-    4. If content has changed and an calculator is set, identify new item IDs
-    5. Delegate to the optional PollingResultHandler with the item IDs
-    6. Return a PollDataResponse; the pipeline builds the Temporal
-       last-completion-result dict from it.
-
+    The handler is the role that must be told when there is new data.
+    Which thing fills that role — an ingester, a router that fans out
+    to several, nothing at all — is the composition root's business.
     """
 
     def __init__(
@@ -45,77 +37,70 @@ class PollDataUseCase:
         self._calculator = calculator
 
     async def execute(self, request: PollDataRequest) -> PollDataResponse:
-        """
-        Execute the poll-and-detect use case.
+        """Poll once and report what was found.
 
         Args:
-            request: PollDataRequest containing polling config and
-                     the previous run's completion result (may be None
-                     for the first run).
+            request: The endpoint to poll and what was seen last time
 
         Returns:
-            PollDataResponse with polling outcome and detection results.
+            What came back, and whether the handler was told
         """
-        config = request.config
-        endpoint_id = config.endpoint_identifier
+        result = await self._poller.poll_endpoint(request.config)
 
-        # Step 1: Poll the endpoint
-        polling_result = await self._poller.poll_endpoint(config)
-        polled_at = polling_result.polled_at.isoformat()
+        if not result.success or result.content_hash is None:
+            return self._report(request, result, Handoff.NOT_NEEDED)
 
-        # Step 2: Hash current content
-        current_content = polling_result.content
-        current_hash = hashlib.sha256(current_content).hexdigest()
+        if result.content_hash == request.previous_hash:
+            return self._report(request, result, Handoff.NOT_NEEDED)
 
-        # Step 3: Extract previous hash and content
-        previous_hash: str | None = None
-        previous_data: bytes | None = None
-        if (
-            request.previous_completion
-            and "polling_result" in request.previous_completion
-        ):
-            previous_hash = request.previous_completion["polling_result"].get(
-                "content_hash"
+        try:
+            item_ids = await self._calculator.identify_new_items(
+                request.previous_content, result.content
             )
-            prev_content_str = request.previous_completion["polling_result"].get(
-                "content"
+            acknowledgement = await self._handler.handle_new_data(
+                request.config.endpoint_identifier,
+                item_ids,
+                result.content_hash,
             )
-            if prev_content_str:
-                previous_data = prev_content_str.encode("utf-8")
+        except Exception as refusal:
+            # Nobody was told, so the obligation stands. Saying so is
+            # the whole of what this use case owes its caller.
+            return self._report(
+                request,
+                result,
+                Handoff.FAILED,
+                found=True,
+                info=(f"{type(refusal).__name__}: {refusal}",),
+            )
 
-        # Step 4: Detect change
-        has_new_data = previous_hash != current_hash
+        return self._report(
+            request,
+            result,
+            Handoff.DISCHARGED,
+            found=True,
+            notified=len(item_ids),
+            info=tuple(acknowledgement.info),
+        )
 
-        # Step 5: Calculate what is new, and invoke the handler if anything is
-        items_processed = 0
-        if has_new_data:
-            try:
-                item_ids = await self._calculator.identify_new_items(
-                    previous_data, current_content
-                )
-                items_processed = len(item_ids)
-                await self._handler.handle_new_data(
-                    endpoint_id,
-                    item_ids,
-                    current_hash,
-                )
-            except Exception as e:
-                logger.error(
-                    "Calculator or handler raised an exception; continuing without ack",
-                    extra={
-                        "endpoint_id": endpoint_id,
-                        "error": str(e),
-                        "error_type": type(e).__name__,
-                    },
-                    exc_info=True,
-                )
-
-        # Step 6: Return completion result
+    @staticmethod
+    def _report(
+        request: PollDataRequest,
+        result: PollingResult,
+        handoff: Handoff,
+        *,
+        found: bool = False,
+        notified: int = 0,
+        info: tuple[str, ...] = (),
+    ) -> PollDataResponse:
+        """One place the response is built, so every path reports alike."""
         return PollDataResponse(
-            endpoint_id=endpoint_id,
-            content_hash=current_hash,
-            content=current_content.decode("utf-8", errors="ignore"),
-            polled_at=polled_at,
-            new_items_found=has_new_data,
-            items_processed=items_processed,
+            endpoint_id=request.config.endpoint_identifier,
+            content_hash=result.content_hash,
+            content=result.content.decode("utf-8", errors="ignore"),
+            polled_at=result.polled_at.isoformat(),
+            polled_successfully=result.success,
+            new_items_found=found,
+            items_notified=notified,
+            handoff=handoff,
+            handoff_info=info,
         )
