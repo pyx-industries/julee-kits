@@ -16,6 +16,7 @@ returns. With the timeout, that mistake is a failing test.
 """
 
 import hashlib
+import logging
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -385,6 +386,31 @@ class TestNewDataDetectionPipelineErrorHandling:
         assert result["detection_result"]["has_new_data"] is True
         assert result["detection_result"]["handoff"] == Handoff.FAILED.value
         assert result["polling_result"]["content_hash"] is None
+
+    async def test_a_failed_handoff_is_written_down(
+        self, workflow_env, sample_config, caplog
+    ):
+        """The use case reports and does not log, so this is the only
+        place a failed handoff is recorded.
+
+        Pinned because it was lost once already: the use case's
+        logger.error went when the acknowledgement started being read,
+        and nothing replaced it, because nothing was asserting it.
+        """
+        async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
+            with last_completion(None), caplog.at_level(logging.ERROR):
+                handle = await start_pipeline(
+                    workflow_env, sample_config, FailingHandlerPipeline
+                )
+                await handle.result()
+
+        errors = [r for r in caplog.records if r.levelno >= logging.ERROR]
+        assert errors, "a failed handoff was not written down anywhere"
+        assert any(
+            "Handler failed" in str(r.__dict__.get("handoff_info", "")) for r in errors
+        ), (
+            f"the reason was not carried: {[r.__dict__.get('handoff_info') for r in errors]}"
+        )
 
     async def test_a_failed_handoff_is_tried_again_next_run(
         self, workflow_env, sample_config
