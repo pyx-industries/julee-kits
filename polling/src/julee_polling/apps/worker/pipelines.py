@@ -16,6 +16,7 @@ from julee_polling.domain.calculators.new_data import NewDataCalculator
 from julee_polling.domain.handlers.polling_result_handler import (
     PollingResultHandler,
 )
+from julee_polling.domain.models.handoff import Handoff
 from julee_polling.domain.models.polling_config import PollingConfig
 from julee_polling.dtos.poll_data import PollDataRequest
 from julee_polling.infrastructure.temporal.proxies import (
@@ -24,6 +25,30 @@ from julee_polling.infrastructure.temporal.proxies import (
 from julee_polling.usecases.poll_data import PollDataUseCase
 
 logger = logging.getLogger(__name__)
+
+
+def _what_was_seen_last_time(
+    previous_completion: dict[str, Any] | None,
+) -> tuple[str | None, bytes | None]:
+    """Read the last run's baseline out of Temporal's completion result.
+
+    The shape of that dict is this pipeline's own business — it wrote
+    it — so reading it happens here rather than in the use case.
+
+    Args:
+        previous_completion: What the last run returned, if there was one
+
+    Returns:
+        The hash and the content last seen, either of which may be None
+    """
+    if not previous_completion or "polling_result" not in previous_completion:
+        return None, None
+
+    polling_result = previous_completion["polling_result"]
+    content = polling_result.get("content")
+    return polling_result.get("content_hash"), (
+        content.encode("utf-8") if content else None
+    )
 
 
 @workflow.defn
@@ -117,9 +142,11 @@ class NewDataDetectionPipeline:
         self.current_step = "polling_endpoint"
 
         try:
+            seen = _what_was_seen_last_time(previous_completion)
             request = PollDataRequest(
                 config=polling_config,
-                previous_completion=previous_completion,
+                previous_hash=seen[0],
+                previous_content=seen[1],
             )
             use_case = PollDataUseCase(
                 poller=WorkflowPollerServiceProxy(),  # type: ignore[abstract]
@@ -140,15 +167,32 @@ class NewDataDetectionPipeline:
                 },
             )
 
+            # What gets recorded is this pipeline's decision, not the
+            # use case's. A poll that failed saw nothing, and a handoff
+            # that failed left the obligation standing, so in both cases
+            # the previous baseline is kept and the next run tries again
+            # rather than comparing against something nobody acted on.
+            keep_previous = (
+                not response.polled_successfully or response.handoff is Handoff.FAILED
+            )
+            recorded_hash = seen[0] if keep_previous else response.content_hash
+            recorded_content = (
+                (seen[1].decode("utf-8", errors="ignore") if seen[1] else "")
+                if keep_previous
+                else response.content
+            )
+
             return {
                 "polling_result": {
-                    "content_hash": response.content_hash,
-                    "content": response.content,
+                    "content_hash": recorded_hash,
+                    "content": recorded_content,
                     "polled_at": response.polled_at,
                 },
                 "detection_result": {
                     "has_new_data": response.new_items_found,
-                    "current_hash": response.content_hash,
+                    "current_hash": recorded_hash,
+                    "handoff": response.handoff.value,
+                    "handoff_info": list(response.handoff_info),
                 },
                 "endpoint_id": response.endpoint_id,
                 "completed_at": workflow.now().isoformat(),
