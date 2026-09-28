@@ -8,28 +8,36 @@ Both are the same entity. is_defined tells them apart, and a derived
 persona can be written up later without becoming a different thing.
 """
 
-from typing import Any, Self
+from dataclasses import dataclass, replace
+from typing import Self, cast
 
 from julee.core.entities.text import Name, Slug
-from pydantic import Field, computed_field
 
 from .base import Authored
 
+# FIXME: this is a kludge. A field that lies about its type until
+# __post_init__ runs is a hidden turd: the annotation says Slug and the
+# value is a bare str for as long as it takes to construct the entity,
+# and every reader has to know that to trust the annotation. It stands
+# because a pydantic default_factory could read the other fields — this
+# one derived the slug from the name — and a dataclass one cannot, and
+# the alternative, making slug a property, would take away a caller's
+# right to name one, which from_definition and the RST repository both
+# exercise. The real fix is to decide whether a derived slug is derived
+# or given, and stop letting it be both.
+DERIVE_IT = cast("Slug", "")
+"""The slug default, meaning "name it after the persona".
 
-def _slug_from_name(data: dict[str, Any]) -> Slug:
-    """Name a persona after itself, when it was not given a slug.
+A persona derived from a story has only a name to be identified by, so
+the name is what the slug comes from.
 
-    A persona derived from a story has only a name to be identified by,
-    so the name is what the slug comes from.
-
-    This ran in ``model_post_init`` and wrote the slug with
-    ``object.__setattr__``, which reaches past validation: the derived
-    slug was the one value of the field that nothing checked. As a
-    default it is built the way a given one is.
-    """
-    return Slug(data["name"])
+``Slug`` refuses an empty string, so the default cannot be a real one.
+It is a plain ``str`` until ``__post_init__`` replaces it, built there
+by ``Slug`` exactly as a given one is.
+"""
 
 
+@dataclass(frozen=True, kw_only=True)
 class Persona(Authored):
     """A kind of person the solution is for.
 
@@ -37,49 +45,50 @@ class Persona(Authored):
     what the people writing the solution down know about them.
     """
 
-    name: Name = Field(
-        description='Display name of the persona (e.g., "Knowledge Curator")'
-    )
-    slug: Slug = Field(
-        default_factory=_slug_from_name,
-        description="Identifier; derived from the name when not given",
-    )
-    goals: tuple[str, ...] = Field(
-        default_factory=tuple,
-        description="What this persona is trying to achieve",
-    )
-    frustrations: tuple[str, ...] = Field(
-        default_factory=tuple,
-        description="What gets in this persona's way today",
-    )
-    jobs_to_be_done: tuple[str, ...] = Field(
-        default_factory=tuple,
-        description="The jobs this persona hires the solution to do",
-    )
-    context: str = Field(
-        default="",
-        description="The circumstances this persona works in",
-    )
-    app_slugs: tuple[Slug, ...] = Field(
-        default_factory=tuple, description="List of app slugs this persona uses"
-    )
-    epic_slugs: tuple[Slug, ...] = Field(
-        default_factory=tuple,
-        description="List of epic slugs containing stories for this persona",
-    )
-    accelerator_slugs: tuple[Slug, ...] = Field(
-        default_factory=tuple,
-        description="Accelerators this persona's work draws on",
-    )
-    contrib_slugs: tuple[Slug, ...] = Field(
-        default_factory=tuple,
-        description="Contrib modules this persona's work draws on",
-    )
+    name: Name
+    """Display name of the persona (e.g., "Knowledge Curator")."""
 
-    @computed_field  # type: ignore[prop-decorator]
+    slug: Slug = DERIVE_IT
+    """Identifier; derived from the name when not given."""
+
+    goals: tuple[str, ...] = ()
+    """What this persona is trying to achieve."""
+
+    frustrations: tuple[str, ...] = ()
+    """What gets in this persona's way today."""
+
+    jobs_to_be_done: tuple[str, ...] = ()
+    """The jobs this persona hires the solution to do."""
+
+    context: str = ""
+    """The circumstances this persona works in."""
+
+    app_slugs: tuple[Slug, ...] = ()
+    """List of app slugs this persona uses."""
+
+    epic_slugs: tuple[Slug, ...] = ()
+    """List of epic slugs containing stories for this persona."""
+
+    accelerator_slugs: tuple[Slug, ...] = ()
+    """Accelerators this persona's work draws on."""
+
+    contrib_slugs: tuple[Slug, ...] = ()
+    """Contrib modules this persona's work draws on."""
+
+    def __post_init__(self) -> None:
+        """Name the persona after itself if it was not given a slug."""
+        if not self.slug:
+            object.__setattr__(self, "slug", Slug(self.name))
+
     @property
     def normalized_name(self) -> str:
-        """Get normalized name for matching."""
+        """Get normalized name for matching.
+
+        A plain property, so it is no longer serialised. It was a
+        ``computed_field``, which put it on the wire; nothing reads it
+        from there, and it is derived from the name that travels beside
+        it.
+        """
         return self.name.normalized
 
     @property
@@ -137,7 +146,7 @@ class Persona(Authored):
         """
         if app_slug in self.app_slugs:
             return self
-        return self.model_copy(update={"app_slugs": (*self.app_slugs, app_slug)})
+        return replace(self, app_slugs=(*self.app_slugs, Slug(app_slug)))
 
     def with_epic(self, epic_slug: str) -> "Persona":
         """The persona with an epic added; a duplicate returns this persona.
@@ -147,7 +156,7 @@ class Persona(Authored):
         """
         if epic_slug in self.epic_slugs:
             return self
-        return self.model_copy(update={"epic_slugs": (*self.epic_slugs, epic_slug)})
+        return replace(self, epic_slugs=(*self.epic_slugs, Slug(epic_slug)))
 
     @property
     def is_defined(self) -> bool:

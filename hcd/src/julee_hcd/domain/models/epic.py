@@ -4,13 +4,15 @@ Represents an epic in the HCD documentation system.
 Epics are defined via RST directives and group related stories together.
 """
 
+from dataclasses import dataclass, replace
+
 from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
-from pydantic import Field
 
 from .base import Authored
 
 
+@dataclass(frozen=True, kw_only=True)
 class Epic(Authored):
     """Epic entity.
 
@@ -18,13 +20,14 @@ class Epic(Authored):
     deliver a larger piece of functionality or business value.
     """
 
-    slug: Slug = Field(description='URL-safe identifier (e.g., "credential-creation")')
-    description: str = Field(
-        default="", description="Human-readable description of the epic"
-    )
-    story_refs: tuple[str, ...] = Field(
-        default_factory=tuple, description="List of story feature titles in this epic"
-    )
+    slug: Slug
+    """URL-safe identifier (e.g., "credential-creation")."""
+
+    description: str = ""
+    """Human-readable description of the epic."""
+
+    story_refs: tuple[str, ...] = ()
+    """List of story feature titles in this epic."""
 
     def with_story(self, story_title: str) -> "Epic":
         """The epic with a story reference added.
@@ -37,7 +40,7 @@ class Epic(Authored):
         """
         if story_title in self.story_refs:
             return self
-        return self.model_copy(update={"story_refs": (*self.story_refs, story_title)})
+        return replace(self, story_refs=(*self.story_refs, story_title))
 
     def has_story(self, story_title: str) -> bool:
         """Check if this epic contains a specific story.

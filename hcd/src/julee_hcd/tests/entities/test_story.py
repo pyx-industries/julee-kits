@@ -91,10 +91,7 @@ class TestStoryCreation:
         assert story.persona == "unknown"
         assert story.app_slug == "unknown"
 
-    @pytest.mark.parametrize("field", ["persona", "app_slug"])
-    def test_saying_one_is_empty_is_refused_rather_than_assumed(
-        self, field: str
-    ) -> None:
+    def test_an_empty_persona_is_refused_rather_than_assumed(self) -> None:
         """Not stating a thing and stating that it is nothing differ.
 
         These defaulted an empty string to "unknown" in a validator,
@@ -102,15 +99,28 @@ class TestStoryCreation:
         story attributed to a persona named "unknown" rather than an
         error. Omitting it still does that, because a feature file may
         legitimately say neither (#71).
+
+        Asked through the value object rather than model_validate. A
+        Story is a frozen dataclass and coerces nothing, so the refusal
+        happens wherever a str becomes a Name or a Slug: in the create
+        use case, in the parsers, and here.
         """
         with pytest.raises(ValueError, match="cannot be empty|nothing in it"):
-            Story.model_validate(
-                {
-                    "slug": "test",
-                    "feature_title": "Test",
-                    "file_path": "test.feature",
-                    field: "",
-                }
+            Story(
+                slug=NonEmptyText("test"),
+                feature_title=Name("Test"),
+                file_path="test.feature",
+                persona=Name(""),
+            )
+
+    def test_an_empty_app_slug_is_refused_rather_than_assumed(self) -> None:
+        """The same, for the app the story belongs to."""
+        with pytest.raises(ValueError, match="cannot be empty|nothing in it"):
+            Story(
+                slug=NonEmptyText("test"),
+                feature_title=Name("Test"),
+                file_path="test.feature",
+                app_slug=Slug(""),
             )
 
     def test_whitespace_only_slug_raises_error(self) -> None:
@@ -191,35 +201,3 @@ class TestStoryMatching:
     def test_matches_app_no_match(self, sample_story: Story) -> None:
         """Test app matching returns False for non-match."""
         assert sample_story.matches_app("checkout-app") is False
-
-
-class TestStorySerialization:
-    """Test Story serialization."""
-
-    def test_story_to_dict(self) -> None:
-        """Test story can be serialized to dict."""
-        story = Story(
-            slug=NonEmptyText("test"),
-            feature_title=Name("Test"),
-            persona=Name("User"),
-            app_slug=Slug("app"),
-            file_path="test.feature",
-        )
-
-        data = story.model_dump()
-        assert data["slug"] == "test"
-        assert data["feature_title"] == "Test"
-        assert data["persona"] == "User"
-
-    def test_story_to_json(self) -> None:
-        """Test story can be serialized to JSON."""
-        story = Story(
-            slug=NonEmptyText("test"),
-            feature_title=Name("Test"),
-            persona=Name("User"),
-            app_slug=Slug("app"),
-            file_path="test.feature",
-        )
-
-        json_str = story.model_dump_json()
-        assert '"slug":"test"' in json_str

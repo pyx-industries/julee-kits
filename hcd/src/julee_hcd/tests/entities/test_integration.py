@@ -299,31 +299,3 @@ class TestIntegrationProperties:
             name=Name("Test"),
         )
         assert integration.module_path == "integrations.my_module"
-
-
-class TestIntegrationSerialization:
-    """Test Integration serialization."""
-
-    def test_integration_to_dict(self) -> None:
-        """Test integration can be serialized to dict."""
-        integration = Integration(
-            slug=Slug("test"),
-            module=NonEmptyText("test"),
-            name=Name("Test"),
-            direction=Direction.INBOUND,
-        )
-
-        data = integration.model_dump()
-        assert data["slug"] == "test"
-        assert data["direction"] == Direction.INBOUND
-
-    def test_integration_to_json(self) -> None:
-        """Test integration can be serialized to JSON."""
-        integration = Integration(
-            slug=Slug("test"),
-            module=NonEmptyText("test"),
-            name=Name("Test"),
-        )
-
-        json_str = integration.model_dump_json()
-        assert '"slug":"test"' in json_str

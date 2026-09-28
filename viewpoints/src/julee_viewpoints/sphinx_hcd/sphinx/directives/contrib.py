@@ -8,6 +8,7 @@ Provides directives for contrib modules (reusable utilities):
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from julee.core.entities.text import Slug
 
 from julee_hcd.domain.models.contrib import ContribModule
 from julee_hcd.domain.repositories import ContribRepository
@@ -59,7 +60,7 @@ class DefineContribDirective(HCDDirective):
         description = "\n".join(self.content).strip()
 
         contrib = ContribModule(
-            slug=slug,
+            slug=Slug(slug),
             name=name,
             description=description,
             technology=technology,

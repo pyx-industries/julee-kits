@@ -11,6 +11,7 @@ from collections.abc import Callable
 from typing import Any
 
 from docutils import nodes
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.epic import Epic
@@ -66,7 +67,7 @@ class DefineEpicDirective(HCDDirective):
 
         # Create and register the epic entity
         epic = Epic(
-            slug=epic_slug,
+            slug=Slug(epic_slug),
             description=description,
             story_refs=tuple(story_refs),
             docname=docname,

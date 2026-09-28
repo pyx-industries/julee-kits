@@ -17,9 +17,11 @@ being written down does: a persona nobody kept is deleted, not archived.
 from typing import Protocol, TypeVar, runtime_checkable
 
 from julee.core.repositories.base import BaseRepository, Deletable
-from pydantic import BaseModel
 
-T = TypeVar("T", bound=BaseModel)
+# Unbounded: a domain entity is a frozen dataclass. What may cross a
+# driven port is doctrine's to decide, and a bound naming pydantic here
+# would contradict it.
+T = TypeVar("T")
 
 
 @runtime_checkable
