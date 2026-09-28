@@ -24,6 +24,7 @@ from unittest.mock import patch
 
 import pytest
 from julee.core.entities.acknowledgement import Acknowledgement
+from pydantic import TypeAdapter
 from temporalio import activity, workflow
 from temporalio.client import WorkflowFailureError, WorkflowHandle
 from temporalio.contrib.pydantic import pydantic_data_converter
@@ -288,7 +289,7 @@ class TestNewDataDetectionPipelineFirstRun:
             with last_completion(None):
                 result = await workflow_env.client.execute_workflow(
                     RecordingPipeline.run,
-                    sample_config.model_dump(mode="json"),
+                    TypeAdapter(PollingConfig).dump_python(sample_config, mode="json"),
                     id=str(uuid.uuid4()),
                     task_queue=TASK_QUEUE,
                     execution_timeout=EXECUTION_TIMEOUT,
