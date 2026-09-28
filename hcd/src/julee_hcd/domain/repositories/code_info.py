@@ -3,7 +3,7 @@
 from typing import Protocol, runtime_checkable
 
 from julee.core.entities.bounded_context_info import BoundedContextInfo
-from julee.repositories.base import RepositoryOf
+from julee.core.repositories.base import RepositoryOf
 
 
 @runtime_checkable

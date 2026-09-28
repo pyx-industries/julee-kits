@@ -16,7 +16,7 @@ authors = [
 keywords = ["julee", "c4", "architecture", "documentation"]
 
 dependencies = [
-    "julee>=0.12,<0.13",
+    "julee>=0.13,<0.14",
 ]
 
 [project.optional-dependencies]
@@ -28,7 +28,7 @@ dev = [
     "pytest-timeout>=2.3.0",
     "mypy>=1.7.0",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.12,<0.13",
+    "julee[doctrine]>=0.13,<0.14",
 ]
 
 # A kit announces itself here. Installing it does not activate it; a

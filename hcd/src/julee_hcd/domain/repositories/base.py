@@ -16,7 +16,7 @@ being written down does: a persona nobody kept is deleted, not archived.
 
 from typing import Protocol, TypeVar, runtime_checkable
 
-from julee.repositories.base import BaseRepository, Deletable
+from julee.core.repositories.base import BaseRepository, Deletable
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
