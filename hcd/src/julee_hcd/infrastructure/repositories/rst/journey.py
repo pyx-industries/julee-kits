@@ -82,7 +82,7 @@ class RstJourneyRepository(RstRepositoryMixin[Journey], JourneyRepository):
         goal = content_before_nested(content, ".. step-")
 
         return Journey(
-            slug=data["slug"],
+            slug=Slug(data["slug"]),
             persona=options.get("persona", ""),
             intent=options.get("intent", ""),
             outcome=options.get("outcome", ""),

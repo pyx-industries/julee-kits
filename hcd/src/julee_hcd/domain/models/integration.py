@@ -4,12 +4,11 @@ Represents an integration module in the HCD documentation system.
 Integrations are defined via YAML manifests in integrations/*/integration.yaml.
 """
 
+from dataclasses import dataclass
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.utils import normalize_name
-from pydantic import Field, computed_field
 
 from .base import Authored
 
@@ -40,14 +39,18 @@ class Direction(StrEnum):
         return labels.get(self, str(self.value))
 
 
-class ExternalDependency(Entity):
+@dataclass(frozen=True, kw_only=True)
+class ExternalDependency:
     """External system that an integration depends on."""
 
-    name: Name = Field(description="Display name of the external system")
-    url: str | None = Field(
-        default=None, description="Optional URL for documentation or reference"
-    )
-    description: str = Field(default="", description="Optional brief description")
+    name: Name
+    """Display name of the external system."""
+
+    url: str | None = None
+    """Optional URL for documentation or reference."""
+
+    description: str = ""
+    """Optional brief description."""
 
     @classmethod
     def from_dict(cls, data: dict) -> "ExternalDependency":
@@ -59,13 +62,18 @@ class ExternalDependency(Entity):
         Returns:
             ExternalDependency instance
         """
+        # Name is built here rather than left to the field. Pydantic
+        # used to make one out of whatever arrived, which is what
+        # refused the "" default below; a dataclass would have stored
+        # the empty string and given the dependency no name at all.
         return cls(
-            name=data.get("name", ""),
+            name=Name(data.get("name", "")),
             url=data.get("url"),
             description=data.get("description", ""),
         )
 
 
+@dataclass(frozen=True, kw_only=True)
 class Integration(Authored):
     """Integration module entity.
 
@@ -73,25 +81,27 @@ class Integration(Authored):
     data flow direction and external dependencies.
     """
 
-    slug: Slug = Field(
-        description='URL-safe identifier (e.g., "pilot-data-collection")'
-    )
-    module: NonEmptyText = Field(
-        description='Python module name (e.g., "pilot_data_collection")'
-    )
-    name: Name = Field(description="Display name")
-    description: str = Field(default="", description="Human-readable description")
-    direction: Direction = Field(
-        default=Direction.BIDIRECTIONAL, description="Data flow direction"
-    )
-    depends_on: tuple[ExternalDependency, ...] = Field(
-        default_factory=tuple, description="List of external dependencies"
-    )
-    manifest_path: str = Field(
-        default="", description="Path to the integration.yaml file"
-    )
+    slug: Slug
+    """URL-safe identifier (e.g., "pilot-data-collection")."""
 
-    @computed_field  # type: ignore[prop-decorator]
+    module: NonEmptyText
+    """Python module name (e.g., "pilot_data_collection")."""
+
+    name: Name
+    """Display name."""
+
+    description: str = ""
+    """Human-readable description."""
+
+    direction: Direction = Direction.BIDIRECTIONAL
+    """Data flow direction."""
+
+    depends_on: tuple[ExternalDependency, ...] = ()
+    """List of external dependencies."""
+
+    manifest_path: str = ""
+    """Path to the integration.yaml file."""
+
     @property
     def name_normalized(self) -> str:
         """Lowercase name for matching, which is what Name.normalized is.

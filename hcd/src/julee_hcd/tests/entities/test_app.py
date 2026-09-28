@@ -232,30 +232,3 @@ class TestAppTypeLabel:
         """Test type label for unknown type."""
         app = App(slug=Slug("test"), name=Name("Test"), app_type=AppType.UNKNOWN)
         assert app.type_label == "Unknown"
-
-
-class TestAppSerialization:
-    """Test App serialization."""
-
-    def test_app_to_dict(self) -> None:
-        """Test app can be serialized to dict."""
-        app = App(
-            slug=Slug("test-app"),
-            name=Name("Test App"),
-            app_type=AppType.STAFF,
-        )
-
-        data = app.model_dump()
-        assert data["slug"] == "test-app"
-        assert data["name"] == "Test App"
-        assert data["app_type"] == AppType.STAFF
-
-    def test_app_to_json(self) -> None:
-        """Test app can be serialized to JSON."""
-        app = App(
-            slug=Slug("test-app"),
-            name=Name("Test App"),
-        )
-
-        json_str = app.model_dump_json()
-        assert '"slug":"test-app"' in json_str

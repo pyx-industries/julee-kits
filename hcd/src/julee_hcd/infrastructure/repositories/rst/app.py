@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.app import App, AppType
@@ -60,8 +61,8 @@ class RstAppRepository(RstRepositoryMixin[App], AppRepository):
         app_type = AppType.from_string(options.get("type", "unknown"))
 
         return App(
-            slug=data["slug"],
-            name=name,
+            slug=Slug(data["slug"]),
+            name=Name(name),
             app_type=app_type,
             status=options.get("status") or None,
             description=content.strip(),

@@ -5,6 +5,7 @@ These cover what authoring one means, which is what the archived version
 knew and the copy had lost.
 """
 
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -100,7 +101,7 @@ def test_a_derived_persona_can_be_written_up_without_changing_identity() -> None
     """Both kinds are the same entity; describing one does not replace it."""
     derived = Persona.from_story_reference("Knowledge Curator")
 
-    written = derived.model_copy(update={"goals": ("Find things",)})
+    written = replace(derived, goals=("Find things",))
 
     assert written.slug == derived.slug
     assert derived.is_defined is False

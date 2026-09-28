@@ -1,6 +1,6 @@
 """Generated CRUD use cases for Epic.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.repositories.epic import EpicRepository
 
-
-class GetEpicRequest(BaseModel):
-    """Request for getting a Epic by slug."""
-
-    slug: str
-
-
-class GetEpicResponse(BaseModel):
-    """Response for getting a Epic."""
-
-    epic: Epic
+from ..dtos.crud_epic import (
+    CreateEpicRequest,
+    CreateEpicResponse,
+    DeleteEpicRequest,
+    DeleteEpicResponse,
+    GetEpicRequest,
+    GetEpicResponse,
+    ListEpicsRequest,
+    ListEpicsResponse,
+    UpdateEpicRequest,
+    UpdateEpicResponse,
+)
 
 
 class GetEpicUseCase(GetUseCase[Epic, EpicRepository]):
@@ -44,17 +44,6 @@ class GetEpicUseCase(GetUseCase[Epic, EpicRepository]):
         return GetEpicResponse(epic=entity)
 
 
-class ListEpicsRequest(BaseModel):
-    """Request for listing all Epics."""
-
-
-class ListEpicsResponse(BaseModel):
-    """Response for listing all Epics."""
-
-    epics: list[Epic]
-    total_count: int
-
-
 class ListEpicsUseCase(ListUseCase[Epic, EpicRepository]):
     """List all Epics."""
 
@@ -66,25 +55,6 @@ class ListEpicsUseCase(ListUseCase[Epic, EpicRepository]):
         """Execute the list epics use case."""
         entities = await self._list_all()
         return ListEpicsResponse(epics=entities, total_count=len(entities))
-
-
-class CreateEpicRequest(BaseModel):
-    """Request for creating a Epic."""
-
-    slug: str
-    description: str = ""
-    story_refs: tuple[str, ...] = ()
-    solution_slug: str = ""
-    docname: str = ""
-    page_title: str = ""
-    preamble_rst: str = ""
-    epilogue_rst: str = ""
-
-
-class CreateEpicResponse(BaseModel):
-    """Response for creating a Epic."""
-
-    epic: Epic
 
 
 class CreateEpicUseCase(CreateUseCase[Epic, EpicRepository]):
@@ -113,29 +83,6 @@ class CreateEpicUseCase(CreateUseCase[Epic, EpicRepository]):
         return CreateEpicResponse(epic=entity)
 
 
-class UpdateEpicRequest(BaseModel):
-    """Request for updating a Epic.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    description: str | None = None
-    story_refs: tuple[str, ...] | None = None
-    solution_slug: str | None = None
-    docname: str | None = None
-    page_title: str | None = None
-    preamble_rst: str | None = None
-    epilogue_rst: str | None = None
-
-
-class UpdateEpicResponse(BaseModel):
-    """Response for updating a Epic."""
-
-    epic: Epic
-
-
 class UpdateEpicUseCase(UpdateUseCase[Epic, EpicRepository]):
     """Update a Epic."""
 
@@ -145,23 +92,8 @@ class UpdateEpicUseCase(UpdateUseCase[Epic, EpicRepository]):
 
     async def execute(self, request: UpdateEpicRequest) -> UpdateEpicResponse:
         """Execute the update epic use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        entity = await self._update_by_id(request.slug, request.changes())
         return UpdateEpicResponse(epic=entity)
-
-
-class DeleteEpicRequest(BaseModel):
-    """Request for deleting a Epic by slug."""
-
-    slug: str
-
-
-class DeleteEpicResponse(BaseModel):
-    """Response for deleting a Epic."""
-
-    deleted: bool
 
 
 class DeleteEpicUseCase(DeleteUseCase[Epic, EpicRepository]):

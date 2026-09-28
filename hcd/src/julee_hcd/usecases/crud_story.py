@@ -1,11 +1,11 @@
 """Generated CRUD use cases for Story.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
 
-from julee.core.entities.text import NonEmptyText
+from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.story import Story
 from julee_hcd.domain.repositories.story import StoryRepository
 
-
-class GetStoryRequest(BaseModel):
-    """Request for getting a Story by slug."""
-
-    slug: str
-
-
-class GetStoryResponse(BaseModel):
-    """Response for getting a Story."""
-
-    story: Story
+from ..dtos.crud_story import (
+    CreateStoryRequest,
+    CreateStoryResponse,
+    DeleteStoryRequest,
+    DeleteStoryResponse,
+    GetStoryRequest,
+    GetStoryResponse,
+    ListStoriesRequest,
+    ListStoriesResponse,
+    UpdateStoryRequest,
+    UpdateStoryResponse,
+)
 
 
 class GetStoryUseCase(GetUseCase[Story, StoryRepository]):
@@ -44,17 +44,6 @@ class GetStoryUseCase(GetUseCase[Story, StoryRepository]):
         return GetStoryResponse(story=entity)
 
 
-class ListStoriesRequest(BaseModel):
-    """Request for listing all Stories."""
-
-
-class ListStoriesResponse(BaseModel):
-    """Response for listing all Stories."""
-
-    stories: list[Story]
-    total_count: int
-
-
 class ListStoriesUseCase(ListUseCase[Story, StoryRepository]):
     """List all Stories."""
 
@@ -66,31 +55,6 @@ class ListStoriesUseCase(ListUseCase[Story, StoryRepository]):
         """Execute the list stories use case."""
         entities = await self._list_all()
         return ListStoriesResponse(stories=entities, total_count=len(entities))
-
-
-class CreateStoryRequest(BaseModel):
-    """Request for creating a Story."""
-
-    slug: str
-    feature_title: str
-    persona: str
-    i_want: str
-    so_that: str
-    app_slug: str
-    file_path: str
-    abs_path: str = ""
-    gherkin_snippet: str = ""
-    solution_slug: str = ""
-    docname: str = ""
-    page_title: str = ""
-    preamble_rst: str = ""
-    epilogue_rst: str = ""
-
-
-class CreateStoryResponse(BaseModel):
-    """Response for creating a Story."""
-
-    story: Story
 
 
 class CreateStoryUseCase(CreateUseCase[Story, StoryRepository]):
@@ -108,11 +72,11 @@ class CreateStoryUseCase(CreateUseCase[Story, StoryRepository]):
         """Execute the create story use case."""
         entity = await self._create(
             entity_id=request.slug,
-            feature_title=request.feature_title,
-            persona=request.persona,
+            feature_title=Name(request.feature_title),
+            persona=Name(request.persona),
             i_want=request.i_want,
             so_that=request.so_that,
-            app_slug=request.app_slug,
+            app_slug=Slug(request.app_slug),
             file_path=request.file_path,
             abs_path=request.abs_path,
             gherkin_snippet=request.gherkin_snippet,
@@ -125,35 +89,6 @@ class CreateStoryUseCase(CreateUseCase[Story, StoryRepository]):
         return CreateStoryResponse(story=entity)
 
 
-class UpdateStoryRequest(BaseModel):
-    """Request for updating a Story.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    feature_title: str | None = None
-    persona: str | None = None
-    i_want: str | None = None
-    so_that: str | None = None
-    app_slug: str | None = None
-    file_path: str | None = None
-    abs_path: str | None = None
-    gherkin_snippet: str | None = None
-    solution_slug: str | None = None
-    docname: str | None = None
-    page_title: str | None = None
-    preamble_rst: str | None = None
-    epilogue_rst: str | None = None
-
-
-class UpdateStoryResponse(BaseModel):
-    """Response for updating a Story."""
-
-    story: Story
-
-
 class UpdateStoryUseCase(UpdateUseCase[Story, StoryRepository]):
     """Update a Story."""
 
@@ -163,23 +98,15 @@ class UpdateStoryUseCase(UpdateUseCase[Story, StoryRepository]):
 
     async def execute(self, request: UpdateStoryRequest) -> UpdateStoryResponse:
         """Execute the update story use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        changes = request.changes()
+        if changes.get("app_slug") is not None:
+            changes["app_slug"] = Slug(changes["app_slug"])
+        if changes.get("feature_title") is not None:
+            changes["feature_title"] = Name(changes["feature_title"])
+        if changes.get("persona") is not None:
+            changes["persona"] = Name(changes["persona"])
+        entity = await self._update_by_id(request.slug, changes)
         return UpdateStoryResponse(story=entity)
-
-
-class DeleteStoryRequest(BaseModel):
-    """Request for deleting a Story by slug."""
-
-    slug: str
-
-
-class DeleteStoryResponse(BaseModel):
-    """Response for deleting a Story."""
-
-    deleted: bool
 
 
 class DeleteStoryUseCase(DeleteUseCase[Story, StoryRepository]):

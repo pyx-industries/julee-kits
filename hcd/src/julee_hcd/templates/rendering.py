@@ -5,7 +5,6 @@ enabling lossless round-trip: Entity -> RST -> Entity.
 """
 
 from jinja2 import Environment, PackageLoader, Template
-from pydantic import BaseModel
 
 # Create Jinja2 environment with RST-friendly settings.
 # Autoescaping is off on purpose: the output is RST, not HTML, and
@@ -19,12 +18,17 @@ _env = Environment(
 )
 
 
-def render_entity(entity_type: str, entity: BaseModel) -> str:
+def render_entity(entity_type: str, entity: object) -> str:
     """Render an entity to RST using its Jinja2 template.
+
+    The entity is typed ``object`` because a template reads attributes
+    off it and nothing here does. It said ``BaseModel``, which was
+    never what the function needed and stopped being true of every
+    entity once they became frozen dataclasses.
 
     Args:
         entity_type: Type name matching template file (e.g., 'journey', 'epic')
-        entity: Domain entity (Pydantic model) to render
+        entity: Domain entity to render
 
     Returns:
         RST content as string

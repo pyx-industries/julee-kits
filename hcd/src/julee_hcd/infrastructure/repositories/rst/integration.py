@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.integration import Direction, Integration
@@ -63,9 +64,9 @@ class RstIntegrationRepository(RstRepositoryMixin[Integration], IntegrationRepos
         direction = Direction.from_string(options.get("direction", "bidirectional"))
 
         return Integration(
-            slug=data["slug"],
-            module=module,
-            name=name,
+            slug=Slug(data["slug"]),
+            module=NonEmptyText(module),
+            name=Name(name),
             description=content.strip(),
             direction=direction,
             page_title=parsed.title,

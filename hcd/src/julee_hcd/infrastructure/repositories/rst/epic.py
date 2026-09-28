@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.epic import Epic
@@ -71,7 +72,7 @@ class RstEpicRepository(RstRepositoryMixin[Epic], EpicRepository):
         description = content_before_nested(content, ".. epic-story::")
 
         return Epic(
-            slug=data["slug"],
+            slug=Slug(data["slug"]),
             description=description,
             story_refs=tuple(story_refs),
             docname=docname,

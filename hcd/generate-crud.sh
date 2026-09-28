@@ -18,7 +18,11 @@
 # of the five kits must never delete; these entities are documentation,
 # and documentation that cannot forget goes stale.
 set -e
-out=src/julee_hcd/usecases
+# The bounded context, not a layer: the generator writes messages into
+# dtos/ and use cases into usecases/. This said usecases/ until the
+# generator split the two, which is why hcd's generated CRUD still
+# carried pydantic in a use case module.
+out=src/julee_hcd
 
 # Every authored entity carries these; see domain/models/base.py.
 authored='solution_slug:str="" docname:str="" page_title:str="" preamble_rst:str="" epilogue_rst:str=""'

@@ -4,11 +4,11 @@ Represents an application in the HCD documentation system.
 Apps are defined via YAML manifests in apps/*/app.yaml.
 """
 
+from dataclasses import dataclass
 from enum import StrEnum
 
 from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
-from pydantic import Field, computed_field
 
 from .base import Authored
 
@@ -71,6 +71,7 @@ class AppType(StrEnum):
             return cls.UNKNOWN
 
 
+@dataclass(frozen=True, kw_only=True)
 class App(Authored):
     """Application entity.
 
@@ -79,32 +80,33 @@ class App(Authored):
     for the documentation.
     """
 
-    slug: Slug = Field(description='URL-safe identifier (e.g., "staff-portal")')
-    name: Name = Field(description='Display name (e.g., "Staff Portal")')
-    app_type: AppType = Field(
-        default=AppType.UNKNOWN,
-        description="Classification (staff, external, member-tool)",
-    )
-    status: str | None = Field(
-        default=None,
-        description='Optional status indicator (e.g., "in-development", "live")',
-    )
-    description: str = Field(default="", description="Human-readable description")
-    interface: AppInterface = Field(
-        default=AppInterface.UNKNOWN,
-        description="How people reach this app, which decides how C4 draws it",
-    )
-    technology: str = Field(
-        default="",
-        description="What the app is built with; inferred from interface if blank",
-    )
-    accelerators: tuple[str, ...] = Field(
-        default_factory=tuple,
-        description="List of accelerator slugs associated with this app",
-    )
-    manifest_path: str = Field(default="", description="Path to the app.yaml file")
+    slug: Slug
+    """URL-safe identifier (e.g., "staff-portal")."""
 
-    @computed_field  # type: ignore[prop-decorator]
+    name: Name
+    """Display name (e.g., "Staff Portal")."""
+
+    app_type: AppType = AppType.UNKNOWN
+    """Classification (staff, external, member-tool)."""
+
+    status: str | None = None
+    """Optional status indicator (e.g., "in-development", "live")."""
+
+    description: str = ""
+    """Human-readable description."""
+
+    interface: AppInterface = AppInterface.UNKNOWN
+    """How people reach this app, which decides how C4 draws it."""
+
+    technology: str = ""
+    """What the app is built with; inferred from interface if blank."""
+
+    accelerators: tuple[str, ...] = ()
+    """List of accelerator slugs associated with this app."""
+
+    manifest_path: str = ""
+    """Path to the app.yaml file."""
+
     @property
     def name_normalized(self) -> str:
         """Lowercase name for matching, which is what Name.normalized is.
@@ -147,7 +149,11 @@ class App(Authored):
             app_type=app_type,
             status=manifest.get("status"),
             description=manifest.get("description", "").strip(),
-            accelerators=manifest.get("accelerators", []),
+            # A manifest gives a YAML list; the field is a tuple, and
+            # pydantic used to convert it. A dataclass stores what it is
+            # given, so a list here would put a mutable, unhashable
+            # collection inside a frozen entity (julee-kits#57).
+            accelerators=tuple(manifest.get("accelerators", ())),
             manifest_path=manifest_path,
         )
 

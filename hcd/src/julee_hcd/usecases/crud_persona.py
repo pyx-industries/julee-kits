@@ -1,11 +1,11 @@
 """Generated CRUD use cases for Persona.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
 
-from julee.core.entities.text import Slug
+from julee.core.entities.text import Name, Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.persona import Persona
 from julee_hcd.domain.repositories.persona import PersonaRepository
 
-
-class GetPersonaRequest(BaseModel):
-    """Request for getting a Persona by slug."""
-
-    slug: str
-
-
-class GetPersonaResponse(BaseModel):
-    """Response for getting a Persona."""
-
-    persona: Persona
+from ..dtos.crud_persona import (
+    CreatePersonaRequest,
+    CreatePersonaResponse,
+    DeletePersonaRequest,
+    DeletePersonaResponse,
+    GetPersonaRequest,
+    GetPersonaResponse,
+    ListPersonasRequest,
+    ListPersonasResponse,
+    UpdatePersonaRequest,
+    UpdatePersonaResponse,
+)
 
 
 class GetPersonaUseCase(GetUseCase[Persona, PersonaRepository]):
@@ -44,17 +44,6 @@ class GetPersonaUseCase(GetUseCase[Persona, PersonaRepository]):
         return GetPersonaResponse(persona=entity)
 
 
-class ListPersonasRequest(BaseModel):
-    """Request for listing all Personas."""
-
-
-class ListPersonasResponse(BaseModel):
-    """Response for listing all Personas."""
-
-    personas: list[Persona]
-    total_count: int
-
-
 class ListPersonasUseCase(ListUseCase[Persona, PersonaRepository]):
     """List all Personas."""
 
@@ -68,32 +57,6 @@ class ListPersonasUseCase(ListUseCase[Persona, PersonaRepository]):
         return ListPersonasResponse(personas=entities, total_count=len(entities))
 
 
-class CreatePersonaRequest(BaseModel):
-    """Request for creating a Persona."""
-
-    slug: str = ""
-    name: str
-    goals: tuple[str, ...] = ()
-    frustrations: tuple[str, ...] = ()
-    jobs_to_be_done: tuple[str, ...] = ()
-    context: str = ""
-    app_slugs: tuple[str, ...] = ()
-    epic_slugs: tuple[str, ...] = ()
-    accelerator_slugs: tuple[str, ...] = ()
-    contrib_slugs: tuple[str, ...] = ()
-    solution_slug: str = ""
-    docname: str = ""
-    page_title: str = ""
-    preamble_rst: str = ""
-    epilogue_rst: str = ""
-
-
-class CreatePersonaResponse(BaseModel):
-    """Response for creating a Persona."""
-
-    persona: Persona
-
-
 class CreatePersonaUseCase(CreateUseCase[Persona, PersonaRepository]):
     """Create a new Persona."""
 
@@ -104,19 +67,19 @@ class CreatePersonaUseCase(CreateUseCase[Persona, PersonaRepository]):
     def _build_entity(self, entity_id: str, **kwargs: Any) -> Persona:
         """Construct a Persona from a generated ID and request fields.
 
-        A request that names no slug leaves the persona to derive one
-        from its name, so the field is left out rather than passed
-        empty.
+        A request that names no slug leaves the entity to work
+        one out, so the field is left out rather than passed empty.
         """
         if not entity_id:
             return Persona(**kwargs)
+
         return Persona(slug=Slug(entity_id), **kwargs)
 
     async def execute(self, request: CreatePersonaRequest) -> CreatePersonaResponse:
         """Execute the create persona use case."""
         entity = await self._create(
             entity_id=request.slug,
-            name=request.name,
+            name=Name(request.name),
             goals=request.goals,
             frustrations=request.frustrations,
             jobs_to_be_done=request.jobs_to_be_done,
@@ -134,36 +97,6 @@ class CreatePersonaUseCase(CreateUseCase[Persona, PersonaRepository]):
         return CreatePersonaResponse(persona=entity)
 
 
-class UpdatePersonaRequest(BaseModel):
-    """Request for updating a Persona.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    name: str | None = None
-    goals: tuple[str, ...] | None = None
-    frustrations: tuple[str, ...] | None = None
-    jobs_to_be_done: tuple[str, ...] | None = None
-    context: str | None = None
-    app_slugs: tuple[str, ...] | None = None
-    epic_slugs: tuple[str, ...] | None = None
-    accelerator_slugs: tuple[str, ...] | None = None
-    contrib_slugs: tuple[str, ...] | None = None
-    solution_slug: str | None = None
-    docname: str | None = None
-    page_title: str | None = None
-    preamble_rst: str | None = None
-    epilogue_rst: str | None = None
-
-
-class UpdatePersonaResponse(BaseModel):
-    """Response for updating a Persona."""
-
-    persona: Persona
-
-
 class UpdatePersonaUseCase(UpdateUseCase[Persona, PersonaRepository]):
     """Update a Persona."""
 
@@ -173,23 +106,11 @@ class UpdatePersonaUseCase(UpdateUseCase[Persona, PersonaRepository]):
 
     async def execute(self, request: UpdatePersonaRequest) -> UpdatePersonaResponse:
         """Execute the update persona use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        changes = request.changes()
+        if changes.get("name") is not None:
+            changes["name"] = Name(changes["name"])
+        entity = await self._update_by_id(request.slug, changes)
         return UpdatePersonaResponse(persona=entity)
-
-
-class DeletePersonaRequest(BaseModel):
-    """Request for deleting a Persona by slug."""
-
-    slug: str
-
-
-class DeletePersonaResponse(BaseModel):
-    """Response for deleting a Persona."""
-
-    deleted: bool
 
 
 class DeletePersonaUseCase(DeleteUseCase[Persona, PersonaRepository]):
