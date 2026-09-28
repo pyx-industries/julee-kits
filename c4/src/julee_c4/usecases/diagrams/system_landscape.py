@@ -1,4 +1,4 @@
-"""GetSystemLandscapeDiagramUseCase with co-located request/response.
+"""GetSystemLandscapeDiagramUseCase.
 
 Use case for computing a system landscape diagram.
 
@@ -6,26 +6,14 @@ A System Landscape diagram shows all software systems and persons
 within an enterprise or organization, plus their relationships.
 """
 
-from pydantic import BaseModel, Field
-
 from julee_c4.domain.models.diagrams import SystemLandscapeDiagram
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
-
-
-class GetSystemLandscapeDiagramRequest(BaseModel):
-    """Request for generating a system landscape diagram."""
-
-    format: str = Field(
-        default="plantuml", description="Output format: plantuml, structurizr, data"
-    )
-
-
-class GetSystemLandscapeDiagramResponse(BaseModel):
-    """Response from computing a system landscape diagram."""
-
-    diagram: SystemLandscapeDiagram
+from julee_c4.dtos.diagrams.system_landscape import (
+    GetSystemLandscapeDiagramRequest,
+    GetSystemLandscapeDiagramResponse,
+)
 
 
 class GetSystemLandscapeDiagramUseCase:

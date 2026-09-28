@@ -1,4 +1,4 @@
-"""GetContainerDiagramUseCase with co-located request/response.
+"""GetContainerDiagramUseCase.
 
 Use case for computing a container diagram.
 
@@ -6,29 +6,16 @@ A Container diagram shows the containers (applications, data stores, etc.)
 that make up a software system, plus the relationships between them.
 """
 
-from pydantic import BaseModel, Field
-
 from julee_c4.domain.models.diagrams import ContainerDiagram
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.models.software_system import SoftwareSystem
 from julee_c4.domain.repositories.container import ContainerRepository
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
-
-
-class GetContainerDiagramRequest(BaseModel):
-    """Request for generating a container diagram."""
-
-    system_slug: str = Field(description="Software system to show containers for")
-    format: str = Field(
-        default="plantuml", description="Output format: plantuml, structurizr, data"
-    )
-
-
-class GetContainerDiagramResponse(BaseModel):
-    """Response from computing a container diagram."""
-
-    diagram: ContainerDiagram | None
+from julee_c4.dtos.diagrams.container_diagram import (
+    GetContainerDiagramRequest,
+    GetContainerDiagramResponse,
+)
 
 
 class GetContainerDiagramUseCase:

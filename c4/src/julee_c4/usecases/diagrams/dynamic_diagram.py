@@ -1,12 +1,10 @@
-"""GetDynamicDiagramUseCase with co-located request/response.
+"""GetDynamicDiagramUseCase.
 
 Use case for computing a dynamic diagram.
 
 A Dynamic diagram shows how elements collaborate at runtime to
 accomplish a specific use case or scenario.
 """
-
-from pydantic import BaseModel, Field
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container
@@ -17,21 +15,10 @@ from julee_c4.domain.repositories.component import ComponentRepository
 from julee_c4.domain.repositories.container import ContainerRepository
 from julee_c4.domain.repositories.dynamic_step import DynamicStepRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
-
-
-class GetDynamicDiagramRequest(BaseModel):
-    """Request for generating a dynamic diagram."""
-
-    sequence_name: str = Field(description="Dynamic sequence to show")
-    format: str = Field(
-        default="plantuml", description="Output format: plantuml, structurizr, data"
-    )
-
-
-class GetDynamicDiagramResponse(BaseModel):
-    """Response from computing a dynamic diagram."""
-
-    diagram: DynamicDiagram | None
+from julee_c4.dtos.diagrams.dynamic_diagram import (
+    GetDynamicDiagramRequest,
+    GetDynamicDiagramResponse,
+)
 
 
 class GetDynamicDiagramUseCase:
