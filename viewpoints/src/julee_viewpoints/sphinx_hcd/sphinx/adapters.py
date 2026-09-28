@@ -7,9 +7,10 @@ Sphinx directives are synchronous, but our domain repositories are async
 import asyncio
 from typing import Any, Generic, Protocol, TypeVar, runtime_checkable
 
-from pydantic import BaseModel
-
-T = TypeVar("T", bound=BaseModel)
+# Unbounded: a domain entity is a frozen dataclass. Nothing here calls
+# a pydantic method — the adapter only moves entities across the async
+# boundary and never looks inside one.
+T = TypeVar("T")
 
 
 @runtime_checkable

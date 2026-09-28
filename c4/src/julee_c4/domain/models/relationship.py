@@ -3,12 +3,11 @@
 Connections between C4 elements representing interactions.
 """
 
+from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any
+from typing import cast
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Slug
-from pydantic import Field
 
 
 class ElementType(StrEnum):
@@ -20,23 +19,22 @@ class ElementType(StrEnum):
     COMPONENT = "component"
 
 
-def _name_it_after_its_ends(data: dict[str, Any]) -> Slug:
-    """Name a relationship after what it joins.
+DERIVE_IT = cast("Slug", "")
+"""A slug default, meaning "work it out from what the entity carries".
 
-    A relationship is identified by its two ends, which it already
-    carries, so its slug is derivable rather than something a caller
-    has to invent.
+An entity identified by something its author already knows has a
+derivable slug rather than one a caller has to invent. A caller may
+still name one, and several do.
 
-    This ran in ``model_post_init`` and wrote the slug with
-    ``object.__setattr__``, which reaches past validation: the derived
-    slug was the one value of the field that nothing checked. As a
-    default it is built the same way a given one is, by
-    :class:`~julee.core.entities.text.Slug`.
-    """
-    return Slug(f"{data['source_slug']}-to-{data['destination_slug']}")
+``Slug`` refuses an empty string, so the default cannot be a real one.
+It is a plain ``str`` until ``__post_init__`` replaces it, built there
+by :class:`~julee.core.entities.text.Slug` exactly as a given one is,
+and nothing observes it in between.
+"""
 
 
-class Relationship(Entity):
+@dataclass(frozen=True)
+class Relationship:
     """Relationship entity.
 
     Represents a connection between two C4 elements. Relationships have
@@ -60,11 +58,20 @@ class Relationship(Entity):
     destination_slug: Slug
     description: str = "Uses"
     technology: str = ""
-    tags: tuple[str, ...] = Field(default_factory=tuple)
+    tags: tuple[str, ...] = field(default_factory=tuple)
     bidirectional: bool = False
     docname: str = ""
-    slug: Slug = Field(default_factory=_name_it_after_its_ends)
-    """Derived from the two ends when not given; declared last so it can be."""
+    slug: Slug = DERIVE_IT
+    """Derived from the two ends unless given."""
+
+    def __post_init__(self) -> None:
+        """Name the relationship after its ends if it was not named."""
+        if not self.slug:
+            object.__setattr__(
+                self,
+                "slug",
+                Slug(f"{self.source_slug}-to-{self.destination_slug}"),
+            )
 
     @property
     def is_person_relationship(self) -> bool:

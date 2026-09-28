@@ -104,7 +104,6 @@ class TestGetSystemContextDiagramUseCase:
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug=Slug("customer-to-banking"),
                 source_type=ElementType.PERSON,
                 source_slug=Slug("customer"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
@@ -114,7 +113,6 @@ class TestGetSystemContextDiagramUseCase:
         )
         await relationship_repo.save(
             Relationship(
-                slug=Slug("banking-to-email"),
                 source_type=ElementType.SOFTWARE_SYSTEM,
                 source_slug=Slug("banking-system"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
@@ -124,7 +122,6 @@ class TestGetSystemContextDiagramUseCase:
         )
         await relationship_repo.save(
             Relationship(
-                slug=Slug("banking-to-crm"),
                 source_type=ElementType.SOFTWARE_SYSTEM,
                 source_slug=Slug("banking-system"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
@@ -233,7 +230,6 @@ class TestGetContainerDiagramUseCase:
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug=Slug("customer-to-web"),
                 source_type=ElementType.PERSON,
                 source_slug=Slug("customer"),
                 destination_type=ElementType.CONTAINER,
@@ -243,7 +239,6 @@ class TestGetContainerDiagramUseCase:
         )
         await relationship_repo.save(
             Relationship(
-                slug=Slug("web-to-api"),
                 source_type=ElementType.CONTAINER,
                 source_slug=Slug("web-app"),
                 destination_type=ElementType.CONTAINER,
@@ -253,7 +248,6 @@ class TestGetContainerDiagramUseCase:
         )
         await relationship_repo.save(
             Relationship(
-                slug=Slug("api-to-db"),
                 source_type=ElementType.CONTAINER,
                 source_slug=Slug("api-app"),
                 destination_type=ElementType.CONTAINER,
@@ -263,7 +257,6 @@ class TestGetContainerDiagramUseCase:
         )
         await relationship_repo.save(
             Relationship(
-                slug=Slug("api-to-email"),
                 source_type=ElementType.CONTAINER,
                 source_slug=Slug("api-app"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
@@ -383,7 +376,6 @@ class TestGetComponentDiagramUseCase:
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug=Slug("auth-to-user"),
                 source_type=ElementType.COMPONENT,
                 source_slug=Slug("auth-controller"),
                 destination_type=ElementType.COMPONENT,
@@ -393,7 +385,6 @@ class TestGetComponentDiagramUseCase:
         )
         await relationship_repo.save(
             Relationship(
-                slug=Slug("auth-to-account"),
                 source_type=ElementType.COMPONENT,
                 source_slug=Slug("auth-controller"),
                 destination_type=ElementType.COMPONENT,
@@ -478,7 +469,6 @@ class TestGetSystemLandscapeDiagramUseCase:
         # Relationships
         await relationship_repo.save(
             Relationship(
-                slug=Slug("customer-to-banking"),
                 source_type=ElementType.PERSON,
                 source_slug=Slug("customer"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
@@ -487,7 +477,6 @@ class TestGetSystemLandscapeDiagramUseCase:
         )
         await relationship_repo.save(
             Relationship(
-                slug=Slug("banking-to-insurance"),
                 source_type=ElementType.SOFTWARE_SYSTEM,
                 source_slug=Slug("banking-system"),
                 destination_type=ElementType.SOFTWARE_SYSTEM,
@@ -590,7 +579,6 @@ class TestGetDeploymentDiagramUseCase:
         # Container relationships
         await relationship_repo.save(
             Relationship(
-                slug=Slug("web-to-api"),
                 source_type=ElementType.CONTAINER,
                 source_slug=Slug("web-app"),
                 destination_type=ElementType.CONTAINER,
@@ -688,7 +676,6 @@ class TestGetDynamicDiagramUseCase:
         # Dynamic steps for login sequence
         await dynamic_step_repo.save(
             DynamicStep(
-                slug=Slug("login-1"),
                 sequence_name=Name("user-login"),
                 step_number=1,
                 source_type=ElementType.PERSON,
@@ -700,7 +687,6 @@ class TestGetDynamicDiagramUseCase:
         )
         await dynamic_step_repo.save(
             DynamicStep(
-                slug=Slug("login-2"),
                 sequence_name=Name("user-login"),
                 step_number=2,
                 source_type=ElementType.CONTAINER,
@@ -712,7 +698,6 @@ class TestGetDynamicDiagramUseCase:
         )
         await dynamic_step_repo.save(
             DynamicStep(
-                slug=Slug("login-3"),
                 sequence_name=Name("user-login"),
                 step_number=3,
                 source_type=ElementType.CONTAINER,

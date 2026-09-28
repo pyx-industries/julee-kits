@@ -3,12 +3,13 @@
 A grouping of related functionality within a container.
 """
 
-from julee.core.entities.entity import Entity
+from dataclasses import dataclass, field, replace
+
 from julee.core.entities.text import Name, Slug
-from pydantic import Field, computed_field
 
 
-class Component(Entity):
+@dataclass(frozen=True)
+class Component:
     """Component entity.
 
     A component is a grouping of related functionality encapsulated
@@ -24,10 +25,9 @@ class Component(Entity):
     technology: str = ""
     interface: str = ""
     code_path: str = ""
-    tags: tuple[str, ...] = Field(default_factory=tuple)
+    tags: tuple[str, ...] = field(default_factory=tuple)
     docname: str = ""
 
-    @computed_field  # type: ignore[prop-decorator]
     @property
     def name_normalized(self) -> str:
         """Normalized name for case-insensitive matching."""
@@ -66,4 +66,4 @@ class Component(Entity):
         """
         if self.has_tag(tag):
             return self
-        return self.model_copy(update={"tags": (*self.tags, tag)})
+        return replace(self, tags=(*self.tags, tag))

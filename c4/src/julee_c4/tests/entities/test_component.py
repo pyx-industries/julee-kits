@@ -2,6 +2,7 @@
 
 import pytest
 from julee.core.entities.text import Name, Slug
+from pydantic import TypeAdapter
 
 from julee_c4.domain.models.component import Component
 
@@ -162,7 +163,13 @@ class TestComponentTags:
 
 
 class TestComponentSerialization:
-    """Test serialization."""
+    """How an adapter turns one into something to store or send.
+
+    The entity does not serialise itself. It is a frozen dataclass
+    holding domain values, and turning that into JSON is the business
+    of whatever is writing the JSON — a repository, an API, a data
+    converter. TypeAdapter is what those use.
+    """
 
     def test_to_dict(self) -> None:
         """Test model can be serialized to dict."""
@@ -173,7 +180,7 @@ class TestComponentSerialization:
             system_slug=Slug("system"),
             technology="Python",
         )
-        data = component.model_dump()
+        data = TypeAdapter(Component).dump_python(component, mode="json")
         assert data["slug"] == "test"
         assert data["name"] == "Test Component"
         assert data["container_slug"] == "container"

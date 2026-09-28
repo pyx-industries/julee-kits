@@ -5,8 +5,7 @@ They are domain objects that can be serialized to different output formats
 (PlantUML, Structurizr DSL, etc.) by serializers.
 """
 
-from julee.core.entities.entity import Entity
-from pydantic import Field
+from dataclasses import dataclass, field
 
 from .component import Component
 from .container import Container
@@ -16,7 +15,8 @@ from .relationship import Relationship
 from .software_system import SoftwareSystem
 
 
-class PersonInfo(Entity):
+@dataclass(frozen=True)
+class PersonInfo:
     """Minimal person info for diagrams.
 
     Represents a user/actor in C4 diagrams. This is a lightweight
@@ -28,44 +28,48 @@ class PersonInfo(Entity):
     description: str = ""
 
 
-class SystemLandscapeDiagram(Entity):
+@dataclass(frozen=True)
+class SystemLandscapeDiagram:
     """Domain model for a C4 System Landscape diagram.
 
     Shows all software systems and their relationships at the highest level.
     """
 
-    systems: tuple[SoftwareSystem, ...] = Field(default_factory=tuple)
-    person_slugs: tuple[str, ...] = Field(default_factory=tuple)
-    relationships: tuple[Relationship, ...] = Field(default_factory=tuple)
+    systems: tuple[SoftwareSystem, ...] = field(default_factory=tuple)
+    person_slugs: tuple[str, ...] = field(default_factory=tuple)
+    relationships: tuple[Relationship, ...] = field(default_factory=tuple)
 
 
-class SystemContextDiagram(Entity):
+@dataclass(frozen=True)
+class SystemContextDiagram:
     """Domain model for a C4 System Context diagram.
 
     Shows a single system in context with its users and external systems.
     """
 
     system: SoftwareSystem
-    external_systems: tuple[SoftwareSystem, ...] = Field(default_factory=tuple)
-    person_slugs: tuple[str, ...] = Field(default_factory=tuple)
-    persons: tuple[PersonInfo, ...] = Field(default_factory=tuple)
-    relationships: tuple[Relationship, ...] = Field(default_factory=tuple)
+    external_systems: tuple[SoftwareSystem, ...] = field(default_factory=tuple)
+    person_slugs: tuple[str, ...] = field(default_factory=tuple)
+    persons: tuple[PersonInfo, ...] = field(default_factory=tuple)
+    relationships: tuple[Relationship, ...] = field(default_factory=tuple)
 
 
-class ContainerDiagram(Entity):
+@dataclass(frozen=True)
+class ContainerDiagram:
     """Domain model for a C4 Container diagram.
 
     Shows the containers within a software system.
     """
 
     system: SoftwareSystem
-    containers: tuple[Container, ...] = Field(default_factory=tuple)
-    external_systems: tuple[SoftwareSystem, ...] = Field(default_factory=tuple)
-    person_slugs: tuple[str, ...] = Field(default_factory=tuple)
-    relationships: tuple[Relationship, ...] = Field(default_factory=tuple)
+    containers: tuple[Container, ...] = field(default_factory=tuple)
+    external_systems: tuple[SoftwareSystem, ...] = field(default_factory=tuple)
+    person_slugs: tuple[str, ...] = field(default_factory=tuple)
+    relationships: tuple[Relationship, ...] = field(default_factory=tuple)
 
 
-class ComponentDiagram(Entity):
+@dataclass(frozen=True)
+class ComponentDiagram:
     """Domain model for a C4 Component diagram.
 
     Shows the components within a container.
@@ -73,34 +77,36 @@ class ComponentDiagram(Entity):
 
     system: SoftwareSystem
     container: Container
-    components: tuple[Component, ...] = Field(default_factory=tuple)
-    external_containers: tuple[Container, ...] = Field(default_factory=tuple)
-    external_systems: tuple[SoftwareSystem, ...] = Field(default_factory=tuple)
-    person_slugs: tuple[str, ...] = Field(default_factory=tuple)
-    relationships: tuple[Relationship, ...] = Field(default_factory=tuple)
+    components: tuple[Component, ...] = field(default_factory=tuple)
+    external_containers: tuple[Container, ...] = field(default_factory=tuple)
+    external_systems: tuple[SoftwareSystem, ...] = field(default_factory=tuple)
+    person_slugs: tuple[str, ...] = field(default_factory=tuple)
+    relationships: tuple[Relationship, ...] = field(default_factory=tuple)
 
 
-class DeploymentDiagram(Entity):
+@dataclass(frozen=True)
+class DeploymentDiagram:
     """Domain model for a C4 Deployment diagram.
 
     Shows the deployment infrastructure for an environment.
     """
 
     environment: str
-    nodes: tuple[DeploymentNode, ...] = Field(default_factory=tuple)
-    containers: tuple[Container, ...] = Field(default_factory=tuple)
-    relationships: tuple[Relationship, ...] = Field(default_factory=tuple)
+    nodes: tuple[DeploymentNode, ...] = field(default_factory=tuple)
+    containers: tuple[Container, ...] = field(default_factory=tuple)
+    relationships: tuple[Relationship, ...] = field(default_factory=tuple)
 
 
-class DynamicDiagram(Entity):
+@dataclass(frozen=True)
+class DynamicDiagram:
     """Domain model for a C4 Dynamic diagram.
 
     Shows a sequence of interactions for a specific scenario.
     """
 
     sequence_name: str
-    steps: tuple[DynamicStep, ...] = Field(default_factory=tuple)
-    systems: tuple[SoftwareSystem, ...] = Field(default_factory=tuple)
-    containers: tuple[Container, ...] = Field(default_factory=tuple)
-    components: tuple[Component, ...] = Field(default_factory=tuple)
-    person_slugs: tuple[str, ...] = Field(default_factory=tuple)
+    steps: tuple[DynamicStep, ...] = field(default_factory=tuple)
+    systems: tuple[SoftwareSystem, ...] = field(default_factory=tuple)
+    containers: tuple[Container, ...] = field(default_factory=tuple)
+    components: tuple[Component, ...] = field(default_factory=tuple)
+    person_slugs: tuple[str, ...] = field(default_factory=tuple)
