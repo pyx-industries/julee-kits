@@ -1,6 +1,6 @@
 """Generated CRUD use cases for SoftwareSystem.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
-from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
+from julee_c4.domain.models.software_system import SoftwareSystem
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
 
-
-class GetSoftwareSystemRequest(BaseModel):
-    """Request for getting a SoftwareSystem by slug."""
-
-    slug: str
-
-
-class GetSoftwareSystemResponse(BaseModel):
-    """Response for getting a SoftwareSystem."""
-
-    software_system: SoftwareSystem
+from ..dtos.crud_software_system import (
+    CreateSoftwareSystemRequest,
+    CreateSoftwareSystemResponse,
+    DeleteSoftwareSystemRequest,
+    DeleteSoftwareSystemResponse,
+    GetSoftwareSystemRequest,
+    GetSoftwareSystemResponse,
+    ListSoftwareSystemsRequest,
+    ListSoftwareSystemsResponse,
+    UpdateSoftwareSystemRequest,
+    UpdateSoftwareSystemResponse,
+)
 
 
 class GetSoftwareSystemUseCase(GetUseCase[SoftwareSystem, SoftwareSystemRepository]):
@@ -46,17 +46,6 @@ class GetSoftwareSystemUseCase(GetUseCase[SoftwareSystem, SoftwareSystemReposito
         return GetSoftwareSystemResponse(software_system=entity)
 
 
-class ListSoftwareSystemsRequest(BaseModel):
-    """Request for listing all SoftwareSystems."""
-
-
-class ListSoftwareSystemsResponse(BaseModel):
-    """Response for listing all SoftwareSystems."""
-
-    software_systems: list[SoftwareSystem]
-    total_count: int
-
-
 class ListSoftwareSystemsUseCase(ListUseCase[SoftwareSystem, SoftwareSystemRepository]):
     """List all SoftwareSystems."""
 
@@ -72,26 +61,6 @@ class ListSoftwareSystemsUseCase(ListUseCase[SoftwareSystem, SoftwareSystemRepos
         return ListSoftwareSystemsResponse(
             software_systems=entities, total_count=len(entities)
         )
-
-
-class CreateSoftwareSystemRequest(BaseModel):
-    """Request for creating a SoftwareSystem."""
-
-    slug: str
-    name: str
-    description: str = ""
-    system_type: SystemType = SystemType.INTERNAL
-    owner: str = ""
-    technology: str = ""
-    url: str = ""
-    tags: tuple[str, ...] = ()
-    docname: str = ""
-
-
-class CreateSoftwareSystemResponse(BaseModel):
-    """Response for creating a SoftwareSystem."""
-
-    software_system: SoftwareSystem
 
 
 class CreateSoftwareSystemUseCase(
@@ -125,30 +94,6 @@ class CreateSoftwareSystemUseCase(
         return CreateSoftwareSystemResponse(software_system=entity)
 
 
-class UpdateSoftwareSystemRequest(BaseModel):
-    """Request for updating a SoftwareSystem.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    name: str | None = None
-    description: str | None = None
-    system_type: SystemType | None = None
-    owner: str | None = None
-    technology: str | None = None
-    url: str | None = None
-    tags: tuple[str, ...] | None = None
-    docname: str | None = None
-
-
-class UpdateSoftwareSystemResponse(BaseModel):
-    """Response for updating a SoftwareSystem."""
-
-    software_system: SoftwareSystem
-
-
 class UpdateSoftwareSystemUseCase(
     UpdateUseCase[SoftwareSystem, SoftwareSystemRepository]
 ):
@@ -162,23 +107,8 @@ class UpdateSoftwareSystemUseCase(
         self, request: UpdateSoftwareSystemRequest
     ) -> UpdateSoftwareSystemResponse:
         """Execute the update software_system use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        entity = await self._update_by_id(request.slug, request.changes())
         return UpdateSoftwareSystemResponse(software_system=entity)
-
-
-class DeleteSoftwareSystemRequest(BaseModel):
-    """Request for deleting a SoftwareSystem by slug."""
-
-    slug: str
-
-
-class DeleteSoftwareSystemResponse(BaseModel):
-    """Response for deleting a SoftwareSystem."""
-
-    deleted: bool
 
 
 class DeleteSoftwareSystemUseCase(

@@ -1,12 +1,10 @@
-"""GetComponentDiagramUseCase with co-located request/response.
+"""GetComponentDiagramUseCase.
 
 Use case for computing a component diagram.
 
 A Component diagram shows the components that make up a container,
 plus the relationships between them.
 """
-
-from pydantic import BaseModel, Field
 
 from julee_c4.domain.models.container import Container
 from julee_c4.domain.models.diagrams import ComponentDiagram
@@ -16,21 +14,10 @@ from julee_c4.domain.repositories.component import ComponentRepository
 from julee_c4.domain.repositories.container import ContainerRepository
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
-
-
-class GetComponentDiagramRequest(BaseModel):
-    """Request for generating a component diagram."""
-
-    container_slug: str = Field(description="Container to show components for")
-    format: str = Field(
-        default="plantuml", description="Output format: plantuml, structurizr, data"
-    )
-
-
-class GetComponentDiagramResponse(BaseModel):
-    """Response from computing a component diagram."""
-
-    diagram: ComponentDiagram | None
+from julee_c4.dtos.diagrams.component_diagram import (
+    GetComponentDiagramRequest,
+    GetComponentDiagramResponse,
+)
 
 
 class GetComponentDiagramUseCase:

@@ -5,6 +5,10 @@
 # The output is committed, unlike a solution's, because a kit ships as a
 # wheel: what is not in the repository is not in the distribution.
 #
+# Two files come out per entity: the messages into dtos/ and the use
+# cases into usecases/. --out names the bounded context, not a layer
+# inside it, because the generator writes into both.
+#
 # The create fields mirror each entity's own fields, defaults included, so a
 # caller may name only what it knows. The slug is among them because a C4
 # element is identified by a slug read off its name, not by a key the
@@ -14,7 +18,7 @@
 # of the five kits must never delete; these entities are documentation,
 # and documentation that cannot forget goes stale.
 set -e
-out=src/julee_c4/usecases
+out=src/julee_c4
 gen() {
   uv run python -m julee.core.usecases.generate_crud \
     --entity "$1" --entity-module "julee_c4.domain.models.$2" \

@@ -1,4 +1,4 @@
-"""GetSystemContextDiagramUseCase with co-located request/response.
+"""GetSystemContextDiagramUseCase.
 
 Use case for computing a system context diagram.
 
@@ -6,28 +6,15 @@ A System Context diagram shows the software system in scope and its
 relationships with users (persons) and other software systems.
 """
 
-from pydantic import BaseModel, Field
-
 from julee_c4.domain.models.diagrams import SystemContextDiagram
 from julee_c4.domain.models.relationship import ElementType
 from julee_c4.domain.models.software_system import SoftwareSystem
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
-
-
-class GetSystemContextDiagramRequest(BaseModel):
-    """Request for generating a system context diagram."""
-
-    system_slug: str = Field(description="Software system to show context for")
-    format: str = Field(
-        default="plantuml", description="Output format: plantuml, structurizr, data"
-    )
-
-
-class GetSystemContextDiagramResponse(BaseModel):
-    """Response from computing a system context diagram."""
-
-    diagram: SystemContextDiagram | None
+from julee_c4.dtos.diagrams.system_context import (
+    GetSystemContextDiagramRequest,
+    GetSystemContextDiagramResponse,
+)
 
 
 class GetSystemContextDiagramUseCase:
