@@ -10,6 +10,7 @@ import logging
 from abc import abstractmethod
 from typing import Any
 
+from pydantic import TypeAdapter
 from temporalio import workflow
 
 from julee_polling.domain.calculators.new_data import NewDataCalculator
@@ -25,6 +26,12 @@ from julee_polling.infrastructure.temporal.proxies import (
 from julee_polling.usecases.poll_data import PollDataUseCase
 
 logger = logging.getLogger(__name__)
+
+_CONFIG = TypeAdapter(PollingConfig)
+"""Validates a schedule's serialised config back into the entity.
+
+A composition root is allowed to know pydantic; the entity is not.
+"""
 
 
 def _what_was_seen_last_time(
@@ -121,7 +128,7 @@ class NewDataDetectionPipeline:
         # Temporal schedules serialise arguments as dicts, so accept either
         # and work with the validated entity from here on.
         polling_config = (
-            PollingConfig.model_validate(config) if isinstance(config, dict) else config
+            _CONFIG.validate_python(config) if isinstance(config, dict) else config
         )
 
         self.endpoint_id = polling_config.endpoint_identifier

@@ -1,17 +1,15 @@
-"""
-Polling domain models.
+"""Polling domain models.
 
-This module contains the core domain models for polling operations,
-including configuration and result models.
+What a poll is configured with, and what it comes back with. Both are
+frozen dataclasses: the domain ring holds no pydantic, and these two
+cross a driven port, which speaks nothing else.
 """
 
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
-
-from julee.core.entities.entity import Entity
-from pydantic import Field
 
 
 class PollingProtocol(StrEnum):
@@ -27,26 +25,34 @@ class SchedulingPolicy(StrEnum):
     SKIP_IF_RUNNING = "skip_if_running"
 
 
-class PollingConfig(Entity):
+@dataclass(frozen=True)
+class PollingConfig:
     """Configuration for a polling operation."""
 
-    endpoint_identifier: str = Field(description="Unique identifier for this endpoint")
+    endpoint_identifier: str
+    """Unique identifier for this endpoint."""
+
     polling_protocol: PollingProtocol
-    connection_params: Mapping[str, Any] = Field(default_factory=dict)
-    polling_params: Mapping[str, Any] = Field(default_factory=dict)
-    timeout_seconds: int | None = Field(default=30)
-    scheduling_policy: SchedulingPolicy = Field(
-        default=SchedulingPolicy.ALLOW_OVERLAP,
-        description="Policy for handling overlapping polling operations",
-    )
+    connection_params: Mapping[str, Any] = field(default_factory=dict)
+    polling_params: Mapping[str, Any] = field(default_factory=dict)
+    timeout_seconds: int | None = 30
+
+    scheduling_policy: SchedulingPolicy = SchedulingPolicy.ALLOW_OVERLAP
+    """Policy for handling overlapping polling operations."""
 
 
-class PollingResult(Entity):
-    """Result of a polling operation."""
+@dataclass(frozen=True)
+class PollingResult:
+    """Result of a polling operation.
+
+    ``content_hash`` is set by whoever fetched the content, which is
+    the only party that saw the bytes before anything else touched
+    them. It is None when the poll did not succeed.
+    """
 
     success: bool
     content: bytes
-    metadata: Mapping[str, Any] = Field(default_factory=dict)
-    polled_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+    polled_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     content_hash: str | None = None
     error_message: str | None = None

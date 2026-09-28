@@ -10,6 +10,7 @@ import hashlib
 
 import httpx
 import pytest
+from pydantic import TypeAdapter
 
 from julee_polling.domain.models.polling_config import (
     PollingConfig,
@@ -260,7 +261,7 @@ class TestHttpPollerServicePollEndpoint:
             }
 
             # Convert dict to PollingConfig (simulating what the workflow does)
-            config = PollingConfig.model_validate(config_dict)
+            config = TypeAdapter(PollingConfig).validate_python(config_dict)
 
             result = await service.poll_endpoint(config)
 
