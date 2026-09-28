@@ -2,7 +2,7 @@
 
 from typing import Protocol, runtime_checkable
 
-from julee.repositories.base import BaseRepository, Deletable
+from julee.core.repositories.base import BaseRepository, Deletable
 
 from julee_c4.domain.models.component import Component
 

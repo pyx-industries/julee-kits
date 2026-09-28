@@ -19,7 +19,7 @@ dependencies = [
     # [doctrine] for griffe: this kit reads a solution's code to document
     # it, which is the whole point of it, and that is where the reader
     # lives.
-    "julee[doctrine]>=0.12,<0.13",
+    "julee[doctrine]>=0.13,<0.14",
     # The domain this kit renders. It holds no entities of its own: hcd
     # says what a persona is, c4 says what a container is, and this kit
     # projects both into documentation.
@@ -41,7 +41,7 @@ dev = [
     "types-docutils",
     "types-PyYAML",
     "ruff>=0.5.0",
-    "julee[doctrine]>=0.12,<0.13",
+    "julee[doctrine]>=0.13,<0.14",
 ]
 
 [project.entry-points."julee.kits"]

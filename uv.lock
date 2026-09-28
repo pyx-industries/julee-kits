@@ -1065,14 +1065,10 @@ wheels = [
 
 [[package]]
 name = "julee"
-version = "0.12.0"
-source = { registry = "https://pypi.org/simple" }
+version = "0.13.0"
+source = { git = "https://github.com/pyx-industries/julee.git?branch=deep-clean#7df42dcf1e70f38262b80c63d6ba0c683c9ed4e3" }
 dependencies = [
     { name = "pydantic" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/bb/80/f21365eb63730ead06189ce61e115e03d3266102dc55d052d879606be9f3/julee-0.12.0.tar.gz", hash = "sha256:9b743cba219958bbb9e7c6e9144426e4c1b93428389ea9ad3080cc076144e3c4", size = 225665, upload-time = "2026-09-27T06:28:35.824Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/56/950101dbc5472d1a0dee9502925aea39e70e76ccefbf1a9482ae0e5b846f/julee-0.12.0-py3-none-any.whl", hash = "sha256:97adb0444c5c9beeaa30acc5dad9d2c615d341365d45b1636cff19865846f3a3", size = 286768, upload-time = "2026-09-27T06:28:34.481Z" },
 ]
 
 [package.optional-dependencies]
@@ -1117,8 +1113,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "julee", specifier = ">=0.12,<0.13" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.12,<0.13" },
+    { name = "julee", git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1166,8 +1162,8 @@ requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.0.0" },
     { name = "jsonpointer", specifier = ">=3.0.0" },
     { name = "jsonschema", specifier = ">=4.0.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.12,<0.13" },
-    { name = "julee", extras = ["temporal", "api", "minio"], specifier = ">=0.12,<0.13" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
+    { name = "julee", extras = ["temporal", "api", "minio"], git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1208,8 +1204,8 @@ dev = [
 requires-dist = [
     { name = "docutils", specifier = ">=0.20" },
     { name = "jinja2", specifier = ">=3.1" },
-    { name = "julee", specifier = ">=0.12,<0.13" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.12,<0.13" },
+    { name = "julee", git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1244,8 +1240,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.12,<0.13" },
-    { name = "julee", extras = ["temporal"], specifier = ">=0.12,<0.13" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
+    { name = "julee", extras = ["temporal"], git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -1283,8 +1279,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "julee", extras = ["doctrine"], specifier = ">=0.12,<0.13" },
-    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", specifier = ">=0.12,<0.13" },
+    { name = "julee", extras = ["doctrine"], git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
+    { name = "julee", extras = ["doctrine"], marker = "extra == 'dev'", git = "https://github.com/pyx-industries/julee.git?branch=deep-clean" },
     { name = "julee-c4", editable = "c4" },
     { name = "julee-hcd", editable = "hcd" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
