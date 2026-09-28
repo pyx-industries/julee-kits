@@ -4,6 +4,8 @@ The dynamic diagram is covered here because it was the one path that read
 fields the model does not have, and nothing exercised it.
 """
 
+from dataclasses import replace
+
 import pytest
 from julee.core.entities.text import Name, Slug
 
@@ -28,14 +30,21 @@ pytestmark = pytest.mark.unit
 
 
 def _step(**overrides: object) -> DynamicStep:
-    """A step with the fields every dynamic step needs."""
+    """A step with the fields every dynamic step needs.
+
+    The slugs are built here rather than handed over as strings. A
+    frozen dataclass stores what it is given; pydantic used to convert
+    a string into a Slug on the way in, which is why this helper could
+    pass "api_app" and read back "apiapp". The type: ignore that let it
+    do so was hiding the mismatch, not tolerating it.
+    """
     fields: dict[str, object] = {
-        "sequence_name": "checkout",
+        "sequence_name": Name("checkout"),
         "step_number": 1,
         "source_type": ElementType.CONTAINER,
-        "source_slug": "api_app",
+        "source_slug": Slug("api_app"),
         "destination_type": ElementType.CONTAINER,
-        "destination_slug": "database",
+        "destination_slug": Slug("database"),
         "description": "Reads the basket",
     }
     fields.update(overrides)
@@ -76,9 +85,7 @@ def test_a_step_with_a_return_value_renders_the_way_back(
     diagram: DynamicDiagram,
 ) -> None:
     """A described return is drawn as a relationship back to the source."""
-    with_return = diagram.model_copy(
-        update={"steps": (_step(return_value="The basket"),)}
-    )
+    with_return = replace(diagram, steps=(_step(return_value="The basket"),))
 
     output = PlantUMLSerializer().serialize_dynamic_diagram(with_return)
 
@@ -128,7 +135,7 @@ def test_a_step_technology_is_carried_into_the_relationship(
     diagram: DynamicDiagram,
 ) -> None:
     """How a step happens belongs on the arrow that shows it happening."""
-    with_tech = diagram.model_copy(update={"steps": (_step(technology="HTTPS"),)})
+    with_tech = replace(diagram, steps=(_step(technology="HTTPS"),))
 
     output = PlantUMLSerializer().serialize_dynamic_diagram(with_tech)
 
@@ -173,10 +180,9 @@ def test_hyphenated_slugs_become_valid_plantuml_identifiers(
     diagram: DynamicDiagram,
 ) -> None:
     """A C4 slug is hyphenated; a PlantUML identifier may not be."""
-    hyphenated = diagram.model_copy(
-        update={
-            "steps": (_step(source_slug="api-app", destination_slug="the-database"),)
-        }
+    hyphenated = replace(
+        diagram,
+        steps=(_step(source_slug="api-app", destination_slug="the-database"),),
     )
 
     output = PlantUMLSerializer().serialize_dynamic_diagram(hyphenated)

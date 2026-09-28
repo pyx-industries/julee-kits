@@ -95,7 +95,6 @@ class CreateDynamicStepUseCase(CreateUseCase[DynamicStep, DynamicStepRepository]
             technology=request.technology,
             return_value=request.return_value,
             is_async=request.is_async,
-            tags=request.tags,
             docname=request.docname,
         )
         return CreateDynamicStepResponse(dynamic_step=entity)
