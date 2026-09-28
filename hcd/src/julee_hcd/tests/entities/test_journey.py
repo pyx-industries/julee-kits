@@ -236,27 +236,3 @@ class TestJourneyProperties:
         """Test display_title with multiple hyphens."""
         journey = Journey(slug=Slug("operate-data-pipelines"))
         assert journey.display_title == "Operate Data Pipelines"
-
-
-class TestJourneySerialization:
-    """Test Journey serialization."""
-
-    def test_journey_to_dict(self) -> None:
-        """Test journey can be serialized to dict."""
-        journey = Journey(
-            slug=Slug("test"),
-            persona="User",
-            steps=(JourneyStep.story("Test Story"),),
-        )
-
-        data = journey.model_dump()
-        assert data["slug"] == "test"
-        assert data["persona"] == "User"
-        assert len(data["steps"]) == 1
-        assert data["steps"][0]["step_type"] == StepType.STORY
-
-    def test_journey_to_json(self) -> None:
-        """Test journey can be serialized to JSON."""
-        journey = Journey(slug=Slug("test"), persona="User")
-        json_str = journey.model_dump_json()
-        assert '"slug":"test"' in json_str

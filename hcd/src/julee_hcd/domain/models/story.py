@@ -3,13 +3,15 @@
 Represents a user story extracted from a Gherkin .feature file.
 """
 
+from dataclasses import dataclass
+
 from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.utils import normalize_name, slugify
-from pydantic import Field, computed_field
 
 from .base import Authored
 
 
+@dataclass(frozen=True, kw_only=True)
 class Story(Authored):
     """A user story extracted from a Gherkin feature file.
 
@@ -17,35 +19,38 @@ class Story(Authored):
     They capture who wants to do what and why.
     """
 
-    slug: NonEmptyText = Field(
-        description="Identifier, app slug and feature title joined by --"
-    )
-    feature_title: Name = Field(description="The Feature: line from the Gherkin file")
-    persona: Name = Field(
-        default=Name("unknown"), description='The actor from "As a <persona>"'
-    )
-    i_want: str = Field(
-        default="do something", description='The action from "I want to <action>"'
-    )
-    so_that: str = Field(
-        default="achieve a goal", description='The benefit from "So that <benefit>"'
-    )
-    app_slug: Slug = Field(
-        default=Slug("unknown"), description="The application this story belongs to"
-    )
-    file_path: str = Field(description="Relative path to the .feature file")
-    abs_path: str = Field(default="", description="Absolute path to the .feature file")
-    gherkin_snippet: str = Field(
-        default="", description="The story header portion of the feature file"
-    )
+    slug: NonEmptyText
+    """Identifier, app slug and feature title joined by --."""
 
-    @computed_field  # type: ignore[prop-decorator]
+    feature_title: Name
+    """The Feature: line from the Gherkin file."""
+
+    file_path: str
+    """Relative path to the .feature file."""
+
+    persona: Name = Name("unknown")
+    """The actor from "As a <persona>"."""
+
+    i_want: str = "do something"
+    """The action from "I want to <action>"."""
+
+    so_that: str = "achieve a goal"
+    """The benefit from "So that <benefit>"."""
+
+    app_slug: Slug = Slug("unknown")
+    """The application this story belongs to."""
+
+    abs_path: str = ""
+    """Absolute path to the .feature file."""
+
+    gherkin_snippet: str = ""
+    """The story header portion of the feature file."""
+
     @property
     def persona_normalized(self) -> str:
         """Lowercase persona for matching, which is Name.normalized."""
         return self.persona.normalized
 
-    @computed_field  # type: ignore[prop-decorator]
     @property
     def app_normalized(self) -> str:
         """The app slug in the form names are compared in.

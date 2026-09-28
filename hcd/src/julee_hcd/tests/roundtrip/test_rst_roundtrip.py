@@ -7,6 +7,7 @@ repository that saves an entity, so byte equality is the bar, not
 equality of the parts this kit happens to model.
 """
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -85,7 +86,7 @@ async def test_an_edit_keeps_the_prose_around_it(epic_dir: Path) -> None:
     epic = await repo.get("onboarding")
     assert epic is not None
 
-    await repo.save(epic.model_copy(update={"description": "Rewritten."}))
+    await repo.save(replace(epic, description="Rewritten."))
     written = (epic_dir / "onboarding.rst").read_text()
 
     assert "Rewritten." in written

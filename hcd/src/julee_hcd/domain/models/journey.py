@@ -5,12 +5,11 @@ Journeys are defined via RST directives and track a persona's path
 through the system to achieve a goal.
 """
 
+from dataclasses import dataclass, replace
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import NonEmptyText, Slug
 from julee.core.utils import normalize_name
-from pydantic import Field, computed_field
 
 from .base import Authored
 
@@ -31,20 +30,22 @@ class StepType(StrEnum):
             raise ValueError(f"Invalid step type: {value}")
 
 
-class JourneyStep(Entity):
+@dataclass(frozen=True, kw_only=True)
+class JourneyStep:
     """A step within a journey.
 
     Steps can be stories (feature references), epics (epic references),
     or phases (grouping labels for subsequent steps).
     """
 
-    step_type: StepType = Field(description="The type of step (story, epic, phase)")
-    ref: NonEmptyText = Field(
-        description="Reference identifier (story title, epic slug, or phase title)"
-    )
-    description: str = Field(
-        default="", description="Optional description (primarily for phases)"
-    )
+    step_type: StepType
+    """The type of step (story, epic, phase)."""
+
+    ref: NonEmptyText
+    """Reference identifier (story title, epic slug, or phase title)."""
+
+    description: str = ""
+    """Optional description (primarily for phases)."""
 
     @classmethod
     def story(cls, title: str) -> "JourneyStep":
@@ -101,6 +102,7 @@ class JourneyStep(Entity):
         return self.step_type == StepType.PHASE
 
 
+@dataclass(frozen=True, kw_only=True)
 class Journey(Authored):
     """User journey entity.
 
@@ -109,31 +111,33 @@ class Journey(Authored):
     the sequence of steps they follow.
     """
 
-    slug: Slug = Field(description='URL-safe identifier (e.g., "build-vocabulary")')
-    persona: str = Field(default="", description="The persona undertaking this journey")
-    intent: str = Field(
-        default="", description="What the persona wants (their motivation)"
-    )
-    outcome: str = Field(
-        default="", description="What success looks like (business value)"
-    )
-    goal: str = Field(default="", description="Activity description (what they do)")
-    depends_on: tuple[Slug, ...] = Field(
-        default_factory=tuple, description="Journey slugs that must be completed first"
-    )
-    steps: tuple[JourneyStep, ...] = Field(
-        default_factory=tuple, description="Sequence of journey steps"
-    )
-    preconditions: tuple[str, ...] = Field(
-        default_factory=tuple,
-        description="Conditions that must be true before starting",
-    )
-    postconditions: tuple[str, ...] = Field(
-        default_factory=tuple,
-        description="Conditions that will be true after completion",
-    )
+    slug: Slug
+    """URL-safe identifier (e.g., "build-vocabulary")."""
 
-    @computed_field  # type: ignore[prop-decorator]
+    persona: str = ""
+    """The persona undertaking this journey."""
+
+    intent: str = ""
+    """What the persona wants (their motivation)."""
+
+    outcome: str = ""
+    """What success looks like (business value)."""
+
+    goal: str = ""
+    """Activity description (what they do)."""
+
+    depends_on: tuple[Slug, ...] = ()
+    """Journey slugs that must be completed first."""
+
+    steps: tuple[JourneyStep, ...] = ()
+    """Sequence of journey steps."""
+
+    preconditions: tuple[str, ...] = ()
+    """Conditions that must be true before starting."""
+
+    postconditions: tuple[str, ...] = ()
+    """Conditions that will be true after completion."""
+
     @property
     def persona_normalized(self) -> str:
         """Lowercase persona for matching.
@@ -180,7 +184,7 @@ class Journey(Authored):
         Args:
             step: JourneyStep to add
         """
-        return self.model_copy(update={"steps": (*self.steps, step)})
+        return replace(self, steps=(*self.steps, step))
 
     def get_story_refs(self) -> list[str]:
         """Get all story references from steps.

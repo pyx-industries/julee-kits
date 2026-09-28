@@ -1,6 +1,6 @@
 """Generated CRUD use cases for ContribModule.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
@@ -13,24 +13,24 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.contrib import ContribModule
 from julee_hcd.domain.repositories.contrib import ContribRepository
 
+from ..dtos.crud_contrib_module import (
+    CreateContribModuleRequest,
+    CreateContribModuleResponse,
+    DeleteContribModuleRequest,
+    DeleteContribModuleResponse,
+    GetContribModuleRequest,
+    GetContribModuleResponse,
+    ListContribModulesRequest,
+    ListContribModulesResponse,
+    UpdateContribModuleRequest,
+    UpdateContribModuleResponse,
+)
+
 ContribModuleRepository = ContribRepository
-
-
-class GetContribModuleRequest(BaseModel):
-    """Request for getting a ContribModule by slug."""
-
-    slug: str
-
-
-class GetContribModuleResponse(BaseModel):
-    """Response for getting a ContribModule."""
-
-    contrib_module: ContribModule
 
 
 class GetContribModuleUseCase(GetUseCase[ContribModule, ContribModuleRepository]):
@@ -48,17 +48,6 @@ class GetContribModuleUseCase(GetUseCase[ContribModule, ContribModuleRepository]
         return GetContribModuleResponse(contrib_module=entity)
 
 
-class ListContribModulesRequest(BaseModel):
-    """Request for listing all ContribModules."""
-
-
-class ListContribModulesResponse(BaseModel):
-    """Response for listing all ContribModules."""
-
-    contrib_modules: list[ContribModule]
-    total_count: int
-
-
 class ListContribModulesUseCase(ListUseCase[ContribModule, ContribModuleRepository]):
     """List all ContribModules."""
 
@@ -74,27 +63,6 @@ class ListContribModulesUseCase(ListUseCase[ContribModule, ContribModuleReposito
         return ListContribModulesResponse(
             contrib_modules=entities, total_count=len(entities)
         )
-
-
-class CreateContribModuleRequest(BaseModel):
-    """Request for creating a ContribModule."""
-
-    slug: str
-    name: str = ""
-    description: str = ""
-    technology: str = "Python"
-    code_path: str = ""
-    solution_slug: str = ""
-    docname: str = ""
-    page_title: str = ""
-    preamble_rst: str = ""
-    epilogue_rst: str = ""
-
-
-class CreateContribModuleResponse(BaseModel):
-    """Response for creating a ContribModule."""
-
-    contrib_module: ContribModule
 
 
 class CreateContribModuleUseCase(CreateUseCase[ContribModule, ContribModuleRepository]):
@@ -127,31 +95,6 @@ class CreateContribModuleUseCase(CreateUseCase[ContribModule, ContribModuleRepos
         return CreateContribModuleResponse(contrib_module=entity)
 
 
-class UpdateContribModuleRequest(BaseModel):
-    """Request for updating a ContribModule.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    name: str | None = None
-    description: str | None = None
-    technology: str | None = None
-    code_path: str | None = None
-    solution_slug: str | None = None
-    docname: str | None = None
-    page_title: str | None = None
-    preamble_rst: str | None = None
-    epilogue_rst: str | None = None
-
-
-class UpdateContribModuleResponse(BaseModel):
-    """Response for updating a ContribModule."""
-
-    contrib_module: ContribModule
-
-
 class UpdateContribModuleUseCase(UpdateUseCase[ContribModule, ContribModuleRepository]):
     """Update a ContribModule."""
 
@@ -163,23 +106,8 @@ class UpdateContribModuleUseCase(UpdateUseCase[ContribModule, ContribModuleRepos
         self, request: UpdateContribModuleRequest
     ) -> UpdateContribModuleResponse:
         """Execute the update contrib_module use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        entity = await self._update_by_id(request.slug, request.changes())
         return UpdateContribModuleResponse(contrib_module=entity)
-
-
-class DeleteContribModuleRequest(BaseModel):
-    """Request for deleting a ContribModule by slug."""
-
-    slug: str
-
-
-class DeleteContribModuleResponse(BaseModel):
-    """Response for deleting a ContribModule."""
-
-    deleted: bool
 
 
 class DeleteContribModuleUseCase(DeleteUseCase[ContribModule, ContribModuleRepository]):

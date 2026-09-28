@@ -103,7 +103,7 @@ class DefineJourneyDirective(HCDDirective):
 
         # Create and register journey entity
         journey = Journey(
-            slug=journey_slug,
+            slug=Slug(journey_slug),
             persona=persona,
             intent=intent,
             outcome=outcome,

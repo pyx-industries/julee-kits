@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.persona import Persona
@@ -57,8 +58,8 @@ class RstPersonaRepository(RstRepositoryMixin[Persona], PersonaRepository):
             name = data["slug"].replace("-", " ").title()
 
         return Persona(
-            slug=data["slug"],
-            name=name,
+            slug=Slug(data["slug"]),
+            name=Name(name),
             goals=tuple(parse_multiline_list(options.get("goals", ""))),
             frustrations=tuple(parse_multiline_list(options.get("frustrations", ""))),
             jobs_to_be_done=tuple(

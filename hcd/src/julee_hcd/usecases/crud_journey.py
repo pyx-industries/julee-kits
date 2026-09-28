@@ -1,6 +1,6 @@
 """Generated CRUD use cases for Journey.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
-from julee_hcd.domain.models.journey import Journey, JourneyStep
+from julee_hcd.domain.models.journey import Journey
 from julee_hcd.domain.repositories.journey import JourneyRepository
 
-
-class GetJourneyRequest(BaseModel):
-    """Request for getting a Journey by slug."""
-
-    slug: str
-
-
-class GetJourneyResponse(BaseModel):
-    """Response for getting a Journey."""
-
-    journey: Journey
+from ..dtos.crud_journey import (
+    CreateJourneyRequest,
+    CreateJourneyResponse,
+    DeleteJourneyRequest,
+    DeleteJourneyResponse,
+    GetJourneyRequest,
+    GetJourneyResponse,
+    ListJourneysRequest,
+    ListJourneysResponse,
+    UpdateJourneyRequest,
+    UpdateJourneyResponse,
+)
 
 
 class GetJourneyUseCase(GetUseCase[Journey, JourneyRepository]):
@@ -44,17 +44,6 @@ class GetJourneyUseCase(GetUseCase[Journey, JourneyRepository]):
         return GetJourneyResponse(journey=entity)
 
 
-class ListJourneysRequest(BaseModel):
-    """Request for listing all Journeys."""
-
-
-class ListJourneysResponse(BaseModel):
-    """Response for listing all Journeys."""
-
-    journeys: list[Journey]
-    total_count: int
-
-
 class ListJourneysUseCase(ListUseCase[Journey, JourneyRepository]):
     """List all Journeys."""
 
@@ -66,31 +55,6 @@ class ListJourneysUseCase(ListUseCase[Journey, JourneyRepository]):
         """Execute the list journeys use case."""
         entities = await self._list_all()
         return ListJourneysResponse(journeys=entities, total_count=len(entities))
-
-
-class CreateJourneyRequest(BaseModel):
-    """Request for creating a Journey."""
-
-    slug: str
-    persona: str = ""
-    intent: str = ""
-    outcome: str = ""
-    goal: str = ""
-    depends_on: tuple[str, ...] = ()
-    steps: tuple[JourneyStep, ...] = ()
-    preconditions: tuple[str, ...] = ()
-    postconditions: tuple[str, ...] = ()
-    solution_slug: str = ""
-    docname: str = ""
-    page_title: str = ""
-    preamble_rst: str = ""
-    epilogue_rst: str = ""
-
-
-class CreateJourneyResponse(BaseModel):
-    """Response for creating a Journey."""
-
-    journey: Journey
 
 
 class CreateJourneyUseCase(CreateUseCase[Journey, JourneyRepository]):
@@ -125,35 +89,6 @@ class CreateJourneyUseCase(CreateUseCase[Journey, JourneyRepository]):
         return CreateJourneyResponse(journey=entity)
 
 
-class UpdateJourneyRequest(BaseModel):
-    """Request for updating a Journey.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    persona: str | None = None
-    intent: str | None = None
-    outcome: str | None = None
-    goal: str | None = None
-    depends_on: tuple[str, ...] | None = None
-    steps: tuple[JourneyStep, ...] | None = None
-    preconditions: tuple[str, ...] | None = None
-    postconditions: tuple[str, ...] | None = None
-    solution_slug: str | None = None
-    docname: str | None = None
-    page_title: str | None = None
-    preamble_rst: str | None = None
-    epilogue_rst: str | None = None
-
-
-class UpdateJourneyResponse(BaseModel):
-    """Response for updating a Journey."""
-
-    journey: Journey
-
-
 class UpdateJourneyUseCase(UpdateUseCase[Journey, JourneyRepository]):
     """Update a Journey."""
 
@@ -163,23 +98,8 @@ class UpdateJourneyUseCase(UpdateUseCase[Journey, JourneyRepository]):
 
     async def execute(self, request: UpdateJourneyRequest) -> UpdateJourneyResponse:
         """Execute the update journey use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        entity = await self._update_by_id(request.slug, request.changes())
         return UpdateJourneyResponse(journey=entity)
-
-
-class DeleteJourneyRequest(BaseModel):
-    """Request for deleting a Journey by slug."""
-
-    slug: str
-
-
-class DeleteJourneyResponse(BaseModel):
-    """Response for deleting a Journey."""
-
-    deleted: bool
 
 
 class DeleteJourneyUseCase(DeleteUseCase[Journey, JourneyRepository]):

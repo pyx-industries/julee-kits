@@ -10,37 +10,34 @@ feature file — still has them, because it may later be written back into
 a document alongside the ones that were authored.
 """
 
-from julee.core.entities.entity import Entity
-from pydantic import Field
+from dataclasses import dataclass
 
 
-class Authored(Entity):
+@dataclass(frozen=True, kw_only=True)
+class Authored:
     """An entity a person wrote into a document, and can be written back.
 
     The RST fields exist so a round-trip is lossless: reading a document
     into entities and writing it out again should give back the document,
     including the parts this kit does not model.
+
+    Keyword-only, and so is every entity built on it. Its five fields all
+    have defaults and every entity adds required ones after them, which a
+    positional dataclass refuses. Nothing constructs one positionally.
     """
 
-    solution_slug: str = Field(
-        default="",
-        description=(
-            "Slug of the solution this belongs to, for a site documenting more than one"
-        ),
-    )
-    docname: str = Field(
-        default="",
-        description="RST document this was read from, for incremental builds",
-    )
-    page_title: str = Field(
-        default="",
-        description="Title of the document, when it differs from the entity's own",
-    )
-    preamble_rst: str = Field(
-        default="",
-        description="Verbatim RST that preceded the directive, kept for round-trip",
-    )
-    epilogue_rst: str = Field(
-        default="",
-        description="Verbatim RST that followed the directive, kept for round-trip",
-    )
+    solution_slug: str = ""
+    """Slug of the solution this belongs to, for a site documenting more
+    than one."""
+
+    docname: str = ""
+    """RST document this was read from, for incremental builds."""
+
+    page_title: str = ""
+    """Title of the document, when it differs from the entity's own."""
+
+    preamble_rst: str = ""
+    """Verbatim RST that preceded the directive, kept for round-trip."""
+
+    epilogue_rst: str = ""
+    """Verbatim RST that followed the directive, kept for round-trip."""

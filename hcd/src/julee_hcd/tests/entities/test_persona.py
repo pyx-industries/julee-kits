@@ -160,28 +160,3 @@ class TestPersonaMethods:
         initial_count = sample_persona.epic_count
         sample_persona = sample_persona.with_epic("vocabulary-management")
         assert sample_persona.epic_count == initial_count
-
-
-class TestPersonaSerialization:
-    """Test Persona serialization."""
-
-    def test_persona_to_dict(self) -> None:
-        """Test persona can be serialized to dict."""
-        persona = Persona(
-            name=Name("Test Persona"),
-            app_slugs=(Slug("app-1"),),
-            epic_slugs=(Slug("epic-1"),),
-        )
-
-        data = persona.model_dump()
-        assert data["name"] == "Test Persona"
-        assert data["app_slugs"] == ("app-1",)
-        assert data["epic_slugs"] == ("epic-1",)
-        assert data["normalized_name"] == "test persona"
-
-    def test_persona_to_json(self) -> None:
-        """Test persona can be serialized to JSON."""
-        persona = Persona(name=Name("Test Persona"))
-        json_str = persona.model_dump_json()
-        assert '"name":"Test Persona"' in json_str
-        assert '"normalized_name":"test persona"' in json_str
