@@ -30,6 +30,7 @@ from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
 
 from julee_polling.apps.worker.pipelines import NewDataDetectionPipeline
+from julee_polling.domain.models.handoff import Handoff
 from julee_polling.domain.models.polling_config import (
     PollingConfig,
     PollingProtocol,
@@ -367,8 +368,13 @@ class TestNewDataDetectionPipelineErrorHandling:
     async def test_handler_failure_does_not_fail_workflow(
         self, workflow_env, sample_config
     ):
-        """A handler that raises does not lose the poll: the run completes,
-        so the next one still has something to compare against."""
+        """A handler that raises does not fail the run, and does not
+        advance the baseline either.
+
+        Nobody was told, so the obligation stands. Recording the new
+        hash would say it had been discharged, and the next run would
+        see no change and never try again.
+        """
         async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
             with last_completion(None):
                 handle = await start_pipeline(
@@ -377,7 +383,34 @@ class TestNewDataDetectionPipelineErrorHandling:
                 result = await handle.result()
 
         assert result["detection_result"]["has_new_data"] is True
-        assert result["polling_result"]["content_hash"] == content_hash(FIRST_CONTENT)
+        assert result["detection_result"]["handoff"] == Handoff.FAILED.value
+        assert result["polling_result"]["content_hash"] is None
+
+    async def test_a_failed_handoff_is_tried_again_next_run(
+        self, workflow_env, sample_config
+    ):
+        """The point of not advancing the baseline.
+
+        A run whose handler failed leaves the content unseen, so the
+        next run over the same content still finds it new and hands it
+        over. Before the baseline was held back, the second run
+        compared against a hash nobody had acted on and did nothing.
+        """
+        async with worker(
+            workflow_env, poll_endpoint_returning(FIRST_CONTENT, FIRST_CONTENT)
+        ):
+            with last_completion(None):
+                handle = await start_pipeline(
+                    workflow_env, sample_config, FailingHandlerPipeline
+                )
+                failed = await handle.result()
+
+            second, handled = await run_pipeline(workflow_env, sample_config, failed)
+
+        assert second["detection_result"]["has_new_data"] is True
+        assert [call["content_hash"] for call in handled] == [
+            content_hash(FIRST_CONTENT)
+        ]
 
 
 class TestNewDataDetectionPipelineIntegration:
