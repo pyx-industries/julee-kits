@@ -1,6 +1,6 @@
 """Generated CRUD use cases for Container.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
-from julee_c4.domain.models.container import Container, ContainerType
+from julee_c4.domain.models.container import Container
 from julee_c4.domain.repositories.container import ContainerRepository
 
-
-class GetContainerRequest(BaseModel):
-    """Request for getting a Container by slug."""
-
-    slug: str
-
-
-class GetContainerResponse(BaseModel):
-    """Response for getting a Container."""
-
-    container: Container
+from ..dtos.crud_container import (
+    CreateContainerRequest,
+    CreateContainerResponse,
+    DeleteContainerRequest,
+    DeleteContainerResponse,
+    GetContainerRequest,
+    GetContainerResponse,
+    ListContainersRequest,
+    ListContainersResponse,
+    UpdateContainerRequest,
+    UpdateContainerResponse,
+)
 
 
 class GetContainerUseCase(GetUseCase[Container, ContainerRepository]):
@@ -44,17 +44,6 @@ class GetContainerUseCase(GetUseCase[Container, ContainerRepository]):
         return GetContainerResponse(container=entity)
 
 
-class ListContainersRequest(BaseModel):
-    """Request for listing all Containers."""
-
-
-class ListContainersResponse(BaseModel):
-    """Response for listing all Containers."""
-
-    containers: list[Container]
-    total_count: int
-
-
 class ListContainersUseCase(ListUseCase[Container, ContainerRepository]):
     """List all Containers."""
 
@@ -66,26 +55,6 @@ class ListContainersUseCase(ListUseCase[Container, ContainerRepository]):
         """Execute the list containers use case."""
         entities = await self._list_all()
         return ListContainersResponse(containers=entities, total_count=len(entities))
-
-
-class CreateContainerRequest(BaseModel):
-    """Request for creating a Container."""
-
-    slug: str
-    name: str
-    system_slug: str
-    description: str = ""
-    container_type: ContainerType = ContainerType.OTHER
-    technology: str = ""
-    url: str = ""
-    tags: tuple[str, ...] = ()
-    docname: str = ""
-
-
-class CreateContainerResponse(BaseModel):
-    """Response for creating a Container."""
-
-    container: Container
 
 
 class CreateContainerUseCase(CreateUseCase[Container, ContainerRepository]):
@@ -115,30 +84,6 @@ class CreateContainerUseCase(CreateUseCase[Container, ContainerRepository]):
         return CreateContainerResponse(container=entity)
 
 
-class UpdateContainerRequest(BaseModel):
-    """Request for updating a Container.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    name: str | None = None
-    system_slug: str | None = None
-    description: str | None = None
-    container_type: ContainerType | None = None
-    technology: str | None = None
-    url: str | None = None
-    tags: tuple[str, ...] | None = None
-    docname: str | None = None
-
-
-class UpdateContainerResponse(BaseModel):
-    """Response for updating a Container."""
-
-    container: Container
-
-
 class UpdateContainerUseCase(UpdateUseCase[Container, ContainerRepository]):
     """Update a Container."""
 
@@ -148,23 +93,8 @@ class UpdateContainerUseCase(UpdateUseCase[Container, ContainerRepository]):
 
     async def execute(self, request: UpdateContainerRequest) -> UpdateContainerResponse:
         """Execute the update container use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        entity = await self._update_by_id(request.slug, request.changes())
         return UpdateContainerResponse(container=entity)
-
-
-class DeleteContainerRequest(BaseModel):
-    """Request for deleting a Container by slug."""
-
-    slug: str
-
-
-class DeleteContainerResponse(BaseModel):
-    """Response for deleting a Container."""
-
-    deleted: bool
 
 
 class DeleteContainerUseCase(DeleteUseCase[Container, ContainerRepository]):

@@ -1,6 +1,6 @@
 """Generated CRUD use cases for DeploymentNode.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
-from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
+from julee_c4.domain.models.deployment_node import DeploymentNode
 from julee_c4.domain.repositories.deployment_node import DeploymentNodeRepository
 
-
-class GetDeploymentNodeRequest(BaseModel):
-    """Request for getting a DeploymentNode by slug."""
-
-    slug: str
-
-
-class GetDeploymentNodeResponse(BaseModel):
-    """Response for getting a DeploymentNode."""
-
-    deployment_node: DeploymentNode
+from ..dtos.crud_deployment_node import (
+    CreateDeploymentNodeRequest,
+    CreateDeploymentNodeResponse,
+    DeleteDeploymentNodeRequest,
+    DeleteDeploymentNodeResponse,
+    GetDeploymentNodeRequest,
+    GetDeploymentNodeResponse,
+    ListDeploymentNodesRequest,
+    ListDeploymentNodesResponse,
+    UpdateDeploymentNodeRequest,
+    UpdateDeploymentNodeResponse,
+)
 
 
 class GetDeploymentNodeUseCase(GetUseCase[DeploymentNode, DeploymentNodeRepository]):
@@ -46,17 +46,6 @@ class GetDeploymentNodeUseCase(GetUseCase[DeploymentNode, DeploymentNodeReposito
         return GetDeploymentNodeResponse(deployment_node=entity)
 
 
-class ListDeploymentNodesRequest(BaseModel):
-    """Request for listing all DeploymentNodes."""
-
-
-class ListDeploymentNodesResponse(BaseModel):
-    """Response for listing all DeploymentNodes."""
-
-    deployment_nodes: list[DeploymentNode]
-    total_count: int
-
-
 class ListDeploymentNodesUseCase(ListUseCase[DeploymentNode, DeploymentNodeRepository]):
     """List all DeploymentNodes."""
 
@@ -72,27 +61,6 @@ class ListDeploymentNodesUseCase(ListUseCase[DeploymentNode, DeploymentNodeRepos
         return ListDeploymentNodesResponse(
             deployment_nodes=entities, total_count=len(entities)
         )
-
-
-class CreateDeploymentNodeRequest(BaseModel):
-    """Request for creating a DeploymentNode."""
-
-    slug: str
-    name: str
-    environment: str = "production"
-    node_type: NodeType = NodeType.OTHER
-    description: str = ""
-    technology: str = ""
-    instances: int = 1
-    parent_slug: str | None = None
-    tags: tuple[str, ...] = ()
-    docname: str = ""
-
-
-class CreateDeploymentNodeResponse(BaseModel):
-    """Response for creating a DeploymentNode."""
-
-    deployment_node: DeploymentNode
 
 
 class CreateDeploymentNodeUseCase(
@@ -127,31 +95,6 @@ class CreateDeploymentNodeUseCase(
         return CreateDeploymentNodeResponse(deployment_node=entity)
 
 
-class UpdateDeploymentNodeRequest(BaseModel):
-    """Request for updating a DeploymentNode.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    name: str | None = None
-    environment: str | None = None
-    node_type: NodeType | None = None
-    description: str | None = None
-    technology: str | None = None
-    instances: int | None = None
-    parent_slug: str | None = None
-    tags: tuple[str, ...] | None = None
-    docname: str | None = None
-
-
-class UpdateDeploymentNodeResponse(BaseModel):
-    """Response for updating a DeploymentNode."""
-
-    deployment_node: DeploymentNode
-
-
 class UpdateDeploymentNodeUseCase(
     UpdateUseCase[DeploymentNode, DeploymentNodeRepository]
 ):
@@ -165,23 +108,8 @@ class UpdateDeploymentNodeUseCase(
         self, request: UpdateDeploymentNodeRequest
     ) -> UpdateDeploymentNodeResponse:
         """Execute the update deployment_node use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        entity = await self._update_by_id(request.slug, request.changes())
         return UpdateDeploymentNodeResponse(deployment_node=entity)
-
-
-class DeleteDeploymentNodeRequest(BaseModel):
-    """Request for deleting a DeploymentNode by slug."""
-
-    slug: str
-
-
-class DeleteDeploymentNodeResponse(BaseModel):
-    """Response for deleting a DeploymentNode."""
-
-    deleted: bool
 
 
 class DeleteDeploymentNodeUseCase(

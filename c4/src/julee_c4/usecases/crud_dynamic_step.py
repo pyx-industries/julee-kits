@@ -1,6 +1,6 @@
 """Generated CRUD use cases for DynamicStep.
 
-Do not edit — regenerate with make generate-crud.
+Do not edit — regenerate with generate-crud.sh.
 """
 
 from typing import Any
@@ -13,22 +13,22 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
-from pydantic import BaseModel
 
-from julee_c4.domain.models.dynamic_step import DynamicStep, ElementType
+from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.repositories.dynamic_step import DynamicStepRepository
 
-
-class GetDynamicStepRequest(BaseModel):
-    """Request for getting a DynamicStep by slug."""
-
-    slug: str
-
-
-class GetDynamicStepResponse(BaseModel):
-    """Response for getting a DynamicStep."""
-
-    dynamic_step: DynamicStep
+from ..dtos.crud_dynamic_step import (
+    CreateDynamicStepRequest,
+    CreateDynamicStepResponse,
+    DeleteDynamicStepRequest,
+    DeleteDynamicStepResponse,
+    GetDynamicStepRequest,
+    GetDynamicStepResponse,
+    ListDynamicStepsRequest,
+    ListDynamicStepsResponse,
+    UpdateDynamicStepRequest,
+    UpdateDynamicStepResponse,
+)
 
 
 class GetDynamicStepUseCase(GetUseCase[DynamicStep, DynamicStepRepository]):
@@ -42,17 +42,6 @@ class GetDynamicStepUseCase(GetUseCase[DynamicStep, DynamicStepRepository]):
         """Execute the get dynamic_step use case."""
         entity = await self._get_by_id(request.slug)
         return GetDynamicStepResponse(dynamic_step=entity)
-
-
-class ListDynamicStepsRequest(BaseModel):
-    """Request for listing all DynamicSteps."""
-
-
-class ListDynamicStepsResponse(BaseModel):
-    """Response for listing all DynamicSteps."""
-
-    dynamic_steps: list[DynamicStep]
-    total_count: int
 
 
 class ListDynamicStepsUseCase(ListUseCase[DynamicStep, DynamicStepRepository]):
@@ -72,30 +61,6 @@ class ListDynamicStepsUseCase(ListUseCase[DynamicStep, DynamicStepRepository]):
         )
 
 
-class CreateDynamicStepRequest(BaseModel):
-    """Request for creating a DynamicStep."""
-
-    slug: str = ""
-    sequence_name: str
-    step_number: int
-    source_type: ElementType
-    source_slug: str
-    destination_type: ElementType
-    destination_slug: str
-    description: str = ""
-    technology: str = ""
-    return_value: str = ""
-    is_async: bool = False
-    tags: tuple[str, ...] = ()
-    docname: str = ""
-
-
-class CreateDynamicStepResponse(BaseModel):
-    """Response for creating a DynamicStep."""
-
-    dynamic_step: DynamicStep
-
-
 class CreateDynamicStepUseCase(CreateUseCase[DynamicStep, DynamicStepRepository]):
     """Create a new DynamicStep."""
 
@@ -106,12 +71,12 @@ class CreateDynamicStepUseCase(CreateUseCase[DynamicStep, DynamicStepRepository]
     def _build_entity(self, entity_id: str, **kwargs: Any) -> DynamicStep:
         """Construct a DynamicStep from a generated ID and request fields.
 
-        A request that names no slug leaves the entity to derive
-        one from its place in the sequence, so the field is left out rather than
-        passed empty.
+        A request that names no slug leaves the entity to work
+        one out, so the field is left out rather than passed empty.
         """
         if not entity_id:
             return DynamicStep(**kwargs)
+
         return DynamicStep(slug=Slug(entity_id), **kwargs)
 
     async def execute(
@@ -136,34 +101,6 @@ class CreateDynamicStepUseCase(CreateUseCase[DynamicStep, DynamicStepRepository]
         return CreateDynamicStepResponse(dynamic_step=entity)
 
 
-class UpdateDynamicStepRequest(BaseModel):
-    """Request for updating a DynamicStep.
-
-    Every field but slug is optional: name the ones to change and the
-    rest are left as they are.
-    """
-
-    slug: str
-    sequence_name: str | None = None
-    step_number: int | None = None
-    source_type: ElementType | None = None
-    source_slug: str | None = None
-    destination_type: ElementType | None = None
-    destination_slug: str | None = None
-    description: str | None = None
-    technology: str | None = None
-    return_value: str | None = None
-    is_async: bool | None = None
-    tags: tuple[str, ...] | None = None
-    docname: str | None = None
-
-
-class UpdateDynamicStepResponse(BaseModel):
-    """Response for updating a DynamicStep."""
-
-    dynamic_step: DynamicStep
-
-
 class UpdateDynamicStepUseCase(UpdateUseCase[DynamicStep, DynamicStepRepository]):
     """Update a DynamicStep."""
 
@@ -175,23 +112,8 @@ class UpdateDynamicStepUseCase(UpdateUseCase[DynamicStep, DynamicStepRepository]
         self, request: UpdateDynamicStepRequest
     ) -> UpdateDynamicStepResponse:
         """Execute the update dynamic_step use case."""
-        entity = await self._update_by_id(
-            request.slug,
-            request.model_dump(exclude={"slug"}, exclude_unset=True),
-        )
+        entity = await self._update_by_id(request.slug, request.changes())
         return UpdateDynamicStepResponse(dynamic_step=entity)
-
-
-class DeleteDynamicStepRequest(BaseModel):
-    """Request for deleting a DynamicStep by slug."""
-
-    slug: str
-
-
-class DeleteDynamicStepResponse(BaseModel):
-    """Response for deleting a DynamicStep."""
-
-    deleted: bool
 
 
 class DeleteDynamicStepUseCase(DeleteUseCase[DynamicStep, DynamicStepRepository]):
