@@ -13,7 +13,7 @@ being one of this kit's own authored entities.
 from typing import Protocol, runtime_checkable
 
 from julee.core.entities.accelerator import Accelerator
-from julee.repositories.base import BaseRepository
+from julee.core.repositories.base import BaseRepository
 
 
 @runtime_checkable
