@@ -138,7 +138,7 @@ class ValidateDocumentUseCase:
         validation = await self.validate_document(
             request.document_id, request.policy_id
         )
-        return ValidateDocumentResponse(validation=validation)
+        return ValidateDocumentResponse.of(validation)
 
     async def validate_document(
         self, document_id: str, policy_id: str

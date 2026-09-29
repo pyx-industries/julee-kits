@@ -12,7 +12,10 @@ from datetime import timedelta
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
-from julee_ceap.domain.models.policy import DocumentPolicyValidation
+from julee_ceap.dtos.validate_document import (
+    ValidateDocumentRequest,
+    ValidateDocumentResponse,
+)
 from julee_ceap.infrastructure.repositories.temporal.proxies import (
     WorkflowDocumentRepositoryProxy,
     WorkflowKnowledgeServiceConfigRepositoryProxy,
@@ -35,7 +38,7 @@ class ValidateDocumentWorkflow:
     1. Receives document_id and policy_id
     2. Orchestrates the ValidateDocumentUseCase with workflow-safe proxies
     3. Provides durability and retry logic for validation processing
-    4. Returns the completed DocumentPolicyValidation object
+    4. Returns what came of it: the id, the status and the verdict
 
     The workflow remains framework-agnostic by delegating all business logic
     to the use case, while providing Temporal-specific orchestration concerns
@@ -57,7 +60,7 @@ class ValidateDocumentWorkflow:
         return self.validation_id
 
     @workflow.run
-    async def run(self, document_id: str, policy_id: str) -> DocumentPolicyValidation:
+    async def run(self, document_id: str, policy_id: str) -> ValidateDocumentResponse:
         """
         Execute the document validation workflow.
 
@@ -66,7 +69,13 @@ class ValidateDocumentWorkflow:
             policy_id: ID of the policy to validate against
 
         Returns:
-            Completed DocumentPolicyValidation object with validation results
+            What came of the validation: the id, the status and the
+            verdict.
+
+            Not the DocumentPolicyValidation entity. Temporal writes
+            a workflow's result into history, so returning the entity
+            made its shape a durable contract replayed long
+            afterwards.
 
         Raises:
             ValueError: If required entities are not found
@@ -153,13 +162,18 @@ class ValidateDocumentWorkflow:
             # Execute the validation process with workflow durability
             # All repository calls inside the use case will be executed as
             # Temporal activities with automatic retry and state persistence
-            validation = await use_case.validate_document(
-                document_id=document_id,
-                policy_id=policy_id,
+            # Through execute(), the use case's front door, so what
+            # comes back is the message it means to send rather than
+            # the record it keeps.
+            validated = await use_case.execute(
+                ValidateDocumentRequest(
+                    document_id=document_id,
+                    policy_id=policy_id,
+                )
             )
 
             # Store the validation ID for queries
-            self.validation_id = validation.validation_id
+            self.validation_id = validated.validation_id
 
             self.current_step = "completed"
 
@@ -168,13 +182,13 @@ class ValidateDocumentWorkflow:
                 extra={
                     "document_id": document_id,
                     "policy_id": policy_id,
-                    "validation_id": validation.validation_id,
-                    "status": validation.status.value,
-                    "passed": validation.passed,
+                    "validation_id": validated.validation_id,
+                    "status": validated.status.value,
+                    "passed": validated.passed,
                 },
             )
 
-            return validation
+            return validated
 
         except Exception as e:
             self.current_step = "failed"

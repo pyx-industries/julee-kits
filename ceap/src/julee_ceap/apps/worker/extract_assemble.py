@@ -14,7 +14,10 @@ from julee.integrations.temporal.execution import TemporalExecutionWitness
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
-from julee_ceap.domain.models.assembly import Assembly
+from julee_ceap.dtos.extract_assemble_data import (
+    ExtractAssembleDataRequest,
+    ExtractAssembleDataResponse,
+)
 from julee_ceap.infrastructure.calculators.schema import (
     LibrarySchemaCalculator,
 )
@@ -65,7 +68,9 @@ class ExtractAssembleWorkflow:
         return self.assembly_id
 
     @workflow.run
-    async def run(self, document_id: str, assembly_specification_id: str) -> Assembly:
+    async def run(
+        self, document_id: str, assembly_specification_id: str
+    ) -> ExtractAssembleDataResponse:
         """
         Execute the extract and assemble workflow.
 
@@ -74,7 +79,11 @@ class ExtractAssembleWorkflow:
             assembly_specification_id: ID of the specification to use
 
         Returns:
-            Completed Assembly object with assembled document
+            What came of the assembly: the ids and the status.
+
+            Not the Assembly entity. Temporal writes a workflow's
+            result into history, so returning the entity made its
+            shape a durable contract replayed long afterwards.
 
         Raises:
             ValueError: If required entities are not found
@@ -153,13 +162,18 @@ class ExtractAssembleWorkflow:
             # Execute the assembly process with workflow durability.
             # All repository calls inside the use case will be executed as
             # Temporal activities with automatic retry and state persistence.
-            assembly = await use_case.assemble_data(
-                document_id=document_id,
-                assembly_specification_id=assembly_specification_id,
+            # Through execute(), the use case's front door, so what
+            # comes back is the message it means to send rather than
+            # the record it keeps.
+            assembled = await use_case.execute(
+                ExtractAssembleDataRequest(
+                    document_id=document_id,
+                    assembly_specification_id=assembly_specification_id,
+                )
             )
 
             # Store the assembly ID for queries
-            self.assembly_id = assembly.assembly_id
+            self.assembly_id = assembled.assembly_id
 
             self.current_step = "completed"
 
@@ -168,13 +182,13 @@ class ExtractAssembleWorkflow:
                 extra={
                     "document_id": document_id,
                     "assembly_specification_id": assembly_specification_id,
-                    "assembly_id": assembly.assembly_id,
-                    "assembled_document_id": assembly.assembled_document_id,
-                    "status": assembly.status.value,
+                    "assembly_id": assembled.assembly_id,
+                    "assembled_document_id": assembled.assembled_document_id,
+                    "status": assembled.status.value,
                 },
             )
 
-            return assembly
+            return assembled
 
         except Exception as e:
             self.current_step = "failed"

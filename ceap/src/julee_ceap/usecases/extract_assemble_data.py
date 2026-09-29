@@ -163,7 +163,7 @@ class ExtractAssembleDataUseCase:
             request.document_id,
             request.assembly_specification_id,
         )
-        return ExtractAssembleDataResponse(assembly=assembly)
+        return ExtractAssembleDataResponse.of(assembly)
 
     async def assemble_data(
         self,
