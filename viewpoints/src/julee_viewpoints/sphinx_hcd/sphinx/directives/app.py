@@ -276,7 +276,10 @@ def build_app_index(docname: str, hcd_context):
 
 def build_apps_for_persona(docname: str, persona_arg: str, hcd_context):
     """Build list of apps for a persona."""
-    from julee_hcd.usecases import derive_personas_from_stories, get_apps_for_persona
+    from julee_hcd.domain.models.persona import (
+        derive_personas_from_stories,
+        get_apps_for_persona,
+    )
 
     from ...config import get_config
 

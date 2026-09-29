@@ -5,6 +5,7 @@ Use case for getting a persona by name.
 
 from julee.core.utils import normalize_name
 
+from julee_hcd.domain.models.persona import merge_personas
 from julee_hcd.domain.repositories.epic import EpicRepository
 from julee_hcd.domain.repositories.persona import PersonaRepository
 from julee_hcd.domain.repositories.story import StoryRepository
@@ -13,7 +14,6 @@ from ..dtos.get_persona import (
     GetPersonaRequest,
     GetPersonaResponse,
 )
-from .derive_personas import DerivePersonasRequest, DerivePersonasUseCase
 
 
 class GetPersonaUseCase:
@@ -51,13 +51,12 @@ class GetPersonaUseCase:
         Returns:
             Response containing the persona if found, or None
         """
-        derive_use_case = DerivePersonasUseCase(
-            self.story_repo, self.epic_repo, self.persona_repo
-        )
-        derive_response = await derive_use_case.execute(DerivePersonasRequest())
+        stories = await self.story_repo.list_all()
+        epics = await self.epic_repo.list_all()
+        defined = await self.persona_repo.list_all() if self.persona_repo else []
 
         normalized_search = normalize_name(request.name)
-        for persona in derive_response.personas:
+        for persona in merge_personas(defined, stories, epics):
             if persona.normalized_name == normalized_search:
                 return GetPersonaResponse(persona=persona)
 
