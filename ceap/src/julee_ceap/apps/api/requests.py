@@ -22,6 +22,7 @@ from julee_ceap.domain.models.assembly_specification.assembly_specification impo
     refuse_a_bad_pointer,
     refuse_a_bad_schema,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 
 
 class CreateAssemblySpecificationRequest(BaseModel):
@@ -104,7 +105,7 @@ class CreateAssemblySpecificationRequest(BaseModel):
             assembly_specification_id=NonEmptyText(assembly_specification_id),
             name=self.name,
             applicability=self.applicability,
-            jsonschema=self.jsonschema,
+            jsonschema=JsonSchema(self.jsonschema),
             knowledge_service_queries=self.knowledge_service_queries,
             version=self.version,
             status=AssemblySpecificationStatus.DRAFT,

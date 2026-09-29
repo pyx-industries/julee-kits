@@ -9,18 +9,16 @@ instances following the Clean Architecture principles.
 
 import json
 import logging
-from collections.abc import Mapping
 from dataclasses import replace
 from typing import Any
 
-import jsonschema
 from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol, validate_parameter_types
 from julee.core.witnesses import ClockWitness, ExecutionWitness, SystemClockWitness
 from julee.core.witnesses.execution import DefaultExecutionWitness
 
-from julee_ceap._schema_ref import extract_schema_from_fetched
+from julee_ceap.domain.calculators.schema import SchemaCalculator
 from julee_ceap.domain.models import (
     Assembly,
     AssemblySpecification,
@@ -32,6 +30,7 @@ from julee_ceap.domain.models import (
 from julee_ceap.domain.models.document.multihash import (
     content_multihash,
 )
+from julee_ceap.domain.models.schema import AssembledData, JsonSchema
 from julee_ceap.domain.oracles import SchemaOracle
 from julee_ceap.domain.repositories import (
     AssemblyRepository,
@@ -48,7 +47,6 @@ from ..dtos.extract_assemble_data import (
     ExtractAssembleDataRequest,
     ExtractAssembleDataResponse,
 )
-from .pointable_json_schema import PointableJSONSchema
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +88,7 @@ class ExtractAssembleDataUseCase:
         knowledge_service_config_repo: KnowledgeServiceConfigRepository,
         knowledge_service: KnowledgeService,
         schema_oracle: SchemaOracle,
+        schema_calculator: SchemaCalculator,
         clock_witness: ClockWitness | None = None,
         execution_witness: ExecutionWitness | None = None,
     ) -> None:
@@ -107,6 +106,9 @@ class ExtractAssembleDataUseCase:
             knowledge_service: Knowledge service instance for external
                 operations
             schema_oracle: Oracle for fetching a JSON Schema by URL
+            schema_calculator: Reads a schema: the part a pointer names,
+                the part a $ref fragment names, and whether assembled
+                data fits
             clock_witness: Witness for the current time.
                 Defaults to SystemClockWitness. Inject TemporalClockWitness
                 inside Temporal workflows, where the runtime records what
@@ -136,6 +138,7 @@ class ExtractAssembleDataUseCase:
             schema_oracle,
             SchemaOracle,  # type: ignore[type-abstract]
         )
+        self.schema_calculator = schema_calculator
         self._clock_witness: ClockWitness = clock_witness or SystemClockWitness()
         self._execution_witness: ExecutionWitness = (
             execution_witness or DefaultExecutionWitness()
@@ -387,19 +390,19 @@ class ExtractAssembleDataUseCase:
             queries[query_id] = query
         return queries
 
-    async def _resolve_jsonschema(self, schema: Mapping[str, Any]) -> dict[str, Any]:
+    async def _resolve_jsonschema(self, schema: JsonSchema) -> JsonSchema:
         """Fetch and resolve a bare $ref schema; return inline schemas unchanged.
 
-        If the schema is exactly {"$ref": "url#/fragment"}, fetches the URL via
-        the injected schema_oracle (a Temporal activity in workflow context)
-        and delegates fragment extraction to extract_schema_from_fetched.
-        Re-fetching on every query ensures the latest published version is used.
+        Re-fetching on every query ensures the latest published version is
+        used. Navigating to the fragment is the calculator's, because it
+        is the same reading of a schema that the rest of this use case
+        asks for and it does no I/O.
         """
-        if not (len(schema) == 1 and "$ref" in schema):
-            return dict(schema)
-        url, _, fragment = schema["$ref"].partition("#")
-        full_schema = await self.schema_oracle.fetch(url)
-        return extract_schema_from_fetched(full_schema, fragment)
+        if not schema.is_a_bare_ref:
+            return schema
+        url, _, fragment = schema.ref.partition("#")
+        fetched = await self.schema_oracle.fetch(url)
+        return self.schema_calculator.schema_at_fragment(fetched, fragment)
 
     @try_use_case_step("assembly_iteration")
     async def _assemble_iteration(
@@ -449,9 +452,9 @@ class ExtractAssembleDataUseCase:
             schema_pointer,
             query_id,
         ) in assembly_specification.knowledge_service_queries.items():
-            # Use PointableJSONSchema to generate complete schema for pointer target
-            pointable_schema = PointableJSONSchema(resolved_jsonschema)
-            output_schema = pointable_schema.schema_for_pointer(schema_pointer)
+            output_schema = self.schema_calculator.schema_for_pointer(
+                resolved_jsonschema, schema_pointer
+            )
 
             # Get the query configuration
             query = queries[query_id]
@@ -630,32 +633,17 @@ class ExtractAssembleDataUseCase:
     def _validate_assembled_data(
         self,
         assembled_data: dict[str, Any],
-        resolved_jsonschema: dict[str, Any],
+        resolved_jsonschema: JsonSchema,
     ) -> None:
-        """Validate that the assembled data conforms to the JSON schema."""
-        try:
-            jsonschema.validate(assembled_data, resolved_jsonschema)
-            logger.debug("Assembled data validation passed")
-        except jsonschema.ValidationError as e:
-            logger.error(
-                "Assembled data validation failed",
-                extra={
-                    "validation_error": str(e),
-                    "error_path": (list(e.absolute_path) if e.absolute_path else []),
-                    "schema_path": (list(e.schema_path) if e.schema_path else []),
-                },
-            )
-            raise ValueError(
-                f"Assembled data does not conform to JSON schema: {e.message}"
-            )
-        except jsonschema.SchemaError as e:
-            logger.error(
-                "JSON schema is invalid",
-                extra={"schema_error": str(e)},
-            )
-            raise ValueError(
-                f"Invalid JSON schema in assembly specification: {e.message}"
-            )
+        """Refuse assembled data that does not fit the schema.
+
+        The check, the two libraries it needs and the messages it raises
+        are the calculator's. What is left here is the decision to make
+        it, which is the use case's.
+        """
+        self.schema_calculator.refuse_data_that_does_not_fit(
+            AssembledData(assembled_data), resolved_jsonschema
+        )
 
     def _calculate_multihash_from_content(self, content_bytes: bytes) -> str:
         """The multihash naming this content."""

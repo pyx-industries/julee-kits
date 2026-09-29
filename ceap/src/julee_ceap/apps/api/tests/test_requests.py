@@ -111,7 +111,7 @@ class TestCreateAssemblySpecificationRequest:
         assert domain_model.assembly_specification_id == "spec-456"
         assert domain_model.name == "Test Assembly"
         assert domain_model.applicability == "Test documents"
-        assert domain_model.jsonschema == {
+        assert domain_model.jsonschema.document == {
             "type": "object",
             "properties": {"content": {"type": "string"}},
         }

@@ -22,6 +22,7 @@ from julee_ceap.domain.models import (
     AssemblySpecification,
     AssemblySpecificationStatus,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.infrastructure.repositories.memory import (
     MemoryAssemblySpecificationRepository,
 )
@@ -76,13 +77,15 @@ def sample_assembly_specification() -> AssemblySpecification:
         assembly_specification_id=NonEmptyText("test-spec-123"),
         name=Name("Meeting Minutes"),
         applicability=NonEmptyText("Online video meeting transcripts"),
-        jsonschema={
-            "type": "object",
-            "properties": {
-                "attendees": {"type": "array", "items": {"type": "string"}},
-                "summary": {"type": "string"},
-            },
-        },
+        jsonschema=JsonSchema(
+            {
+                "type": "object",
+                "properties": {
+                    "attendees": {"type": "array", "items": {"type": "string"}},
+                    "summary": {"type": "string"},
+                },
+            }
+        ),
         knowledge_service_queries={
             "/properties/attendees": NonEmptyText("query-123"),
             "/properties/summary": NonEmptyText("query-456"),
@@ -148,13 +151,15 @@ class TestGetAssemblySpecifications:
             assembly_specification_id=NonEmptyText("test-spec-456"),
             name=Name("Project Report"),
             applicability=NonEmptyText("Project documentation and status updates"),
-            jsonschema={
-                "type": "object",
-                "properties": {
-                    "project_name": {"type": "string"},
-                    "status": {"type": "string"},
-                },
-            },
+            jsonschema=JsonSchema(
+                {
+                    "type": "object",
+                    "properties": {
+                        "project_name": {"type": "string"},
+                        "status": {"type": "string"},
+                    },
+                }
+            ),
             knowledge_service_queries={
                 "/properties/project_name": NonEmptyText("query-789"),
                 "/properties/status": NonEmptyText("query-101"),
@@ -209,7 +214,7 @@ class TestGetAssemblySpecifications:
                 assembly_specification_id=NonEmptyText(f"spec-{i:03d}"),
                 name=Name(f"Specification {i}"),
                 applicability=NonEmptyText(f"Test applicability {i}"),
-                jsonschema={"type": "object", "properties": {}},
+                jsonschema=JsonSchema({"type": "object", "properties": {}}),
             )
             specifications.append(spec)
             await memory_repo.save(spec)
@@ -262,7 +267,7 @@ class TestGetAssemblySpecification:
         )
         assert data["name"] == sample_assembly_specification.name
         assert data["applicability"] == sample_assembly_specification.applicability
-        assert data["jsonschema"] == sample_assembly_specification.jsonschema
+        assert data["jsonschema"] == sample_assembly_specification.jsonschema.document
         assert (
             data["knowledge_service_queries"]
             == sample_assembly_specification.knowledge_service_queries
@@ -296,33 +301,35 @@ class TestGetAssemblySpecification:
             assembly_specification_id=NonEmptyText("complex-spec-123"),
             name=Name("Complex Meeting Minutes"),
             applicability=NonEmptyText("Detailed meeting transcripts with metadata"),
-            jsonschema={
-                "type": "object",
-                "properties": {
-                    "metadata": {
-                        "type": "object",
-                        "properties": {
-                            "date": {"type": "string", "format": "date"},
-                            "duration": {"type": "integer"},
-                        },
-                    },
-                    "attendees": {
-                        "type": "array",
-                        "items": {
+            jsonschema=JsonSchema(
+                {
+                    "type": "object",
+                    "properties": {
+                        "metadata": {
                             "type": "object",
                             "properties": {
-                                "name": {"type": "string"},
-                                "role": {"type": "string"},
+                                "date": {"type": "string", "format": "date"},
+                                "duration": {"type": "integer"},
                             },
                         },
+                        "attendees": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {"type": "string"},
+                                    "role": {"type": "string"},
+                                },
+                            },
+                        },
+                        "agenda": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                     },
-                    "agenda": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                    },
-                },
-                "required": ["metadata", "attendees"],
-            },
+                    "required": ["metadata", "attendees"],
+                }
+            ),
             knowledge_service_queries={
                 "/properties/metadata/properties/date": NonEmptyText("date-query"),
                 "/properties/attendees": NonEmptyText("attendees-query"),
@@ -369,7 +376,7 @@ class TestGetAssemblySpecification:
                 assembly_specification_id=NonEmptyText(f"spec-{status.value}"),
                 name=Name(f"Spec {status.value}"),
                 applicability=NonEmptyText("Test applicability"),
-                jsonschema={"type": "object", "properties": {}},
+                jsonschema=JsonSchema({"type": "object", "properties": {}}),
                 status=status,
             )
             await memory_repo.save(spec)
@@ -475,7 +482,7 @@ class TestCreateAssemblySpecification:
         assert saved_spec is not None
         assert saved_spec.name == request_data["name"]
         assert saved_spec.applicability == request_data["applicability"]
-        assert saved_spec.jsonschema == request_data["jsonschema"]
+        assert saved_spec.jsonschema.document == request_data["jsonschema"]
         assert (
             saved_spec.knowledge_service_queries
             == request_data["knowledge_service_queries"]

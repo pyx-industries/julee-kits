@@ -17,6 +17,7 @@ from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.infrastructure.repositories.minio.assembly_specification import (
     MinioAssemblySpecificationRepository,
 )
@@ -45,25 +46,27 @@ def sample_specification() -> AssemblySpecification:
         assembly_specification_id=NonEmptyText("spec-123"),
         name=Name("Meeting Minutes"),
         applicability=NonEmptyText("Corporate meeting recordings and transcripts"),
-        jsonschema={
-            "type": "object",
-            "properties": {
-                "title": {"type": "string"},
-                "attendees": {"type": "array", "items": {"type": "string"}},
-                "action_items": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "description": {"type": "string"},
-                            "assignee": {"type": "string"},
-                            "due_date": {"type": "string"},
+        jsonschema=JsonSchema(
+            {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "attendees": {"type": "array", "items": {"type": "string"}},
+                    "action_items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "description": {"type": "string"},
+                                "assignee": {"type": "string"},
+                                "due_date": {"type": "string"},
+                            },
                         },
                     },
                 },
-            },
-            "required": ["title"],
-        },
+                "required": ["title"],
+            }
+        ),
         status=AssemblySpecificationStatus.ACTIVE,
         knowledge_service_queries={
             "/properties/title": NonEmptyText("extract-meeting-title"),
@@ -83,10 +86,12 @@ def inactive_specification() -> AssemblySpecification:
         assembly_specification_id=NonEmptyText("spec-inactive-456"),
         name=Name("Inactive Spec"),
         applicability=NonEmptyText("This is an inactive specification"),
-        jsonschema={
-            "type": "object",
-            "properties": {"test": {"type": "string"}},
-        },
+        jsonschema=JsonSchema(
+            {
+                "type": "object",
+                "properties": {"test": {"type": "string"}},
+            }
+        ),
         status=AssemblySpecificationStatus.INACTIVE,
         version=NonEmptyText("1.0.0"),
         created_at=datetime.now(UTC),
@@ -228,11 +233,13 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
             assembly_specification_id=NonEmptyText(spec_id),
             name=Name("Test Lifecycle Spec"),
             applicability=NonEmptyText("Test specification for lifecycle testing"),
-            jsonschema={
-                "type": "object",
-                "properties": {"test_field": {"type": "string"}},
-                "required": ["test_field"],
-            },
+            jsonschema=JsonSchema(
+                {
+                    "type": "object",
+                    "properties": {"test_field": {"type": "string"}},
+                    "required": ["test_field"],
+                }
+            ),
             status=AssemblySpecificationStatus.DRAFT,
             knowledge_service_queries={
                 "/properties/test_field": NonEmptyText("test-query")
@@ -353,7 +360,7 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
             applicability=NonEmptyText(
                 "Detailed meeting documentation with full metadata"
             ),
-            jsonschema=complex_schema,
+            jsonschema=JsonSchema(complex_schema),
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries=complex_queries,
             version=NonEmptyText("2.0.0"),
@@ -366,7 +373,7 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
         retrieved = await specification_repo.get("complex-spec")
 
         assert retrieved is not None
-        assert retrieved.jsonschema == complex_schema
+        assert retrieved.jsonschema.document == complex_schema
         assert retrieved.knowledge_service_queries == complex_queries
         assert len(retrieved.knowledge_service_queries) == 4
 
@@ -379,17 +386,19 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
             assembly_specification_id=NonEmptyText("unicode-spec"),
             name=Name("Spécification avec caractères spéciaux"),
             applicability=NonEmptyText("Документы с unicode содержанием и émojis 🚀📝"),
-            jsonschema={
-                "type": "object",
-                "properties": {
-                    "título": {"type": "string"},
-                    "descripción": {"type": "string"},
-                    "метаданные": {
-                        "type": "object",
-                        "properties": {"автор": {"type": "string"}},
+            jsonschema=JsonSchema(
+                {
+                    "type": "object",
+                    "properties": {
+                        "título": {"type": "string"},
+                        "descripción": {"type": "string"},
+                        "метаданные": {
+                            "type": "object",
+                            "properties": {"автор": {"type": "string"}},
+                        },
                     },
-                },
-            },
+                }
+            ),
             status=AssemblySpecificationStatus.ACTIVE,
             knowledge_service_queries={
                 "/properties/título": NonEmptyText("query-título"),
@@ -407,6 +416,6 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
         assert retrieved is not None
         assert retrieved.name == "Spécification avec caractères spéciaux"
         assert "unicode содержанием и émojis 🚀📝" in retrieved.applicability
-        assert "título" in retrieved.jsonschema["properties"]
-        assert "метаданные" in retrieved.jsonschema["properties"]
+        assert "título" in retrieved.jsonschema.document["properties"]
+        assert "метаданные" in retrieved.jsonschema.document["properties"]
         assert "/properties/título" in retrieved.knowledge_service_queries

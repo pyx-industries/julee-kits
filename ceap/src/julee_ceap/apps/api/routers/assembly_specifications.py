@@ -22,7 +22,7 @@ from julee_ceap.apps.api.dependencies import (
     get_assembly_specification_repository,
 )
 from julee_ceap.apps.api.requests import CreateAssemblySpecificationRequest
-from julee_ceap.domain.models import AssemblySpecification
+from julee_ceap.apps.api.responses import AssemblySpecificationResponse
 from julee_ceap.domain.repositories.assembly_specification import (
     AssemblySpecificationRepository,
 )
@@ -33,12 +33,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[AssemblySpecification])
+@router.get("/", response_model=Page[AssemblySpecificationResponse])
 async def get_assembly_specifications(
     repository: AssemblySpecificationRepository = Depends(
         get_assembly_specification_repository
     ),
-) -> Page[AssemblySpecification]:
+) -> Page[AssemblySpecificationResponse]:
     """
     Get a paginated list of assembly specifications.
 
@@ -61,7 +61,10 @@ async def get_assembly_specifications(
         )
 
         # Use fastapi-pagination to paginate the results
-        return cast(Page[AssemblySpecification], paginate(specifications))
+        return cast(
+            Page[AssemblySpecificationResponse],
+            paginate([AssemblySpecificationResponse.of(s) for s in specifications]),
+        )
 
     except Exception as e:
         logger.error(
@@ -75,7 +78,9 @@ async def get_assembly_specifications(
         )
 
 
-@router.get("/{assembly_specification_id}", response_model=AssemblySpecification)
+@router.get(
+    "/{assembly_specification_id}", response_model=AssemblySpecificationResponse
+)
 async def get_assembly_specification(
     assembly_specification_id: str = Path(
         description="The ID of the assembly specification to retrieve"
@@ -83,7 +88,7 @@ async def get_assembly_specification(
     repository: AssemblySpecificationRepository = Depends(
         get_assembly_specification_repository
     ),
-) -> AssemblySpecification:
+) -> AssemblySpecificationResponse:
     """
     Get a specific assembly specification by ID.
 
@@ -128,7 +133,7 @@ async def get_assembly_specification(
             },
         )
 
-        return specification
+        return AssemblySpecificationResponse.of(specification)
 
     except HTTPException:
         # Re-raise HTTP exceptions (like 404)
@@ -149,13 +154,13 @@ async def get_assembly_specification(
         )
 
 
-@router.post("/", response_model=AssemblySpecification)
+@router.post("/", response_model=AssemblySpecificationResponse)
 async def create_assembly_specification(
     request: CreateAssemblySpecificationRequest,
     repository: AssemblySpecificationRepository = Depends(
         get_assembly_specification_repository
     ),
-) -> AssemblySpecification:
+) -> AssemblySpecificationResponse:
     """
     Create a new assembly specification.
 
@@ -195,7 +200,7 @@ async def create_assembly_specification(
             },
         )
 
-        return specification
+        return AssemblySpecificationResponse.of(specification)
 
     except Exception as e:
         logger.error(

@@ -25,6 +25,7 @@ from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 
 from ..knowledge_service import (
     FileRegistrationResult,
@@ -175,7 +176,7 @@ class AnthropicKnowledgeService(KnowledgeService):
         self,
         config: KnowledgeServiceConfig,
         query_text: str,
-        output_schema: dict[str, Any] | None = None,
+        output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,
         query_metadata: Mapping[str, Any] | None = None,
         assistant_prompt: str | None = None,
@@ -235,7 +236,7 @@ class AnthropicKnowledgeService(KnowledgeService):
             # Handle schema embedding if provided
             if output_schema:
                 # Build query with embedded schema
-                schema_json = json.dumps(output_schema, indent=2)
+                schema_json = json.dumps(dict(output_schema.document), indent=2)
                 enhanced_query_text = f"""{query_text}
 
 Please structure your response according to this JSON schema:

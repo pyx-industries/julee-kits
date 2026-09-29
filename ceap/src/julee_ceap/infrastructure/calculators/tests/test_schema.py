@@ -1,20 +1,22 @@
-"""
-Unit tests for PointableJSONSchema utility class.
+"""What the schema calculator works out, asked of the adapter.
 
-These tests verify that the PointableJSONSchema class correctly generates
-standalone schemas from JSON pointer targets while preserving important
-root metadata needed for proper JSON Schema validation.
+These tests followed the code. They were written against
+``PointableJSONSchema`` in ``usecases/``, which was never a use case: it
+does no I/O, takes no ports and answers the same way every time. ADR 016
+calls that a calculator, and the libraries it needs — jsonpointer and
+jsonschema — belong on this side of the port.
 """
 
 import pytest
 
-from julee_ceap.usecases.pointable_json_schema import PointableJSONSchema
+from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.infrastructure.calculators.schema import LibrarySchemaCalculator
 
 pytestmark = pytest.mark.unit
 
 
-class TestPointableJSONSchema:
-    """Test cases for PointableJSONSchema class."""
+class TestTheSchemaForAPointer:
+    """What schema_for_pointer returns for each shape of pointer."""
 
     def test_simple_property_extraction(self) -> None:
         """Test extracting a simple property schema."""
@@ -27,8 +29,11 @@ class TestPointableJSONSchema:
             "required": ["title"],
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/title")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/title")
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -54,8 +59,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/user")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/user")
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -83,8 +91,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/title")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/title")
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -107,8 +118,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/name")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/name")
+            .document
+        )
 
         expected = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -139,8 +153,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/created_at")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/created_at")
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -169,8 +186,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/created_at")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/created_at")
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -192,8 +212,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "")
+            .document
+        )
 
         assert result == root_schema
 
@@ -216,8 +239,13 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/user/properties/profile")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(
+                JsonSchema(root_schema), "/properties/user/properties/profile"
+            )
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -243,10 +271,10 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-
         with pytest.raises(ValueError, match="Invalid JSON pointer"):
-            pointable.schema_for_pointer("/properties/nonexistent")
+            LibrarySchemaCalculator().schema_for_pointer(
+                JsonSchema(root_schema), "/properties/nonexistent"
+            )
 
     def test_malformed_pointer_raises_error(self) -> None:
         """Test that malformed JSON pointers raise ValueError."""
@@ -257,10 +285,10 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-
         with pytest.raises(ValueError, match="Invalid JSON pointer"):
-            pointable.schema_for_pointer("not/a/valid/pointer")
+            LibrarySchemaCalculator().schema_for_pointer(
+                JsonSchema(root_schema), "not/a/valid/pointer"
+            )
 
     def test_array_items_extraction(self) -> None:
         """Test extracting array item schemas."""
@@ -274,8 +302,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/tags/items")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/tags/items")
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -300,8 +331,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/name")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/name")
+            .document
+        )
 
         # Should preserve all root metadata
         expected = {
@@ -327,8 +361,11 @@ class TestPointableJSONSchema:
             },
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/count")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/count")
+            .document
+        )
 
         expected = {
             "type": "object",
@@ -361,8 +398,11 @@ class TestPointableJSONSchema:
             "required": ["type", "@context", "id", "issuer"],
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties")
+            .document
+        )
 
         # This should return a schema that validates the properties DIRECTLY,
         # NOT wrapped in another "properties" object
@@ -426,8 +466,11 @@ class TestPointableJSONSchema:
             "required": ["title", "created_at", "author"],
         }
 
-        pointable = PointableJSONSchema(root_schema)
-        result = pointable.schema_for_pointer("/properties/author")
+        result = (
+            LibrarySchemaCalculator()
+            .schema_for_pointer(JsonSchema(root_schema), "/properties/author")
+            .document
+        )
 
         expected = {
             "$schema": "http://json-schema.org/draft-07/schema#",
