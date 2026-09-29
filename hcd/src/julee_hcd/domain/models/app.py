@@ -11,6 +11,9 @@ from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
 
 from .base import Authored
+from .epic import Epic
+from .journey import Journey
+from .story import Story
 
 
 class AppInterface(StrEnum):
@@ -220,3 +223,85 @@ class App(Authored):
             AppInterface.WEB: "Python",
             AppInterface.CLI: "Python/Click",
         }.get(self.interface, "Python")
+
+
+def get_stories_for_app(
+    app: App,
+    stories: list[Story],
+) -> list[Story]:
+    """Get stories that belong to an app.
+
+    Args:
+        app: App to find stories for
+        stories: All Story entities
+
+    Returns:
+        List of Story entities for this app, sorted by feature_title
+    """
+    matching = [s for s in stories if s.app_slug == app.slug]
+    return sorted(matching, key=lambda s: s.feature_title)
+
+
+def get_journeys_for_app(
+    app: App,
+    stories: list[Story],
+    journeys: list[Journey],
+) -> list[Journey]:
+    """Get journeys that include stories from an app.
+
+    Args:
+        app: App to find journeys for
+        stories: All Story entities
+        journeys: All Journey entities
+
+    Returns:
+        List of Journey entities containing stories from this app, sorted by slug
+    """
+    # Get story titles for this app
+    app_story_titles = {
+        normalize_name(s.feature_title) for s in stories if s.app_slug == app.slug
+    }
+
+    if not app_story_titles:
+        return []
+
+    # Find journeys containing these stories
+    matching = []
+    for journey in journeys:
+        story_refs = journey.get_story_refs()
+        if any(normalize_name(ref) in app_story_titles for ref in story_refs):
+            matching.append(journey)
+
+    return sorted(matching, key=lambda j: j.slug)
+
+
+def get_epics_for_app(
+    app: App,
+    stories: list[Story],
+    epics: list[Epic],
+) -> list[Epic]:
+    """Get epics that contain stories from an app.
+
+    Args:
+        app: App to find epics for
+        stories: All Story entities
+        epics: All Epic entities
+
+    Returns:
+        List of Epic entities containing stories from this app, sorted by slug
+    """
+    # Get story titles for this app
+    app_story_titles = {
+        normalize_name(s.feature_title) for s in stories if s.app_slug == app.slug
+    }
+
+    if not app_story_titles:
+        return []
+
+    # Find epics containing these stories
+    matching = []
+    for epic in epics:
+        if any(normalize_name(ref) in app_story_titles for ref in epic.story_refs):
+            matching.append(epic)
+
+    return sorted(matching, key=lambda e: e.slug)

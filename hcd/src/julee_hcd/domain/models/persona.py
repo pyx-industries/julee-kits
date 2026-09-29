@@ -434,3 +434,26 @@ def derive_personas_by_app_type(
         app_type: sorted(personas, key=lambda p: p.name)
         for app_type, personas in personas_by_type.items()
     }
+
+
+def get_personas_for_app(
+    app: App,
+    stories: list[Story],
+    epics: list[Epic],
+) -> list[Persona]:
+    """Get personas that use an app.
+
+    Args:
+        app: App to find personas for
+        stories: All Story entities
+        epics: All Epic entities (for persona derivation)
+
+    Returns:
+        List of Persona entities that use this app, sorted by name
+    """
+    # Derive all personas that show up in these stories/epics
+    all_personas = derive_personas_from_stories(stories, epics)
+
+    # Filter to those using this app
+    matching = [p for p in all_personas if app.slug in p.app_slugs]
+    return sorted(matching, key=lambda p: p.name)
