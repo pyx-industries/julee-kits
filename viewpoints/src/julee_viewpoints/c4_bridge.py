@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from julee.core.values.claim import Claim
     from sphinx.application import Sphinx
 
-    from julee_c4.domain.models.diagrams import PersonInfo
+    from julee_c4.domain.values.diagrams import PersonInfo
     from julee_viewpoints.sphinx_hcd.sphinx.context import HCDContext
 
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def _get_hcd_context(app: Any) -> "HCDContext | None":
 
 
 PERSON_IS_A_PERSONA = (
-    "julee_c4.domain.models.diagrams.PersonInfo",
+    "julee_c4.domain.values.diagrams.PersonInfo",
     "is_a",
     "julee_hcd.domain.models.persona.Persona",
 )
@@ -163,7 +163,7 @@ def enrich_persons_from_hcd(
         Slugs with no matching persona are simply omitted - the C4
         serializer already falls back to rendering the bare slug for those.
     """
-    from julee_c4.domain.models.diagrams import PersonInfo
+    from julee_c4.domain.values.diagrams import PersonInfo
 
     hcd_context = _get_hcd_context(app)
     if hcd_context is None or not person_slugs:
