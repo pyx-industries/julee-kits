@@ -1,8 +1,11 @@
-"""Polling domain models.
+"""What a poll is configured with, and what it comes back with.
 
-What a poll is configured with, and what it comes back with. Both are
-frozen dataclasses: the domain ring holds no pydantic, and these two
+Both are frozen dataclasses: the domain ring holds no pydantic, and both
 cross a driven port, which speaks nothing else.
+
+Both are values. Nothing keeps a PollingResult — it is what one poll came
+back with, and a second poll of the same endpoint is a different result
+rather than an update to this one (ADR 018).
 """
 
 from collections.abc import Mapping

@@ -6,7 +6,7 @@ is the one package of the bounded context that imports pydantic
 (ADR 001).
 """
 
-from julee.core.entities.accelerator import AcceleratorValidationIssue
+from julee.core.values.accelerator import AcceleratorValidationIssue
 from pydantic import BaseModel
 
 

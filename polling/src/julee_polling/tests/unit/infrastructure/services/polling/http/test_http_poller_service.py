@@ -1,5 +1,5 @@
 """
-Unit tests for HttpPollerService.
+Unit tests for HttpPollerOracle.
 
 This module tests the HTTP poller service implementation using httpx's
 built-in MockTransport for mocking HTTP responses. Tests use table-based
@@ -12,19 +12,19 @@ import httpx
 import pytest
 from pydantic import TypeAdapter
 
-from julee_polling.domain.models.polling_config import (
+from julee_polling.domain.values.polling_config import (
     PollingConfig,
     PollingProtocol,
 )
 from julee_polling.infrastructure.services.polling.http.http_poller_service import (
-    HttpPollerService,
+    HttpPollerOracle,
 )
 
 pytestmark = pytest.mark.unit
 
 
-class TestHttpPollerServicePollEndpoint:
-    """Test the poll_endpoint method of HttpPollerService."""
+class TestHttpPollerOraclePollEndpoint:
+    """Test the poll_endpoint method of HttpPollerOracle."""
 
     @pytest.mark.parametrize(
         "status_code,content,expected_success,description",
@@ -52,7 +52,7 @@ class TestHttpPollerServicePollEndpoint:
 
         mock_transport = httpx.MockTransport(handler)
 
-        async with HttpPollerService() as service:
+        async with HttpPollerOracle() as service:
             service.client = httpx.AsyncClient(transport=mock_transport)
 
             config = PollingConfig(
@@ -92,7 +92,7 @@ class TestHttpPollerServicePollEndpoint:
 
         mock_transport = httpx.MockTransport(handler)
 
-        async with HttpPollerService() as service:
+        async with HttpPollerOracle() as service:
             service.client = httpx.AsyncClient(transport=mock_transport)
 
             config = PollingConfig(
@@ -120,7 +120,7 @@ class TestHttpPollerServicePollEndpoint:
 
         mock_transport = httpx.MockTransport(handler)
 
-        async with HttpPollerService() as service:
+        async with HttpPollerOracle() as service:
             service.client = httpx.AsyncClient(transport=mock_transport)
 
             config = PollingConfig(
@@ -147,7 +147,7 @@ class TestHttpPollerServicePollEndpoint:
 
         mock_transport = httpx.MockTransport(handler)
 
-        async with HttpPollerService() as service:
+        async with HttpPollerOracle() as service:
             service.client = httpx.AsyncClient(transport=mock_transport)
 
             config = PollingConfig(
@@ -184,7 +184,7 @@ class TestHttpPollerServicePollEndpoint:
         async def factory() -> dict[str, str]:
             return {"Authorization": "Bearer fresh-token"}
 
-        async with HttpPollerService(header_factory=factory) as service:
+        async with HttpPollerOracle(header_factory=factory) as service:
             service.client = httpx.AsyncClient(transport=mock_transport)
 
             config = PollingConfig(
@@ -218,7 +218,7 @@ class TestHttpPollerServicePollEndpoint:
 
         mock_transport = httpx.MockTransport(handler)
 
-        async with HttpPollerService() as service:
+        async with HttpPollerOracle() as service:
             service.client = httpx.AsyncClient(transport=mock_transport)
 
             config = PollingConfig(
@@ -245,7 +245,7 @@ class TestHttpPollerServicePollEndpoint:
 
         mock_transport = httpx.MockTransport(handler)
 
-        async with HttpPollerService() as service:
+        async with HttpPollerOracle() as service:
             service.client = httpx.AsyncClient(transport=mock_transport)
 
             # Create a dict that represents a serialized PollingConfig (as from Temporal schedule)

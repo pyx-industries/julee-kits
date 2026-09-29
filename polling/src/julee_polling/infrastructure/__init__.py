@@ -7,10 +7,10 @@ and external system integrations for the polling contrib module.
 No re-exports to avoid import chains that pull non-deterministic code
 into Temporal workflows. Import directly from specific modules:
 
-- from julee_polling.infrastructure.services.polling.http import HttpPollerService
+- from julee_polling.infrastructure.services.polling.http import HttpPollerOracle
 - from julee_polling.infrastructure.temporal.manager import PollingManager
-- from julee_polling.infrastructure.temporal.proxies import WorkflowPollerServiceProxy
-- from julee_polling.infrastructure.temporal.activities import TemporalPollerService
+- from julee_polling.infrastructure.temporal.proxies import WorkflowPollerOracleProxy
+- from julee_polling.infrastructure.temporal.activities import TemporalPollerOracle
 """
 
 __all__ = []

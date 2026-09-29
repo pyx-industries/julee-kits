@@ -7,7 +7,7 @@ contrib module.
 No re-exports to avoid import chains that pull non-deterministic code
 into Temporal workflows. Import directly from specific modules:
 
-- from julee_polling.infrastructure.services.polling.http.http_poller_service import HttpPollerService
+- from julee_polling.infrastructure.services.polling.http.http_poller_service import HttpPollerOracle
 """
 
 __all__ = []

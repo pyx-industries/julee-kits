@@ -42,7 +42,7 @@ from sphinx.util import logging
 from sphinx.util.docutils import SphinxDirective
 
 if TYPE_CHECKING:
-    from julee.core.entities.claim import Claim
+    from julee.core.values.claim import Claim
     from sphinx.application import Sphinx
 
     from julee_c4.domain.models.diagrams import PersonInfo

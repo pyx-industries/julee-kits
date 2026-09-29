@@ -15,16 +15,16 @@ from collections.abc import Awaitable, Callable
 
 from julee.integrations.temporal.decorators import temporal_activity_registration
 
-from ..services.polling.http.http_poller_service import HttpPollerService
+from ..services.polling.http.http_poller_service import HttpPollerOracle
 from .activity_names import POLLING_SERVICE_ACTIVITY_BASE
 
 
 @temporal_activity_registration(POLLING_SERVICE_ACTIVITY_BASE)
-class TemporalPollerService(HttpPollerService):
+class TemporalPollerOracle(HttpPollerOracle):
     """
-    Temporal activity wrapper for PollerService operations.
+    Temporal activity wrapper for PollerOracle operations.
 
-    This class wraps the HttpPollerService to make it compatible with Temporal
+    This class wraps the HttpPollerOracle to make it compatible with Temporal
     activities. It inherits all the polling functionality while being registered
     as a Temporal activity that can be called from workflows.
 
@@ -40,7 +40,7 @@ class TemporalPollerService(HttpPollerService):
         self.logger: logging.Logger = logging.getLogger(__name__)
 
 
-ACTIVITY_CLASSES = (TemporalPollerService,)
+ACTIVITY_CLASSES = (TemporalPollerOracle,)
 """The activities this kit offers a worker.
 
 Named in the manifest under "temporal.activities", so a solution is told
@@ -50,5 +50,5 @@ what there is rather than reading this module to find out.
 
 __all__ = [
     "ACTIVITY_CLASSES",
-    "TemporalPollerService",
+    "TemporalPollerOracle",
 ]

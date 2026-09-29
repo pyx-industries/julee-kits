@@ -10,11 +10,11 @@ Install it, then adopt it::
     kits = ["polling"]
 
 Example usage:
-    from julee_polling.domain.models.polling_config import (
+    from julee_polling.domain.values.polling_config import (
         PollingConfig,
         PollingProtocol,
     )
-    from julee_polling.infrastructure.services.polling.http import HttpPollerService
+    from julee_polling.infrastructure.services.polling.http import HttpPollerOracle
     # Configure polling
     config = PollingConfig(
         endpoint_identifier="api-v1",
@@ -24,7 +24,7 @@ Example usage:
     )
 
     # Poll the endpoint
-    service = HttpPollerService()
+    service = HttpPollerOracle()
     result = await service.poll_endpoint(config)
 
 Note: All imports must be explicit to avoid import chains that can pull
@@ -38,14 +38,14 @@ from julee.core.entities.kit import Kit
 # into Temporal workflows. Import from specific submodules instead:
 #
 # Domain:
-# - from julee_polling.domain.models.polling_config import PollingConfig, PollingProtocol, PollingResult
-# - from julee_polling.domain.services.poller import PollerService
+# - from julee_polling.domain.values.polling_config import PollingConfig, PollingProtocol, PollingResult
+# - from julee_polling.domain.oracles.poller import PollerOracle
 #
 # Infrastructure:
-# - from julee_polling.infrastructure.services.polling.http import HttpPollerService
+# - from julee_polling.infrastructure.services.polling.http import HttpPollerOracle
 # - from julee_polling.infrastructure.temporal.manager import PollingManager
-# - from julee_polling.infrastructure.temporal.proxies import WorkflowPollerServiceProxy
-# - from julee_polling.infrastructure.temporal.activities import TemporalPollerService
+# - from julee_polling.infrastructure.temporal.proxies import WorkflowPollerOracleProxy
+# - from julee_polling.infrastructure.temporal.activities import TemporalPollerOracle
 
 kit = Kit(
     slug="polling",
