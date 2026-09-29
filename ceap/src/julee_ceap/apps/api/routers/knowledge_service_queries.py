@@ -23,7 +23,7 @@ from julee_ceap.apps.api.dependencies import (
     get_knowledge_service_query_repository,
 )
 from julee_ceap.apps.api.requests import CreateKnowledgeServiceQueryRequest
-from julee_ceap.domain.models import KnowledgeServiceQuery
+from julee_ceap.apps.api.responses import KnowledgeServiceQueryResponse
 from julee_ceap.domain.repositories.knowledge_service_query import (
     KnowledgeServiceQueryRepository,
 )
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[KnowledgeServiceQuery])
+@router.get("/", response_model=Page[KnowledgeServiceQueryResponse])
 async def get_knowledge_service_queries(
     ids: str | None = Query(
         None,
@@ -49,7 +49,7 @@ async def get_knowledge_service_queries(
     repository: KnowledgeServiceQueryRepository = Depends(
         get_knowledge_service_query_repository
     ),
-) -> Page[KnowledgeServiceQuery]:
+) -> Page[KnowledgeServiceQueryResponse]:
     """
     Get knowledge service queries by IDs or list all with pagination.
 
@@ -112,7 +112,10 @@ async def get_knowledge_service_queries(
             )
 
             # Return as paginated result for consistent API response format
-            return cast(Page[KnowledgeServiceQuery], paginate(found_queries))
+            return cast(
+                Page[KnowledgeServiceQueryResponse],
+                paginate([KnowledgeServiceQueryResponse.of(q) for q in found_queries]),
+            )
 
         except HTTPException:
             # Re-raise HTTP exceptions (like 400 Bad Request)
@@ -145,7 +148,10 @@ async def get_knowledge_service_queries(
             )
 
             # Use fastapi-pagination to paginate the results
-            return cast(Page[KnowledgeServiceQuery], paginate(queries))
+            return cast(
+                Page[KnowledgeServiceQueryResponse],
+                paginate([KnowledgeServiceQueryResponse.of(q) for q in queries]),
+            )
 
         except Exception as e:
             logger.error(
@@ -162,13 +168,13 @@ async def get_knowledge_service_queries(
             )
 
 
-@router.post("/", response_model=KnowledgeServiceQuery)
+@router.post("/", response_model=KnowledgeServiceQueryResponse)
 async def create_knowledge_service_query(
     request: CreateKnowledgeServiceQueryRequest,
     repository: KnowledgeServiceQueryRepository = Depends(
         get_knowledge_service_query_repository
     ),
-) -> KnowledgeServiceQuery:
+) -> KnowledgeServiceQueryResponse:
     """
     Create a new knowledge service query.
 
@@ -208,7 +214,7 @@ async def create_knowledge_service_query(
             },
         )
 
-        return query
+        return KnowledgeServiceQueryResponse.of(query)
 
     except Exception as e:
         logger.error(
@@ -226,13 +232,13 @@ async def create_knowledge_service_query(
         )
 
 
-@router.get("/{query_id}", response_model=KnowledgeServiceQuery)
+@router.get("/{query_id}", response_model=KnowledgeServiceQueryResponse)
 async def get_knowledge_service_query(
     query_id: str,
     repository: KnowledgeServiceQueryRepository = Depends(
         get_knowledge_service_query_repository
     ),
-) -> KnowledgeServiceQuery:
+) -> KnowledgeServiceQueryResponse:
     """
     Get a specific knowledge service query by ID.
 
@@ -272,7 +278,7 @@ async def get_knowledge_service_query(
             },
         )
 
-        return query
+        return KnowledgeServiceQueryResponse.of(query)
 
     except HTTPException:
         # Re-raise HTTP exceptions (like 404 Not Found)

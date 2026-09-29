@@ -20,9 +20,7 @@ from fastapi_pagination import Page, paginate
 from julee_ceap.apps.api.dependencies import (
     get_knowledge_service_config_repository,
 )
-from julee_ceap.domain.models.knowledge_service_config import (
-    KnowledgeServiceConfig,
-)
+from julee_ceap.apps.api.responses import KnowledgeServiceConfigResponse
 from julee_ceap.domain.repositories.knowledge_service_config import (
     KnowledgeServiceConfigRepository,
 )
@@ -33,12 +31,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[KnowledgeServiceConfig])
+@router.get("/", response_model=Page[KnowledgeServiceConfigResponse])
 async def get_knowledge_service_configs(
     repository: KnowledgeServiceConfigRepository = Depends(
         get_knowledge_service_config_repository
     ),
-) -> Page[KnowledgeServiceConfig]:
+) -> Page[KnowledgeServiceConfigResponse]:
     """
     Get all knowledge service configurations with pagination.
 
@@ -63,7 +61,10 @@ async def get_knowledge_service_configs(
         )
 
         # Use fastapi-pagination to paginate the results
-        return cast(Page[KnowledgeServiceConfig], paginate(configs))
+        return cast(
+            Page[KnowledgeServiceConfigResponse],
+            paginate([KnowledgeServiceConfigResponse.of(c) for c in configs]),
+        )
 
     except Exception as e:
         logger.error(
