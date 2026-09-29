@@ -5,62 +5,17 @@ Detects domain conditions (unknown persona, unknown story/epic refs, empty journ
 and reports them for handler delegation.
 """
 
-from typing import Any
-
 from julee.core.utils import normalize_name
-from pydantic import BaseModel, Field
 
-from julee_hcd.domain.models.journey import Journey
 from julee_hcd.domain.repositories.epic import EpicRepository
 from julee_hcd.domain.repositories.persona import PersonaRepository
 from julee_hcd.domain.repositories.story import StoryRepository
 
-
-class JourneyOrchestrationRequest(BaseModel):
-    """Request for journey orchestration check."""
-
-    journey: Journey = Field(
-        description="The journey to check for orchestration conditions"
-    )
-
-
-class JourneyCondition(BaseModel):
-    """A detected domain condition for a journey."""
-
-    condition: str = Field(description="Condition type identifier")
-    journey_slug: str = Field(description="The journey's slug")
-    details: dict[str, Any] = Field(
-        default_factory=dict, description="Condition-specific details"
-    )
-
-
-class JourneyOrchestrationResponse(BaseModel):
-    """Response from journey orchestration check."""
-
-    journey: Journey = Field(description="The checked journey")
-    conditions: list[JourneyCondition] = Field(
-        default_factory=list, description="Detected conditions"
-    )
-
-    @property
-    def has_unknown_persona(self) -> bool:
-        """Check if unknown persona condition was detected."""
-        return any(c.condition == "unknown_persona" for c in self.conditions)
-
-    @property
-    def has_unknown_story_refs(self) -> bool:
-        """Check if unknown story refs condition was detected."""
-        return any(c.condition == "unknown_story_refs" for c in self.conditions)
-
-    @property
-    def has_unknown_epic_refs(self) -> bool:
-        """Check if unknown epic refs condition was detected."""
-        return any(c.condition == "unknown_epic_refs" for c in self.conditions)
-
-    @property
-    def has_empty_journey(self) -> bool:
-        """Check if empty journey condition was detected."""
-        return any(c.condition == "empty_journey" for c in self.conditions)
+from ..dtos.journey_orchestration import (
+    JourneyCondition,
+    JourneyOrchestrationRequest,
+    JourneyOrchestrationResponse,
+)
 
 
 class JourneyOrchestrationUseCase:

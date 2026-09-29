@@ -4,26 +4,16 @@ Use case for getting a persona by name.
 """
 
 from julee.core.utils import normalize_name
-from pydantic import BaseModel, Field
 
-from julee_hcd.domain.models.persona import Persona
 from julee_hcd.domain.repositories.epic import EpicRepository
 from julee_hcd.domain.repositories.persona import PersonaRepository
 from julee_hcd.domain.repositories.story import StoryRepository
 
+from ..dtos.get_persona import (
+    GetPersonaRequest,
+    GetPersonaResponse,
+)
 from .derive_personas import DerivePersonasRequest, DerivePersonasUseCase
-
-
-class GetPersonaRequest(BaseModel):
-    """Request for getting a persona by name."""
-
-    name: str = Field(description="Persona name to search for")
-
-
-class GetPersonaResponse(BaseModel):
-    """Response from getting a persona by name."""
-
-    persona: Persona | None
 
 
 class GetPersonaUseCase:
