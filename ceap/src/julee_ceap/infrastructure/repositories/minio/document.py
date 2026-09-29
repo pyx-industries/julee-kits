@@ -16,15 +16,15 @@ import json
 import logging
 from datetime import UTC, datetime
 
-from julee.core.entities.content_stream import (
-    ContentStream,
-)
 from julee.integrations.minio.client import MinioClient, MinioRepositoryMixin
 from minio.error import S3Error
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 
 from julee_ceap.domain.models.document import Document
-from julee_ceap.domain.models.document.multihash import content_multihash
+from julee_ceap.domain.models.document.multihash import (
+    ContentMultihash,
+    content_multihash,
+)
 from julee_ceap.domain.repositories.document import DocumentRepository
 
 
@@ -130,21 +130,20 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
             )
             return None
 
-    async def content_of(self, document: Document) -> ContentStream:
-        """The content this document names, as a fresh stream.
+    async def content_of(self, document: Document) -> bytes:
+        """The content this document names.
 
-        A new ``get_object`` each call, so two callers never share one
-        response and nobody has to rewind — the two ways content reading
-        has gone wrong here (julee#124, julee#90).
-
-        The response is wrapped rather than read, so the bytes stay in
-        MinIO until somebody asks for them.
+        Read in full here rather than handed back as the live response.
+        Whether the adapter buffers is the adapter's business, and every
+        caller read it in full immediately anyway. Bytes also cannot be
+        spent by one reader or need rewinding, which is what julee#124
+        and julee#90 were (julee-kits#89).
 
         Args:
             document: The document whose content to read
 
         Returns:
-            A stream over the content, at its start
+            The content
 
         Raises:
             ValueError: If the metadata names content that is not stored
@@ -170,28 +169,26 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                 ) from error
             raise
 
-        return ContentStream(response)
+        try:
+            return response.read()
+        finally:
+            response.close()
+            response.release_conn()
 
-    async def store_content(self, content: ContentStream) -> str:
+    async def store_content(self, content: bytes) -> ContentMultihash:
         """Keep these bytes under their own name, and say what it is.
 
         The name is the content, so storing the same bytes twice finds
         the first object already there and adds nothing — which is why
         this can be called without checking first.
 
-        Read once. It used to be read twice, to hash and then to upload,
-        with a seek(0) in between; content fetched from another
-        repository arrives over a response that cannot be rewound, so
-        the seek raised and the save failed (julee#90).
-
         Args:
-            content: The bytes to store, read once from where it is
+            content: The bytes to store
 
         Returns:
             The multihash the content is stored under
         """
-        raw = content.read()
-        multihash = content_multihash(raw)
+        multihash = ContentMultihash(content_multihash(content))
 
         try:
             self.client.stat_object(
@@ -209,13 +206,13 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
         self.client.put_object(
             bucket_name=self.content_bucket,
             object_name=multihash,
-            data=io.BytesIO(raw),
-            length=len(raw),
+            data=io.BytesIO(content),
+            length=len(content),
         )
 
         self.logger.debug(
             "Content stored",
-            extra={"content_multihash": multihash, "content_size": len(raw)},
+            extra={"content_multihash": multihash, "content_size": len(content)},
         )
 
         return multihash

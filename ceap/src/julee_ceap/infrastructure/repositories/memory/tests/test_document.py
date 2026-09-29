@@ -6,12 +6,7 @@ dependencies. They follow the Clean Architecture testing patterns and verify
 idempotency, error handling, and content operations including content_bytes.
 """
 
-import io
-
 import pytest
-from julee.core.entities.content_stream import (
-    ContentStream,
-)
 from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
@@ -33,14 +28,14 @@ def repository() -> MemoryDocumentRepository:
 
 
 @pytest.fixture
-def sample_content() -> ContentStream:
+def sample_content() -> bytes:
     """Sample content for testing."""
     content_bytes = b"This is test content for document storage"
-    return ContentStream(io.BytesIO(content_bytes))
+    return content_bytes
 
 
 @pytest.fixture
-def sample_document(sample_content: ContentStream) -> Document:
+def sample_document(sample_content: bytes) -> Document:
     """Sample document for testing."""
     return Document(
         document_id=NonEmptyText("test-doc-123"),
@@ -62,9 +57,7 @@ class TestMemoryDocumentRepositoryContentBytes:
         content = '{"assembled": "document", "data": "test"}'
 
         # Create document with content_bytes
-        stored = await repository.store_content(
-            ContentStream(io.BytesIO(content.encode("utf-8")))
-        )
+        stored = await repository.store_content(content.encode("utf-8"))
         document = Document(
             document_id=NonEmptyText("test-doc-content-string"),
             original_filename=NonEmptyText("assembled.json"),
@@ -85,7 +78,7 @@ class TestMemoryDocumentRepositoryContentBytes:
 
         # Content is read through the port
         stream = await repository.content_of(retrieved)
-        assert stream.read().decode("utf-8") == content
+        assert stream.decode("utf-8") == content
 
     async def test_save_document_with_content_bytes_unicode(
         self, repository: MemoryDocumentRepository
@@ -93,9 +86,7 @@ class TestMemoryDocumentRepositoryContentBytes:
         """Test saving document with unicode content_bytes."""
         content = '{"title": "测试文档", "emoji": "🚀", "content": "éñ"}'
 
-        stored = await repository.store_content(
-            ContentStream(io.BytesIO(content.encode("utf-8")))
-        )
+        stored = await repository.store_content(content.encode("utf-8"))
 
         document = Document(
             document_id=NonEmptyText("test-doc-unicode"),
@@ -111,7 +102,7 @@ class TestMemoryDocumentRepositoryContentBytes:
 
         assert retrieved is not None
         stream = await repository.content_of(retrieved)
-        assert stream.read().decode("utf-8") == content
+        assert stream.decode("utf-8") == content
 
     # Note: Empty content test removed because domain model requires
     # size_bytes > 0
@@ -122,9 +113,7 @@ class TestMemoryDocumentRepositoryContentBytes:
         """Test that content_bytes is not stored in memory storage."""
         content = '{"test": "data that should not be in storage"}'
 
-        stored = await repository.store_content(
-            ContentStream(io.BytesIO(content.encode("utf-8")))
-        )
+        stored = await repository.store_content(content.encode("utf-8"))
 
         document = Document(
             document_id=NonEmptyText("test-storage-exclusion"),
@@ -150,7 +139,7 @@ class TestMemoryDocumentRepositoryContentBytes:
         retrieved = await repository.get("test-storage-exclusion")
         assert retrieved is not None
         stream = await repository.content_of(retrieved)
-        assert stream.read().decode("utf-8") == content
+        assert stream.decode("utf-8") == content
 
 
 class TestMemoryDocumentRepositoryBasicOperations:

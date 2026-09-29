@@ -5,16 +5,12 @@ This module provides factory_boy factories for creating test instances of
 Document domain objects with sensible defaults.
 """
 
-import io
 import uuid
 from datetime import UTC, datetime
 from typing import Any
 
 from factory.base import Factory
 from factory.declarations import LazyAttribute, LazyFunction
-from julee.core.entities.content_stream import (
-    ContentStream,
-)
 from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
@@ -28,22 +24,6 @@ from julee_ceap.domain.models.document.multihash import (
 def _get_default_content_bytes() -> bytes:
     """Generate the default content bytes for documents."""
     return b"Test document content for testing purposes"
-
-
-class ContentStreamFactory(Factory):
-    class Meta:
-        model = ContentStream
-
-    # Create ContentStream with BytesIO containing test content
-    @classmethod
-    def _create(cls, model_class: type[ContentStream], **kwargs: Any) -> ContentStream:
-        content = kwargs.get("content", b"Test stream content")
-        return model_class(io.BytesIO(content))
-
-    @classmethod
-    def _build(cls, model_class: type[ContentStream], **kwargs: Any) -> ContentStream:
-        content = kwargs.get("content", b"Test stream content")
-        return model_class(io.BytesIO(content))
 
 
 class DocumentFactory(Factory):

@@ -13,7 +13,6 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
-from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 from minio.error import S3Error
@@ -43,14 +42,14 @@ def repository(fake_minio_client: FakeMinioClient) -> MinioDocumentRepository:
 
 
 @pytest.fixture
-def sample_content() -> ContentStream:
+def sample_content() -> bytes:
     """Sample content for testing."""
     content_bytes = b"This is test content for document storage"
-    return ContentStream(io.BytesIO(content_bytes))
+    return content_bytes
 
 
 @pytest.fixture
-def sample_document(sample_content: ContentStream) -> Document:
+def sample_document(sample_content: bytes) -> Document:
     """Sample document for testing."""
     # The name the repository will compute for this content. Worked out
     # by hand here until #44: the fixture reproduced the production
@@ -145,9 +144,7 @@ class TestMinioDocumentRepositoryStore:
         # Act. Two calls now, in this order: content cannot be named
         # until it has been read, so it is stored before the document
         # that names it.
-        await repository.store_content(
-            ContentStream(io.BytesIO(b"This is test content for document storage"))
-        )
+        await repository.store_content(b"This is test content for document storage")
         await repository.save(sample_document)
 
         # Assert content and metadata were stored
@@ -171,13 +168,13 @@ class TestMinioDocumentRepositoryStore:
 
         content_bytes = b"This is test content for document storage"
 
-        first = await repository.store_content(ContentStream(io.BytesIO(content_bytes)))
+        first = await repository.store_content(content_bytes)
         await repository.save(sample_document)
         stored_multihash = first
 
         # The same bytes again, under different metadata. The name is
         # the content, so the second store finds the first one's object.
-        await repository.store_content(ContentStream(io.BytesIO(content_bytes)))
+        await repository.store_content(content_bytes)
 
         second_document = Document(
             document_id=NonEmptyText("different-doc-456"),
@@ -221,7 +218,7 @@ class TestMinioDocumentRepositoryStore:
         repository = MinioDocumentRepository(fake_minio_client)
         content = b"This is test content for document storage"
 
-        stored = await repository.store_content(ContentStream(io.BytesIO(content)))
+        stored = await repository.store_content(content)
         document = Document(
             document_id=NonEmptyText("test-doc-123"),
             original_filename=NonEmptyText("test.txt"),
@@ -235,7 +232,7 @@ class TestMinioDocumentRepositoryStore:
         found = await repository.get("test-doc-123")
         assert found is not None
         assert found.content_multihash == multihash_of(content)
-        assert (await repository.content_of(found)).read() == content
+        assert await repository.content_of(found) == content
 
     async def test_store_handles_content_storage_error(
         self, fake_minio_client: FakeMinioClient, sample_document: Document
@@ -272,7 +269,7 @@ class TestMinioDocumentRepositoryStore:
 
         # Act & Assert
         with pytest.raises(S3Error):
-            await repository.store_content(ContentStream(io.BytesIO(b"some content")))
+            await repository.store_content(b"some content")
 
         # Verify no objects were stored
         assert fake_minio_client.get_object_count("documents") == 0
@@ -286,9 +283,7 @@ class TestMinioDocumentRepositoryGet:
         self, repository: MinioDocumentRepository, sample_document: Document
     ) -> None:
         """Test retrieving an existing document with content."""
-        await repository.store_content(
-            ContentStream(io.BytesIO(b"This is test content for document storage"))
-        )
+        await repository.store_content(b"This is test content for document storage")
         await repository.save(sample_document)
 
         # Act - retrieve the document
@@ -302,7 +297,7 @@ class TestMinioDocumentRepositoryGet:
         assert result.size_bytes == sample_document.size_bytes
 
         # Content is read through the port, not off what came back
-        assert (await repository.content_of(result)).read() == (
+        assert await repository.content_of(result) == (
             b"This is test content for document storage"
         )
 
@@ -475,21 +470,25 @@ class TestMinioDocumentRepositorySavingAStreamItCannotRewind:
         return other
 
     @pytest.mark.asyncio
-    async def test_what_content_of_returns_is_not_rewindable(
+    async def test_what_content_of_returns_can_be_read_again(
         self, repository: MinioDocumentRepository, a_stored_document: bytes
     ) -> None:
-        """The premise. If this ever stops holding, the tests below stop
-        meaning anything and should be read again rather than trusted.
+        """The premise the tests below rest on.
 
-        It used to be asserted of what get() returned, when get()
-        attached a stream. It does not any more, and the property now
-        belongs to the call that opens one."""
+        It used to be the opposite: content_of handed back a live
+        response, which could not be rewound, and that was asserted here
+        so the tests below would be re-read rather than trusted if it
+        ever changed. It has changed. The port returns bytes
+        (julee-kits#89), so the premise is now that reading does not
+        spend them, and nothing below has to hold a stream carefully.
+        """
         document = await repository.get("doc-1")
         assert document is not None
 
         content = await repository.content_of(document)
 
-        assert not content.stream.seekable()
+        assert content == a_stored_document
+        assert content == a_stored_document
 
     @pytest.mark.asyncio
     async def test_a_document_can_be_transferred_to_another_repository(
@@ -530,7 +529,7 @@ class TestMinioDocumentRepositorySavingAStreamItCannotRewind:
         transferred = await destination.get("doc-1")
 
         assert transferred is not None
-        assert (await destination.content_of(transferred)).read() == a_stored_document
+        assert await destination.content_of(transferred) == a_stored_document
 
     @pytest.mark.asyncio
     async def test_saving_a_seekable_stream_still_works(
@@ -538,7 +537,7 @@ class TestMinioDocumentRepositorySavingAStreamItCannotRewind:
     ) -> None:
         """The case that always worked, kept so the fix is not a trade."""
         content = b"content handed in as bytes, not fetched"
-        stored = await repository.store_content(ContentStream(io.BytesIO(content)))
+        stored = await repository.store_content(content)
         document = Document(
             document_id=NonEmptyText("doc-fresh"),
             original_filename=NonEmptyText("fresh.txt"),
@@ -565,7 +564,7 @@ class TestMinioDocumentRepositorySavingAStreamItCannotRewind:
         about documents rather than about content: the store will keep
         b"" and name it quite happily.
         """
-        stored = await repository.store_content(ContentStream(io.BytesIO(b"")))
+        stored = await repository.store_content(b"")
         document = Document(
             document_id=NonEmptyText("doc-empty"),
             original_filename=NonEmptyText("empty.txt"),
@@ -592,9 +591,7 @@ class TestMinioDocumentRepositoryContentBytes:
         content = '{"assembled": "document", "data": "test"}'
 
         # Create document with content_bytes
-        stored = await repository.store_content(
-            ContentStream(io.BytesIO(content.encode("utf-8")))
-        )
+        stored = await repository.store_content(content.encode("utf-8"))
         document = Document(
             document_id=NonEmptyText("test-doc-content-string"),
             original_filename=NonEmptyText("assembled.json"),
@@ -615,7 +612,7 @@ class TestMinioDocumentRepositoryContentBytes:
 
         # Content is read through the port
         stream = await repository.content_of(retrieved)
-        assert stream.read().decode("utf-8") == content
+        assert stream.decode("utf-8") == content
 
     async def test_save_document_with_content_bytes_unicode(
         self, repository: MinioDocumentRepository
@@ -623,9 +620,7 @@ class TestMinioDocumentRepositoryContentBytes:
         """Test saving document with unicode content_bytes."""
         content = '{"title": "测试文档", "emoji": "🚀", "content": "éñ"}'
 
-        stored = await repository.store_content(
-            ContentStream(io.BytesIO(content.encode("utf-8")))
-        )
+        stored = await repository.store_content(content.encode("utf-8"))
 
         document = Document(
             document_id=NonEmptyText("test-doc-unicode"),
@@ -641,7 +636,7 @@ class TestMinioDocumentRepositoryContentBytes:
 
         assert retrieved is not None
         stream = await repository.content_of(retrieved)
-        assert stream.read().decode("utf-8") == content
+        assert stream.decode("utf-8") == content
 
     # Note: Empty content test removed because domain model requires
     # size_bytes > 0
@@ -654,9 +649,7 @@ class TestMinioDocumentRepositoryContentBytes:
         """Test that content_bytes is not stored in metadata."""
         content = '{"test": "data that should not be in metadata"}'
 
-        stored = await repository.store_content(
-            ContentStream(io.BytesIO(content.encode("utf-8")))
-        )
+        stored = await repository.store_content(content.encode("utf-8"))
 
         document = Document(
             document_id=NonEmptyText("test-metadata-exclusion"),
@@ -773,7 +766,7 @@ async def content_of(
     """
     document = found[document_id]
     assert document is not None, f"{document_id} was not found"
-    return (await repository.content_of(document)).read()
+    return await repository.content_of(document)
 
 
 class TestMinioDocumentRepositoryGetMany:
@@ -838,17 +831,20 @@ class TestMinioDocumentRepositoryGetMany:
         assert await content_of(repository, found, "doc-a") == two_documents_one_file
 
     @pytest.mark.asyncio
-    async def test_the_documents_do_not_share_a_stream(
+    async def test_two_documents_naming_one_file_both_get_it(
         self, repository: MinioDocumentRepository, two_documents_one_file: bytes
     ) -> None:
-        """Said directly, because the reads above would also pass if
-        ContentStream ever became re-readable, and that is not the
-        property being relied on here.
+        """julee#124 was two documents sharing one spent stream.
 
-        get_many no longer hands out streams at all, so the hazard is
-        gone by construction rather than by care. What is asserted now
-        is that asking for the same content twice gives two streams —
-        the property everything above depends on (julee#124)."""
+        This asserted that they got two distinct streams. There are no
+        streams: content_of returns bytes, so neither document can take
+        anything from the other, and the identity of what comes back is
+        not a property worth asserting — identical bytes may well be
+        the same object.
+
+        What is left to check is that both get the content, which is
+        what the hazard cost.
+        """
         found = await repository.get_many(["doc-a", "doc-b"])
         first, second = found["doc-a"], found["doc-b"]
         assert first is not None and second is not None
@@ -856,9 +852,8 @@ class TestMinioDocumentRepositoryGetMany:
         one = await repository.content_of(first)
         other = await repository.content_of(second)
 
-        assert one is not other
-        assert one.read() == two_documents_one_file
-        assert other.read() == two_documents_one_file
+        assert one == two_documents_one_file
+        assert other == two_documents_one_file
 
     @pytest.mark.asyncio
     async def test_the_content_is_still_stored_once_for_both(

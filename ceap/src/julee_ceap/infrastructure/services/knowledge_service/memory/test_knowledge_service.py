@@ -6,11 +6,9 @@ KnowledgeService protocol, verifying file registration storage and
 canned query response functionality.
 """
 
-import io
 from datetime import UTC, datetime
 
 import pytest
-from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
@@ -80,9 +78,9 @@ def sample_query_result() -> QueryResult:
     )
 
 
-def some_content() -> ContentStream:
+def some_content() -> bytes:
     """Content to hand the service, since a Document no longer carries any."""
-    return ContentStream(io.BytesIO(b"test content"))
+    return b"test content"
 
 
 class TestMemoryKnowledgeService:

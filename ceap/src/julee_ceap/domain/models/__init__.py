@@ -8,7 +8,6 @@ Re-exports commonly used models for convenient importing:
 # Document models
 # Assembly models
 # Custom field types
-from julee.core.entities.content_stream import ContentStream
 
 from .assembly import Assembly, AssemblyStatus
 from .assembly_specification import (
@@ -28,7 +27,6 @@ __all__ = [
     # Document models
     "Document",
     "DocumentStatus",
-    "ContentStream",
     # Assembly models
     "Assembly",
     "AssemblyStatus",

@@ -27,7 +27,6 @@ if TYPE_CHECKING:
         KnowledgeServiceConfig,
     )
 
-from julee.core.entities.content_stream import ContentStream
 
 from julee_ceap.domain.models.document import Document
 
@@ -76,7 +75,7 @@ class KnowledgeService(Protocol):
         self,
         config: "KnowledgeServiceConfig",
         document: Document,
-        content: ContentStream,
+        content: bytes,
     ) -> FileRegistrationResult:
         """Register a document file with the external knowledge service.
 
