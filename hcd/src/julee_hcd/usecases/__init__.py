@@ -49,10 +49,6 @@ from .resolve_app_references import (
     ResolveAppReferencesRequest,
     ResolveAppReferencesResponse,
     ResolveAppReferencesUseCase,
-    get_epics_for_app,
-    get_journeys_for_app,
-    get_personas_for_app,
-    get_stories_for_app,
 )
 from .resolve_story_references import (
     ResolveStoryReferencesRequest,
@@ -112,16 +108,12 @@ __all__ = [
     "get_apps_for_accelerator",
     "get_code_info_for_accelerator",
     "get_dependent_accelerators",
-    "get_epics_for_app",
     "get_epics_for_story",
     "get_fed_by_accelerators",
     "get_journeys_for_accelerator",
-    "get_journeys_for_app",
     "get_journeys_for_story",
-    "get_personas_for_app",
     "get_publish_integrations",
     "get_related_stories",
     "get_source_integrations",
     "get_stories_for_accelerator",
-    "get_stories_for_app",
 ]

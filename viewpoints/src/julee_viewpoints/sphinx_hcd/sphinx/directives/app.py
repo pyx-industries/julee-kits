@@ -9,13 +9,14 @@ Provides directives for rendering application information:
 from docutils import nodes
 from julee.core.utils import normalize_name, slugify
 
-from julee_hcd.domain.models.app import App, AppType
-from julee_hcd.usecases import (
+from julee_hcd.domain.models.app import (
+    App,
+    AppType,
     get_epics_for_app,
     get_journeys_for_app,
-    get_personas_for_app,
     get_stories_for_app,
 )
+from julee_hcd.domain.models.persona import get_personas_for_app
 
 from ...utils import path_to_root
 from .base import HCDDirective
