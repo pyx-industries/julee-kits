@@ -14,6 +14,8 @@ they are built as what they are, here, once.
 
 import json
 import logging
+from collections.abc import Mapping
+from dataclasses import fields
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +23,7 @@ import yaml
 from julee.core.entities.text import Name, NonEmptyText
 from julee.core.observability import log_extra
 from julee.core.witnesses.clock import ClockWitness, SystemClockWitness
+from pydantic import TypeAdapter
 
 from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,
@@ -31,6 +34,7 @@ from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.domain.values.seed import DocumentSeed
 
@@ -107,7 +111,7 @@ class FixtureSystemDataService:
                 knowledge_service_id=NonEmptyText(entry["knowledge_service_id"]),
                 prompt=NonEmptyText(entry["prompt"]),
                 assistant_prompt=entry["assistant_prompt"],
-                query_metadata=entry.get("query_metadata", {}),
+                query_metadata=_query_metadata(entry.get("query_metadata")),
                 created_at=now,
                 updated_at=now,
             )
@@ -260,3 +264,32 @@ def _a_status(written: str | None) -> AssemblySpecificationStatus:
             extra=log_extra(status=written),
         )
         return AssemblySpecificationStatus.ACTIVE
+
+
+def _query_metadata(written: Mapping[str, object] | None) -> QueryMetadata:
+    """How a fixture's query asked to be run.
+
+    The shipped files set max_tokens and temperature. A key that is not
+    one of the three is dropped with a warning rather than silently, so
+    a typo in a fixture is visible — the old open mapping would have
+    carried ``temperture: 0.1`` all the way to the adapter, which would
+    have ignored it just as quietly.
+
+    Args:
+        written: The query_metadata mapping a fixture entry carried
+
+    Returns:
+        The value the domain speaks, empty if the fixture said nothing
+    """
+    if not written:
+        return QueryMetadata()
+    named = {f.name for f in fields(QueryMetadata)}
+    unknown = sorted(set(written) - named)
+    if unknown:
+        logger.warning(
+            "Fixture names query metadata nothing reads; ignoring",
+            extra=log_extra(unknown=unknown),
+        )
+    return TypeAdapter(QueryMetadata).validate_python(
+        {k: v for k, v in written.items() if k in named}
+    )

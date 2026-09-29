@@ -11,15 +11,14 @@ Concrete implementations of this protocol are provided for different external
 services (Anthropic, OpenAI, etc.) and are created via factory functions.
 """
 
-from collections.abc import Mapping
 from typing import (
-    Any,
     Protocol,
     runtime_checkable,
 )
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.query_result import (
     FileRegistrationResult,
     QueryResult,
@@ -85,7 +84,7 @@ class KnowledgeService(Protocol):
         query_text: str,
         output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,
-        query_metadata: Mapping[str, Any] | None = None,
+        query_metadata: QueryMetadata = QueryMetadata(),
         assistant_prompt: str | None = None,
     ) -> QueryResult:
         """Execute a query against the external knowledge service.

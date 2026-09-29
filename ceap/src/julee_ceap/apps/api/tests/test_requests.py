@@ -15,12 +15,14 @@ from pydantic import ValidationError
 from julee_ceap.apps.api.requests import (
     CreateAssemblySpecificationRequest,
     CreateKnowledgeServiceQueryRequest,
+    QueryMetadataRequest,
 )
 from julee_ceap.domain.models import (
     AssemblySpecification,
     AssemblySpecificationStatus,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 
 pytestmark = pytest.mark.unit
 
@@ -146,7 +148,7 @@ class TestCreateKnowledgeServiceQueryRequest:
         assert request.name == "Extract Meeting Summary"
         assert request.knowledge_service_id == "anthropic-claude"
         assert request.prompt == "Extract the main summary from this meeting transcript"
-        assert request.query_metadata == {}  # Default empty dict
+        assert request.query_metadata == QueryMetadataRequest()
         assert request.assistant_prompt is None  # Default None
 
     def test_a_request_refuses_what_the_entity_would(self) -> None:
@@ -189,7 +191,7 @@ class TestCreateKnowledgeServiceQueryRequest:
             name=Name("Test Query"),
             knowledge_service_id=NonEmptyText("test-service"),
             prompt=NonEmptyText("Test prompt for extraction"),
-            query_metadata={"model": "claude-3", "temperature": 0.2},
+            query_metadata=QueryMetadataRequest(model="claude-3", temperature=0.2),
             assistant_prompt="Please format as JSON",
         )
 
@@ -200,10 +202,9 @@ class TestCreateKnowledgeServiceQueryRequest:
         assert domain_model.name == "Test Query"
         assert domain_model.knowledge_service_id == "test-service"
         assert domain_model.prompt == "Test prompt for extraction"
-        assert domain_model.query_metadata == {
-            "model": "claude-3",
-            "temperature": 0.2,
-        }
+        assert domain_model.query_metadata == QueryMetadata(
+            model="claude-3", temperature=0.2
+        )
         assert domain_model.assistant_prompt == "Please format as JSON"
         assert isinstance(domain_model.created_at, datetime)
         assert isinstance(domain_model.updated_at, datetime)

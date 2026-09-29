@@ -25,6 +25,7 @@ from pydantic import TypeAdapter, ValidationError
 from julee_ceap.domain.models.assembly_specification import (
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 
 from .factories import KnowledgeServiceQueryFactory
 
@@ -229,10 +230,34 @@ class TestKnowledgeServiceQueryDefaults:
 
 
 class TestKnowledgeServiceQueryMetadata:
-    """Test KnowledgeServiceQuery query_metadata field functionality."""
+    """What a query says about how it wants to be run.
 
-    def test_query_metadata_defaults_to_empty_dict(self) -> None:
-        """Test that query_metadata defaults to an empty dict."""
+    This was a free-form mapping, and these tests asserted that
+    arbitrary keys survived it: top_p, custom_config, citations. No
+    adapter ever read one. It is a QueryMetadata now (ADR 018), so what
+    is worth testing is that the three knobs anything reads are carried
+    and survive a round trip.
+    """
+
+    def a_query(self, metadata: QueryMetadata) -> KnowledgeServiceQuery:
+        """One query, tuned as asked.
+
+        Args:
+            metadata: How it should ask to be run
+
+        Returns:
+            The query, with the other fields filled in
+        """
+        return KnowledgeServiceQuery(
+            query_id=NonEmptyText("test-id"),
+            name=Name("Test Query"),
+            knowledge_service_id=NonEmptyText("test-service"),
+            prompt=NonEmptyText("Test prompt"),
+            query_metadata=metadata,
+        )
+
+    def test_a_query_that_tunes_nothing_says_so(self) -> None:
+        """Every knob unset, rather than an empty bag."""
         query = KnowledgeServiceQuery(
             query_id=NonEmptyText("test-id"),
             name=Name("Test Query"),
@@ -240,80 +265,33 @@ class TestKnowledgeServiceQueryMetadata:
             prompt=NonEmptyText("Test prompt"),
         )
 
-        assert query.query_metadata == {}
+        assert query.query_metadata == QueryMetadata()
 
-    def test_query_metadata_accepts_custom_values(self) -> None:
-        """Test that query_metadata can accept custom service values."""
-        metadata = {
-            "model": "claude-sonnet-4-5",
-            "max_tokens": 4000,
-            "temperature": 0.1,
-        }
-
-        query = KnowledgeServiceQuery(
-            query_id=NonEmptyText("test-id"),
-            name=Name("Test Query"),
-            knowledge_service_id=NonEmptyText("anthropic-service"),
-            prompt=NonEmptyText("Test prompt"),
-            query_metadata=metadata,
+    def test_it_carries_the_three_knobs(self) -> None:
+        """The ones the Anthropic adapter reads."""
+        query = self.a_query(
+            QueryMetadata(model="claude-sonnet-4-5", max_tokens=4000, temperature=0.1)
         )
 
-        assert query.query_metadata == metadata
-        assert query.query_metadata["model"] == "claude-sonnet-4-5"
-        assert query.query_metadata["max_tokens"] == 4000
-        assert query.query_metadata["temperature"] == 0.1
+        assert query.query_metadata.model == "claude-sonnet-4-5"
+        assert query.query_metadata.max_tokens == 4000
+        assert query.query_metadata.temperature == 0.1
 
-    def test_query_metadata_serialization(self) -> None:
-        """Test that query_metadata serializes correctly in JSON."""
-        metadata = {
-            "model": "gpt-4",
-            "temperature": 0.2,
-            "top_p": 0.9,
-            "custom_config": {"endpoint": "v2", "retries": 3},
-        }
+    def test_it_survives_a_round_trip(self) -> None:
+        """Through the adapter the repositories serialise with."""
+        adapter = TypeAdapter(KnowledgeServiceQuery)
+        original = self.a_query(QueryMetadata(model="gpt-4", temperature=0.2))
 
-        query = KnowledgeServiceQuery(
-            query_id=NonEmptyText("openai-query"),
-            name=Name("OpenAI Query"),
-            knowledge_service_id=NonEmptyText("openai-service"),
-            prompt=NonEmptyText("Test prompt for OpenAI"),
-            query_metadata=metadata,
-        )
+        found = adapter.validate_json(adapter.dump_json(original))
 
-        json_str = TypeAdapter(KnowledgeServiceQuery).dump_json(query).decode("utf-8")
-        import json
+        assert found.query_metadata == original.query_metadata
 
-        json_data = json.loads(json_str)
+    def test_a_knob_left_unset_stays_unset(self) -> None:
+        """Rather than coming back as a default the domain invented."""
+        adapter = TypeAdapter(KnowledgeServiceQuery)
+        original = self.a_query(QueryMetadata(max_tokens=2000))
 
-        assert json_data["query_metadata"] == metadata
-        assert json_data["query_metadata"]["model"] == "gpt-4"
-        assert json_data["query_metadata"]["custom_config"]["endpoint"] == "v2"
+        found = adapter.validate_json(adapter.dump_json(original))
 
-    def test_query_metadata_roundtrip_serialization(self) -> None:
-        """Test query_metadata survives JSON roundtrip serialization."""
-        metadata = {
-            "model": "claude-sonnet-4-5",
-            "max_tokens": 2000,
-            "temperature": 0.0,
-            "citations": True,
-        }
-
-        original = KnowledgeServiceQuery(
-            query_id=NonEmptyText("roundtrip-test"),
-            name=Name("Roundtrip Test"),
-            knowledge_service_id=NonEmptyText("test-service"),
-            prompt=NonEmptyText("Test roundtrip serialization"),
-            query_metadata=metadata,
-        )
-
-        # Serialize and deserialize
-        json_str = (
-            TypeAdapter(KnowledgeServiceQuery).dump_json(original).decode("utf-8")
-        )
-        import json
-
-        json_data = json.loads(json_str)
-        reconstructed = KnowledgeServiceQuery(**json_data)
-
-        assert reconstructed.query_metadata == original.query_metadata
-        assert reconstructed.query_metadata == metadata
+        assert found.query_metadata.model is None
+        assert found.query_metadata.temperature is None

@@ -19,6 +19,7 @@ from julee_ceap.apps.api.dependencies import (
 )
 from julee_ceap.apps.api.routers.knowledge_service_queries import router
 from julee_ceap.domain.models import KnowledgeServiceQuery
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.infrastructure.repositories.memory import (
     MemoryKnowledgeServiceQueryRepository,
 )
@@ -74,7 +75,7 @@ def sample_knowledge_service_query() -> KnowledgeServiceQuery:
         name=Name("Extract Meeting Summary"),
         knowledge_service_id=NonEmptyText("anthropic-claude"),
         prompt=NonEmptyText("Extract the main summary from this meeting transcript"),
-        query_metadata={"model": "claude-3", "temperature": 0.2},
+        query_metadata=QueryMetadata(model="claude-3", temperature=0.2),
         assistant_prompt="Please format as JSON",
     )
 
@@ -136,7 +137,7 @@ class TestGetKnowledgeServiceQueries:
             name=Name("Extract Attendees"),
             knowledge_service_id=NonEmptyText("openai-service"),
             prompt=NonEmptyText("Extract all attendees from this meeting"),
-            query_metadata={"model": "gpt-4", "temperature": 0.1},
+            query_metadata=QueryMetadata(model="gpt-4", temperature=0.1),
             assistant_prompt="Format as JSON array",
         )
 
@@ -240,7 +241,11 @@ class TestCreateKnowledgeServiceQuery:
         assert data["name"] == request_data["name"]
         assert data["knowledge_service_id"] == request_data["knowledge_service_id"]
         assert data["prompt"] == request_data["prompt"]
-        assert data["query_metadata"] == request_data["query_metadata"]
+        assert data["query_metadata"] == {
+            "model": "claude-3",
+            "max_tokens": None,
+            "temperature": 0.2,
+        }
         assert data["assistant_prompt"] == request_data["assistant_prompt"]
         assert "created_at" in data
         assert "updated_at" in data
@@ -294,7 +299,11 @@ class TestCreateKnowledgeServiceQuery:
         assert data["name"] == request_data["name"]
         assert data["knowledge_service_id"] == request_data["knowledge_service_id"]
         assert data["prompt"] == request_data["prompt"]
-        assert data["query_metadata"] == {}
+        assert data["query_metadata"] == {
+            "model": None,
+            "max_tokens": None,
+            "temperature": None,
+        }
         assert data["assistant_prompt"] is None
 
     def test_create_knowledge_service_query_validation_errors(
@@ -377,7 +386,7 @@ class TestCreateKnowledgeServiceQuery:
             "name": "Integration Test Query",
             "knowledge_service_id": "test-integration-service",
             "prompt": "This is an integration test prompt",
-            "query_metadata": {"test": True, "integration": "yes"},
+            "query_metadata": {"model": "claude-3", "max_tokens": 500},
             "assistant_prompt": "Integration test response format",
         }
 
@@ -402,7 +411,11 @@ class TestCreateKnowledgeServiceQuery:
             == request_data["knowledge_service_id"]
         )
         assert returned_query["prompt"] == request_data["prompt"]
-        assert returned_query["query_metadata"] == request_data["query_metadata"]
+        assert returned_query["query_metadata"] == {
+            "model": "claude-3",
+            "max_tokens": 500,
+            "temperature": None,
+        }
         assert returned_query["assistant_prompt"] == request_data["assistant_prompt"]
 
         # Create another query to test multiple items
@@ -677,7 +690,7 @@ class TestGetIndividualKnowledgeServiceQuery:
             knowledge_service_id=NonEmptyText("test-service"),
             prompt=NonEmptyText("Extract test data"),
             assistant_prompt="Assistant instructions",
-            query_metadata={"max_tokens": 100, "temperature": 0.7},
+            query_metadata=QueryMetadata(max_tokens=100, temperature=0.7),
         )
         await memory_repo.save(query)
 
@@ -693,6 +706,7 @@ class TestGetIndividualKnowledgeServiceQuery:
         assert data["prompt"] == "Extract test data"
         assert data["assistant_prompt"] == "Assistant instructions"
         assert data["query_metadata"] == {
+            "model": None,
             "max_tokens": 100,
             "temperature": 0.7,
         }
@@ -727,7 +741,7 @@ class TestGetIndividualKnowledgeServiceQuery:
             name=Name("Minimal Query"),
             knowledge_service_id=NonEmptyText("test-service"),
             prompt=NonEmptyText("Basic prompt"),
-            query_metadata={},
+            query_metadata=QueryMetadata(),
         )
         await memory_repo.save(query)
 
@@ -739,4 +753,8 @@ class TestGetIndividualKnowledgeServiceQuery:
         assert data["query_id"] == "minimal-query"
         assert data["name"] == "Minimal Query"
         assert data["assistant_prompt"] is None
-        assert data["query_metadata"] == {}
+        assert data["query_metadata"] == {
+            "model": None,
+            "max_tokens": None,
+            "temperature": None,
+        }

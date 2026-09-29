@@ -15,12 +15,12 @@ All domain models use Pydantic BaseModel for validation, serialization,
 and type safety, following the patterns established in the sample project.
 """
 
-from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any
 
 from julee.core.entities.text import Name, NonEmptyText
+
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -39,32 +39,10 @@ class KnowledgeServiceQuery:
     The mapping between queries and schema sections is handled by the
     AssemblySpecification's knowledge_service_queries field.
 
-    Examples of query_metadata usage:
-
-    For Anthropic services::
-
-        query_metadata = {
-            "model": "claude-sonnet-4-5",
-            "max_tokens": 4000,
-            "temperature": 0.1
-        }
-
-    For OpenAI services::
-
-        query_metadata = {
-            "model": "gpt-4",
-            "temperature": 0.2,
-            "top_p": 0.9
-        }
-
-    For custom services::
-
-        query_metadata = {
-            "endpoint": "custom-model-v2",
-            "timeout": 30,
-            "retries": 3
-        }
-
+    How a query asks to be run is a QueryMetadata: a model, a token
+    budget and a temperature, each optional. This was an open mapping
+    whose docstring advertised top_p, endpoint, timeout and retries as
+    well, none of which any adapter has ever read.
     """
 
     # Core query identification
@@ -80,8 +58,8 @@ class KnowledgeServiceQuery:
     """The specific prompt to send to the knowledge service for this extraction."""
 
     # Service-specific configuration
-    query_metadata: Mapping[str, Any] | None = field(default_factory=dict)
-    """Service-specific metadata and configuration options such as model selection, temperature, max_tokens, etc. The structure depends on the specific knowledge service being used."""
+    query_metadata: QueryMetadata = field(default_factory=QueryMetadata)
+    """How this query asks to be run. Knobs left unset are the adapter's."""
     assistant_prompt: str | None = None
     """Optional assistant message content to constrain or prime the model's response. This is added as the final assistant message before the model generates its response, allowing control over response format and structure."""
 
