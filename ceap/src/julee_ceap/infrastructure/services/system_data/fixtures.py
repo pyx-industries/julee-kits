@@ -20,8 +20,8 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from julee.core.entities.text import Name, NonEmptyText
 from julee.core.observability import log_extra
+from julee.core.values.text import Name, NonEmptyText
 from julee.core.witnesses.clock import ClockWitness, SystemClockWitness
 from pydantic import TypeAdapter
 

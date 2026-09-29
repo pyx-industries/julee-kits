@@ -7,7 +7,7 @@ defined anywhere, so the authored path would have raised AttributeError.
 """
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText, Slug
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.persona import Persona

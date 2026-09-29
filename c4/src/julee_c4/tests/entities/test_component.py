@@ -1,7 +1,7 @@
 """Tests for Component domain model."""
 
 import pytest
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 from pydantic import TypeAdapter
 
 from julee_c4.domain.models.component import Component

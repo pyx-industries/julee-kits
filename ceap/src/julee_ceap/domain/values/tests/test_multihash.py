@@ -8,7 +8,7 @@ answer cannot arrive quietly.
 import hashlib
 
 import pytest
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.values.multihash import (

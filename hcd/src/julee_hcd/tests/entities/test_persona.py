@@ -1,7 +1,7 @@
 """Tests for Persona domain model."""
 
 import pytest
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from julee_hcd.domain.models.persona import Persona
 

@@ -25,7 +25,7 @@ FakeMinioClient itself.
 from dataclasses import replace
 
 import pytest
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.document import Document, DocumentStatus

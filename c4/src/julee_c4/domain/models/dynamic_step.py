@@ -5,7 +5,7 @@ A numbered step in a dynamic (sequence) diagram.
 
 from dataclasses import dataclass
 
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from .relationship import DERIVE_IT, ElementType
 

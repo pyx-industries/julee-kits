@@ -7,8 +7,8 @@ through the system to achieve a goal.
 
 from dataclasses import dataclass, replace
 
-from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
+from julee.core.values.text import Slug
 
 from ..values.journey_step import JourneyStep
 from .base import Authored

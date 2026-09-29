@@ -5,7 +5,6 @@ Do not edit — regenerate with generate-crud.sh.
 
 from typing import Any
 
-from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -13,6 +12,7 @@ from julee.core.usecases.generic_crud import (
     ListUseCase,
     UpdateUseCase,
 )
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.integration import Direction, Integration
 from julee_hcd.domain.repositories.integration import IntegrationRepository

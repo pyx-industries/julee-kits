@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 
 from julee_ceap.apps.api.app import app
 from julee_ceap.apps.api.dependencies import (

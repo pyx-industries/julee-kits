@@ -5,8 +5,8 @@ Represents a user story extracted from a Gherkin .feature file.
 
 from dataclasses import dataclass
 
-from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.utils import normalize_name, slugify
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from .base import Authored
 

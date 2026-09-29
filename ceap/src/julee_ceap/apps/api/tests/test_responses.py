@@ -16,7 +16,7 @@ say so.
 from datetime import UTC, datetime
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 from pydantic import BaseModel
 
 from julee_ceap.apps.api.responses import (

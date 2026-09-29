@@ -7,7 +7,7 @@ fields the model does not have, and nothing exercised it.
 from dataclasses import replace
 
 import pytest
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container, ContainerType

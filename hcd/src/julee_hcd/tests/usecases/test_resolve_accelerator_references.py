@@ -6,8 +6,8 @@ from julee.core.entities.bounded_context_info import (
     BoundedContextInfo,
     ClassInfo,
 )
-from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.values.accelerator import IntegrationReference
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.domain.models.integration import Direction, Integration

@@ -1,7 +1,7 @@
 """Tests for Integration domain model."""
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText, Slug
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.integration import (
     Direction,

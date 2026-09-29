@@ -22,7 +22,7 @@ import json
 from typing import Any
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 from pydantic import TypeAdapter, ValidationError
 
 from julee_ceap.domain.models.assembly_specification import (

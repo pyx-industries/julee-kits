@@ -5,7 +5,7 @@ on its own and the point is that its fields arrive on the real ones.
 """
 
 import pytest
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.epic import Epic
 

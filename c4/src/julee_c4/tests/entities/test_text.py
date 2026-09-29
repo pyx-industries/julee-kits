@@ -7,7 +7,7 @@ no amount of testing the types in isolation would catch.
 """
 
 import pytest
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container

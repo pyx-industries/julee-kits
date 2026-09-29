@@ -7,8 +7,8 @@ Integrations are defined via YAML manifests in integrations/*/integration.yaml.
 from dataclasses import dataclass
 from enum import StrEnum
 
-from julee.core.entities.text import Name, NonEmptyText, Slug
 from julee.core.utils import normalize_name
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from ..values.external_dependency import ExternalDependency
 from .base import Authored

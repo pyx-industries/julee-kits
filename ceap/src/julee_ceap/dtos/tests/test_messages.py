@@ -15,7 +15,7 @@ long after the code that wrote it.
 from datetime import UTC, datetime
 
 import pytest
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 from pydantic import BaseModel
 
 from julee_ceap.domain.models.assembly import Assembly, AssemblyStatus

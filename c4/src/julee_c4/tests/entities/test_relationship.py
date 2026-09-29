@@ -1,7 +1,7 @@
 """Tests for Relationship domain model."""
 
 import pytest
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
 

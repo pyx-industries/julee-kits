@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 
 from factory.base import Factory
 from factory.declarations import LazyFunction
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 from julee_ceap.domain.models.assembly import (
     Assembly,

@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from ..values.container_instance import ContainerInstance
 

@@ -9,7 +9,7 @@ canned query response functionality.
 from datetime import UTC, datetime
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.domain.models.knowledge_service_config import (

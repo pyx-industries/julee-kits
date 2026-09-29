@@ -8,7 +8,7 @@ including validation, serialization, and business logic.
 from datetime import UTC, datetime
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 from pydantic import TypeAdapter
 
 from julee_ceap.domain.models.policy import (

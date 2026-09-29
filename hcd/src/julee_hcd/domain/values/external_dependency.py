@@ -6,7 +6,7 @@ are the same dependency, and nothing keeps one under an id.
 
 from dataclasses import dataclass
 
-from julee.core.entities.text import Name
+from julee.core.values.text import Name
 
 
 @dataclass(frozen=True, kw_only=True)

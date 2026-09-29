@@ -10,7 +10,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.policy import Policy, PolicyStatus

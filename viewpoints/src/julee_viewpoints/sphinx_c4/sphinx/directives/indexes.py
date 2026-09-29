@@ -17,7 +17,7 @@ once every document has been read.
 """
 
 from docutils import nodes
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container

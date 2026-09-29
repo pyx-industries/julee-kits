@@ -7,7 +7,7 @@ idempotency, error handling, and content operations including content_bytes.
 """
 
 import pytest
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.domain.values.multihash import ContentMultihash

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import cast
 
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 
 class ElementType(StrEnum):
@@ -37,7 +37,7 @@ still name one, and several do.
 
 ``Slug`` refuses an empty string, so the default cannot be a real one.
 It is a plain ``str`` until ``__post_init__`` replaces it, built there
-by :class:`~julee.core.entities.text.Slug` exactly as a given one is,
+by :class:`~julee.core.values.text.Slug` exactly as a given one is,
 and nothing observes it in between.
 """
 
@@ -57,7 +57,7 @@ class Relationship:
     Persona carries: a lowercased name with spaces in it, for comparing
     names by. A reference holding spaces is not a slug, and would never
     have matched the field it is used as a key into. Declaring both ends
-    :class:`~julee.core.entities.text.Slug` settles which one is
+    :class:`~julee.core.values.text.Slug` settles which one is
     meant (#70).
     """
 

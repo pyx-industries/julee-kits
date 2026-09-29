@@ -7,7 +7,7 @@ imports app.py and the reverse would be a cycle.
 """
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText, Slug
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.app import (
     App,

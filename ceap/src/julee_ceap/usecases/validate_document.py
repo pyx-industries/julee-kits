@@ -11,9 +11,9 @@ from collections.abc import Callable, Sequence
 from dataclasses import replace
 from datetime import datetime
 
-from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol
+from julee.core.values.text import NonEmptyText
 
 from julee_ceap.domain.models import (
     Document,

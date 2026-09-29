@@ -13,7 +13,7 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 from minio.error import S3Error
 
