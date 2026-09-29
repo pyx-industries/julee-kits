@@ -4,7 +4,6 @@ Finds stories, personas, journeys, and epics related to an app.
 """
 
 from julee.core.utils import normalize_name
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.app import App
 from julee_hcd.domain.models.epic import Epic
@@ -12,6 +11,10 @@ from julee_hcd.domain.models.journey import Journey
 from julee_hcd.domain.models.persona import Persona
 from julee_hcd.domain.models.story import Story
 
+from ..dtos.resolve_app_references import (
+    ResolveAppReferencesRequest,
+    ResolveAppReferencesResponse,
+)
 from .derive_personas import derive_personas_from_stories
 
 
@@ -118,24 +121,6 @@ def get_epics_for_app(
             matching.append(epic)
 
     return sorted(matching, key=lambda e: e.slug)
-
-
-class ResolveAppReferencesRequest(BaseModel):
-    """What an app's references are resolved against."""
-
-    app: App
-    stories: tuple[Story, ...] = ()
-    epics: tuple[Epic, ...] = ()
-    journeys: tuple[Journey, ...] = ()
-
-
-class ResolveAppReferencesResponse(BaseModel):
-    """Everything an app is connected to."""
-
-    stories: tuple[Story, ...] = ()
-    personas: tuple[Persona, ...] = ()
-    journeys: tuple[Journey, ...] = ()
-    epics: tuple[Epic, ...] = ()
 
 
 class ResolveAppReferencesUseCase:

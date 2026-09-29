@@ -10,11 +10,9 @@ Defined personas are authoritative and get enriched with story data.
 Derived personas fill gaps when stories reference undefined personas.
 """
 
-from collections import defaultdict
 from typing import Any
 
 from julee.core.utils import normalize_name
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.app import App
 from julee_hcd.domain.models.epic import Epic
@@ -23,6 +21,11 @@ from julee_hcd.domain.models.story import Story
 from julee_hcd.domain.repositories.epic import EpicRepository
 from julee_hcd.domain.repositories.persona import PersonaRepository
 from julee_hcd.domain.repositories.story import StoryRepository
+
+from ..dtos.derive_personas import (
+    DerivePersonasRequest,
+    DerivePersonasResponse,
+)
 
 
 def _derive_raw(stories: list[Story], epics: list[Epic]) -> dict[str, dict[str, Any]]:
@@ -87,16 +90,6 @@ def derive_personas_from_stories(
         for data in _derive_raw(stories, epics).values()
     ]
     return sorted(personas, key=lambda p: p.name)
-
-
-class DerivePersonasRequest(BaseModel):
-    """Request for deriving personas from stories and epics."""
-
-
-class DerivePersonasResponse(BaseModel):
-    """Response from deriving personas."""
-
-    personas: list[Persona]
 
 
 class DerivePersonasUseCase:
@@ -258,8 +251,10 @@ def derive_personas_by_app_type(
     for app in apps:
         app_types[app.slug] = app.app_type.value if app.app_type else "unknown"
 
-    # Group personas by app type
-    personas_by_type: dict[str, list[Persona]] = defaultdict(list)
+    # Group personas by app type. A plain dict rather than a
+    # defaultdict: collections is not part of the language a use case
+    # speaks, and setdefault says the same thing in it.
+    personas_by_type: dict[str, list[Persona]] = {}
 
     for persona in all_personas:
         # Find all app types this persona uses
@@ -270,7 +265,7 @@ def derive_personas_by_app_type(
 
         # Add persona to each type group
         for app_type in persona_types:
-            personas_by_type[app_type].append(persona)
+            personas_by_type.setdefault(app_type, []).append(persona)
 
     # Sort personas within each group
     return {

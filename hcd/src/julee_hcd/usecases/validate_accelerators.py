@@ -9,35 +9,14 @@ with discovered bounded contexts (from src/ directory scanning) to identify:
 """
 
 from julee.core.entities.accelerator import AcceleratorValidationIssue
-from pydantic import BaseModel
 
 from julee_hcd.domain.repositories.accelerator import AcceleratorRepository
 from julee_hcd.domain.repositories.code_info import CodeInfoRepository
 
-
-class ValidateAcceleratorsRequest(BaseModel):
-    """Request for validating accelerators against code structure.
-
-    Compares documented accelerators (from RST) with discovered bounded
-    contexts (from src/ directory scanning).
-    """
-
-
-class ValidateAcceleratorsResponse(BaseModel):
-    """Response from validating accelerators against code structure.
-
-    Contains lists of matched accelerators and any issues found.
-    """
-
-    documented_slugs: list[str]
-    discovered_slugs: list[str]
-    matched_slugs: list[str]
-    issues: list[AcceleratorValidationIssue]
-
-    @property
-    def is_valid(self) -> bool:
-        """Check if validation passed with no issues."""
-        return len(self.issues) == 0
+from ..dtos.validate_accelerators import (
+    ValidateAcceleratorsRequest,
+    ValidateAcceleratorsResponse,
+)
 
 
 class ValidateAcceleratorsUseCase:
