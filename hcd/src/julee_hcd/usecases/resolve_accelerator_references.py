@@ -7,12 +7,16 @@ from julee.core.entities.accelerator import Accelerator
 from julee.core.entities.bounded_context_info import BoundedContextInfo
 from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.app import App
 from julee_hcd.domain.models.integration import Integration
 from julee_hcd.domain.models.journey import Journey
 from julee_hcd.domain.models.story import Story
+
+from ..dtos.resolve_accelerator_references import (
+    ResolveAcceleratorReferencesRequest,
+    ResolveAcceleratorReferencesResponse,
+)
 
 
 def get_apps_for_accelerator(
@@ -211,31 +215,6 @@ def get_code_info_for_accelerator(
             return info
 
     return None
-
-
-class ResolveAcceleratorReferencesRequest(BaseModel):
-    """What an accelerator's references are resolved against."""
-
-    accelerator: Accelerator
-    accelerators: tuple[Accelerator, ...] = ()
-    apps: tuple[App, ...] = ()
-    stories: tuple[Story, ...] = ()
-    journeys: tuple[Journey, ...] = ()
-    integrations: tuple[Integration, ...] = ()
-    code_infos: tuple[BoundedContextInfo, ...] = ()
-
-
-class ResolveAcceleratorReferencesResponse(BaseModel):
-    """Everything an accelerator is connected to."""
-
-    apps: tuple[App, ...] = ()
-    stories: tuple[Story, ...] = ()
-    journeys: tuple[Journey, ...] = ()
-    source_integrations: tuple[Integration, ...] = ()
-    publish_integrations: tuple[Integration, ...] = ()
-    dependents: tuple[Accelerator, ...] = ()
-    fed_by: tuple[Accelerator, ...] = ()
-    code_info: BoundedContextInfo | None = None
 
 
 class ResolveAcceleratorReferencesUseCase:

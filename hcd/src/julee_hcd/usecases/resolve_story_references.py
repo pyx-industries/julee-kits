@@ -4,11 +4,15 @@ Finds epics and journeys that reference a specific story.
 """
 
 from julee.core.utils import normalize_name
-from pydantic import BaseModel
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.journey import Journey
 from julee_hcd.domain.models.story import Story
+
+from ..dtos.resolve_story_references import (
+    ResolveStoryReferencesRequest,
+    ResolveStoryReferencesResponse,
+)
 
 
 def get_epics_for_story(
@@ -95,23 +99,6 @@ def get_related_stories(
             related.append(s)
 
     return sorted(related, key=lambda s: s.feature_title)
-
-
-class ResolveStoryReferencesRequest(BaseModel):
-    """What a story's references are resolved against."""
-
-    story: Story
-    stories: tuple[Story, ...] = ()
-    epics: tuple[Epic, ...] = ()
-    journeys: tuple[Journey, ...] = ()
-
-
-class ResolveStoryReferencesResponse(BaseModel):
-    """Everything that refers to a story."""
-
-    epics: tuple[Epic, ...] = ()
-    journeys: tuple[Journey, ...] = ()
-    related_stories: tuple[Story, ...] = ()
 
 
 class ResolveStoryReferencesUseCase:
