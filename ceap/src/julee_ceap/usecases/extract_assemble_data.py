@@ -7,7 +7,6 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
-import io
 import json
 import logging
 from collections.abc import Mapping
@@ -15,7 +14,6 @@ from dataclasses import replace
 from typing import Any
 
 import jsonschema
-from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol, validate_parameter_types
@@ -32,7 +30,6 @@ from julee_ceap.domain.models import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.document.multihash import (
-    ContentMultihash,
     content_multihash,
 )
 from julee_ceap.domain.oracles import SchemaOracle
@@ -607,9 +604,7 @@ class ExtractAssembleDataUseCase:
         # Store the content, then name it: the multihash comes back
         # from the store rather than being computed here.
         content_bytes = assembled_content.encode("utf-8")
-        stored = await self.document_repo.store_content(
-            ContentStream(io.BytesIO(content_bytes))
-        )
+        stored = await self.document_repo.store_content(content_bytes)
 
         now = self._clock_witness.now()
         assembled_document = Document(
@@ -621,7 +616,7 @@ class ExtractAssembleDataUseCase:
             ),
             content_type=NonEmptyText("application/json"),
             size_bytes=len(content_bytes),
-            content_multihash=ContentMultihash(stored),
+            content_multihash=stored,
             status=DocumentStatus.ASSEMBLED,
             created_at=now,
             updated_at=now,

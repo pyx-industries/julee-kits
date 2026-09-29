@@ -12,14 +12,12 @@ The use case follows clean architecture principles:
 - Can be tested independently of infrastructure concerns
 """
 
-import io
 import json
 import logging
 from pathlib import Path
 from typing import Any
 
 import yaml
-from julee.core.entities.content_stream import ContentStream
 from julee.core.witnesses import ClockWitness, SystemClockWitness
 
 from julee_ceap.domain.models.assembly_specification import (
@@ -869,9 +867,7 @@ class InitializeSystemDataUseCase:
             self.logger.info(content_bytes)
 
         # Store the content, then name it.
-        stored = await self.document_repo.store_content(
-            ContentStream(io.BytesIO(content_bytes))
-        )
+        stored = await self.document_repo.store_content(content_bytes)
         size_bytes = len(content_bytes)
         multihash_of_content = stored
 

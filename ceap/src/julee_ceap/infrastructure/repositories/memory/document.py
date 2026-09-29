@@ -11,17 +11,16 @@ ideal for testing scenarios where external dependencies should be avoided.
 All operations are still async to maintain interface compatibility.
 """
 
-import io
 import logging
 from typing import Any
 
-from julee.core.entities.content_stream import (
-    ContentStream,
-)
 from julee.repositories.memory import MemoryRepositoryMixin
 
 from julee_ceap.domain.models.document import Document
-from julee_ceap.domain.models.document.multihash import content_multihash
+from julee_ceap.domain.models.document.multihash import (
+    ContentMultihash,
+    content_multihash,
+)
 from julee_ceap.domain.repositories.document import DocumentRepository
 
 logger = logging.getLogger(__name__)
@@ -47,10 +46,7 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
         """Content kept apart from metadata, keyed by its own hash.
 
         The shape MinIO uses, for the same reason: content has a name of
-        its own, so it can be read again. Bytes rather than the stored
-        document's ContentStream, because a stream is spent once read —
-        a double that kept one would hand the second reader an empty
-        result where the real thing hands over the content (julee#124).
+        its own, so it can be read again.
         """
 
         logger.debug("Initializing MemoryDocumentRepository")
@@ -69,22 +65,21 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
         """
         return self.get_entity(document_id)
 
-    async def store_content(self, content: ContentStream) -> str:
+    async def store_content(self, content: bytes) -> ContentMultihash:
         """Keep these bytes under their own name, and say what it is.
 
         Args:
-            content: The bytes to store, read once from where it is
+            content: The bytes to store
 
         Returns:
             The multihash the content is stored under
         """
-        raw = content.read()
-        multihash = content_multihash(raw)
-        self.content_by_multihash[multihash] = raw
+        multihash = ContentMultihash(content_multihash(content))
+        self.content_by_multihash[multihash] = content
 
         self.logger.debug(
             "Content stored",
-            extra={"content_multihash": multihash, "content_size": len(raw)},
+            extra={"content_multihash": multihash, "content_size": len(content)},
         )
 
         return multihash
@@ -101,17 +96,14 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
         """
         self.save_entity(document, "document_id")
 
-    async def content_of(self, document: Document) -> ContentStream:
-        """The content this document names, as a fresh stream.
-
-        A new stream over the stored bytes each call, so two callers
-        never share one and nobody has to rewind.
+    async def content_of(self, document: Document) -> bytes:
+        """The content this document names.
 
         Args:
             document: The document whose content to read
 
         Returns:
-            A stream over the content, at its start
+            The content
 
         Raises:
             ValueError: If the metadata names content that is not stored
@@ -122,7 +114,7 @@ class MemoryDocumentRepository(DocumentRepository, MemoryRepositoryMixin[Documen
                 f"Document {document.document_id} names content "
                 f"{document.content_multihash}, which was never stored"
             )
-        return ContentStream(io.BytesIO(content))
+        return content
 
     async def generate_id(self) -> str:
         """Generate a unique document identifier.

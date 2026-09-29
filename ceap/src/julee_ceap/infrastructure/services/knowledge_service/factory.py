@@ -9,8 +9,6 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-from julee.core.entities.content_stream import ContentStream
-
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
@@ -43,7 +41,7 @@ class ConfigurableKnowledgeService(KnowledgeService):
         self,
         config: KnowledgeServiceConfig,
         document: Document,
-        content: ContentStream,
+        content: bytes,
     ) -> FileRegistrationResult:
         """Register a document with the knowledge service."""
         service = knowledge_service_factory(config)

@@ -5,7 +5,6 @@ This module provides unit tests for the documents API endpoints,
 focusing on the core functionality of listing documents with pagination.
 """
 
-import io
 from collections.abc import Generator
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -14,7 +13,6 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from fastapi_pagination import add_pagination
-from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.apps.api.dependencies import get_document_repository
@@ -255,9 +253,7 @@ class TestGetDocumentContent:
         # documents name a multihash of their own, so the content has
         # to be stored under that same name to be found.
         doc = sample_documents[0]
-        stored = await memory_repo.store_content(
-            ContentStream(io.BytesIO(b"test content"))
-        )
+        stored = await memory_repo.store_content(b"test content")
         doc = replace(doc, content_multihash=ContentMultihash(stored))
         await memory_repo.save(doc)
 
