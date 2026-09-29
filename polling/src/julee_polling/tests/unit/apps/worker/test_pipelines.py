@@ -35,6 +35,7 @@ from julee_polling.apps.worker.completion import PipelineCompletion
 from julee_polling.apps.worker.pipelines import NewDataDetectionPipeline
 from julee_polling.domain.values.handoff import Handoff
 from julee_polling.domain.values.polling_config import (
+    HttpConnection,
     PollingConfig,
     PollingProtocol,
     PollingResult,
@@ -249,7 +250,7 @@ def sample_config():
     return PollingConfig(
         endpoint_identifier="test-api",
         polling_protocol=PollingProtocol.HTTP,
-        connection_params={"url": "https://api.example.com/data"},
+        connection_params=HttpConnection(url="https://api.example.com/data"),
         timeout_seconds=30,
     )
 

@@ -11,6 +11,7 @@ Install it, then adopt it::
 
 Example usage:
     from julee_polling.domain.values.polling_config import (
+        HttpConnection,
         PollingConfig,
         PollingProtocol,
     )
@@ -19,7 +20,7 @@ Example usage:
     config = PollingConfig(
         endpoint_identifier="api-v1",
         polling_protocol=PollingProtocol.HTTP,
-        connection_params={"url": "https://api.example.com/data"},
+        connection_params=HttpConnection(url="https://api.example.com/data"),
         timeout_seconds=30
     )
 

@@ -13,6 +13,7 @@ import pytest
 from temporalio.client import Client, ScheduleAlreadyRunningError
 
 from julee_polling.domain.values.polling_config import (
+    HttpConnection,
     PollingConfig,
     PollingProtocol,
 )
@@ -61,7 +62,7 @@ def sample_config():
     return PollingConfig(
         endpoint_identifier="test-api",
         polling_protocol=PollingProtocol.HTTP,
-        connection_params={"url": "https://api.example.com/data"},
+        connection_params=HttpConnection(url="https://api.example.com/data"),
         timeout_seconds=30,
     )
 
@@ -207,7 +208,7 @@ class TestPollingManagerStartPolling:
         config2 = PollingConfig(
             endpoint_identifier="test-api-2",
             polling_protocol=PollingProtocol.HTTP,
-            connection_params={"url": "https://api2.example.com/data"},
+            connection_params=HttpConnection(url="https://api2.example.com/data"),
         )
 
         # Start polling for multiple endpoints

@@ -13,6 +13,7 @@ from julee.core.entities.acknowledgement import Acknowledgement
 
 from julee_polling.domain.values.handoff import Handoff
 from julee_polling.domain.values.polling_config import (
+    HttpConnection,
     PollingConfig,
     PollingProtocol,
     PollingResult,
@@ -31,6 +32,7 @@ def a_config() -> PollingConfig:
     return PollingConfig(
         endpoint_identifier="test-api",
         polling_protocol=PollingProtocol.HTTP,
+        connection_params=HttpConnection(url="https://api.example.com/data"),
     )
 
 
