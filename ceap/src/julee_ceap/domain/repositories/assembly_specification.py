@@ -25,8 +25,6 @@ repositories:
   AssemblySpecification entities including their JSON schemas and knowledge
   service query mappings for document assembly workflows.
 
-In Temporal workflow contexts, these protocols are implemented by workflow
-stubs that delegate to activities for durability and proper error handling.
 """
 
 from typing import Protocol, runtime_checkable

@@ -26,8 +26,6 @@ repositories:
   complexities of integrating with external knowledge services while
   maintaining a clean, consistent interface.
 
-In Temporal workflow contexts, these protocols are implemented by workflow
-stubs that delegate to activities for durability and proper error handling.
 """
 
 from typing import Protocol, runtime_checkable

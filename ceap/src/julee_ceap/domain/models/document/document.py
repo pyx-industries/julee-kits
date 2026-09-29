@@ -44,7 +44,7 @@ class Document:
 
     It used to be a field, ``content: ContentStream | None``, excluded
     from serialisation because a live stream cannot be serialised. So a
-    Document that had crossed a Temporal boundary never carried it, and
+    Document that had crossed a process boundary never carried it, and
     an invariant saying every document has content was false in transit
     by construction. What that produced was a validator containing
 

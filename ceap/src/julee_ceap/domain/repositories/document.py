@@ -25,8 +25,6 @@ repositories:
   small content (via BytesIO) and large content (via file streams) through
   bytes, read in full by the adapter.
 
-In Temporal workflow contexts, these protocols are implemented by workflow
-stubs that delegate to activities for durability and proper error handling.
 """
 
 from typing import Protocol, runtime_checkable
@@ -63,8 +61,8 @@ class DocumentRepository(BaseRepository[Document], Protocol):
 
         Bytes rather than a stream. This took a ContentStream, which is
         a class with no domain meaning: not an entity, not a value
-        object, and not something that survives a Temporal activity
-        boundary. Every caller already had the bytes in hand and wrapped
+        object, and not something that survives a process boundary.
+        Every caller already had the bytes in hand and wrapped
         them only to satisfy this signature (julee-kits#89).
 
         Args:
@@ -91,10 +89,8 @@ class DocumentRepository(BaseRepository[Document], Protocol):
         is expressible.
 
         Every caller read the stream in full immediately. Whether the
-        adapter buffers is the adapter's business, which the Temporal
-        activity boundary settles anyway: a stream cannot cross it, and
-        ``services/temporal/activities.py`` already re-reads the content
-        rather than passing one (julee-kits#89).
+        adapter buffers is the adapter's business; a stream cannot cross
+        a process boundary and bytes can (julee-kits#89).
 
         Args:
             document: The document whose content to read

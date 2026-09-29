@@ -57,10 +57,10 @@ class ExtractAssembleDataUseCase:
     framework-agnostic. It depends only on repository protocols, not
     concrete implementations.
 
-    In workflow contexts, this use case is called from workflow code with
-    repository stubs that delegate to Temporal activities for durability.
-    The use case remains completely unaware of whether it's running in a
-    workflow context or a simple async context - it just calls repository
+    The repositories and services are whatever the composition root hands
+    in. The use case does not know what stands behind them - it just calls
+    the methods the ports promise, and a durable runtime or a plain async
+    one is the caller's business. It just calls repository
     methods and expects them to work correctly.
 
     Architectural Notes:
@@ -105,19 +105,17 @@ class ExtractAssembleDataUseCase:
             schema_calculator: Reads a schema: the part a pointer names,
                 the part a $ref fragment names, and whether assembled
                 data fits
-            clock_witness: Witness for the current time.
-                Defaults to SystemClockWitness. Inject TemporalClockWitness
-                inside Temporal workflows, where the runtime records what
-                it said so a replay is told the same thing.
-            execution_witness: Witness for the execution ID.
-                Defaults to DefaultExecutionWitness. Inject
-                TemporalExecutionWitness inside Temporal workflows.
+            clock_witness: Witness for the current time. Defaults to
+                SystemClockWitness; a composition root whose runtime
+                replays injects the witness that runtime provides.
+            execution_witness: Witness for the execution ID. Defaults to
+                DefaultExecutionWitness; likewise the runtime's.
 
         .. note::
 
             The repositories passed here may be concrete implementations
-            (for testing or direct execution) or workflow stubs (for
-            Temporal workflow execution). The use case doesn't know or care
+            (for testing or direct execution) or stubs that reach a durable
+            runtime. The use case doesn't know or care
             which - it just calls the methods defined in the protocols.
 
             Repositories are validated at construction time to catch
@@ -310,48 +308,21 @@ class ExtractAssembleDataUseCase:
         self, assembly_specification: AssemblySpecification
     ) -> dict[str, KnowledgeServiceQuery]:
         """Retrieve all knowledge service queries needed for this assembly."""
-        query_ids = list(assembly_specification.knowledge_service_queries.values())
-
-        # TODO: TEMPORAL SERIALIZATION ISSUE - Replace with get_many when
-        # fixed
-        #
-        # Issue: Complex return type
-        # Dict[str, Optional[KnowledgeServiceQuery]] from get_many causes
-        # Temporal's type system to fall back to typing.Any, resulting in
-        # Pydantic models being deserialized as plain dictionaries instead of
-        # model instances.
-        #
-        # Error: "SERIALIZATION ISSUE DETECTED: parameter
-        # 'queries'['query-id'] is dict instead of KnowledgeServiceQuery!"
-        #
-        # Root Cause: Temporal's type resolution cannot handle the complex
-        # nested generic type Dict[str, Optional[T]] and passes typing.Any to
-        # the data converter, which then deserializes to plain dicts.
-        #
-        # Investigation: Full analysis showed:
-        # - Data converter debug output confirming typing.Any fallback
-        # - Repository type resolution working correctly
-        # - Guard check system detecting the exact issue
-        # - Evidence that simpler types (Optional[T]) work fine
-        #
-        # Temporary Fix: Use individual get() calls which return Optional[T]
-        # that Temporal handles correctly.
-        #
-        # Future Solutions:
-        # 1. Fix Temporal's type resolution for complex nested generics
-        # 2. Create custom data converter for this specific type pattern
-        # 3. Simplify repository interface to avoid Optional in batch
-        #    operations
-        #
-        # Currently using individual get calls to avoid complex type
-        # serialization issue
-        queries: dict[str, KnowledgeServiceQuery] = {}
-        for query_id in query_ids:
-            query = await self.knowledge_service_query_repo.get(query_id)
-            if not query:
-                raise ValueError(f"Knowledge service query not found: {query_id}")
-            queries[query_id] = query
-        return queries
+        # As plain strs: the port takes list[str], and to mypy a list of
+        # the checked kind is not one, whatever each element is.
+        query_ids = [
+            str(query_id)
+            for query_id in assembly_specification.knowledge_service_queries.values()
+        ]
+        found = await self.knowledge_service_query_repo.get_many(query_ids)
+        missing = [query_id for query_id in query_ids if found.get(query_id) is None]
+        if missing:
+            raise ValueError(f"Knowledge service query not found: {missing[0]}")
+        return {
+            query_id: query
+            for query_id in query_ids
+            if (query := found[query_id]) is not None
+        }
 
     async def _resolve_jsonschema(self, schema: JsonSchema) -> JsonSchema:
         """Fetch and resolve a bare $ref schema; return inline schemas unchanged.
