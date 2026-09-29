@@ -21,7 +21,6 @@ from typing import Any
 import yaml
 from julee.core.entities.content_stream import ContentStream
 from julee.core.witnesses import ClockWitness, SystemClockWitness
-from pydantic import BaseModel
 
 from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,
@@ -45,19 +44,16 @@ from julee_ceap.domain.repositories.knowledge_service_query import (
     KnowledgeServiceQueryRepository,
 )
 
+from ..dtos.initialize_system_data import (
+    InitializeSystemDataRequest,
+    InitializeSystemDataResponse,
+)
+
 logger = logging.getLogger(__name__)
 
 
 _FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
 """Demo fixtures shipped with the CEAP module."""
-
-
-class InitializeSystemDataRequest(BaseModel):
-    pass
-
-
-class InitializeSystemDataResponse(BaseModel):
-    pass
 
 
 class InitializeSystemDataUseCase:
