@@ -49,6 +49,9 @@ from julee_ceap.infrastructure.repositories.minio.knowledge_service_config impor
 from julee_ceap.infrastructure.repositories.minio.knowledge_service_query import (
     MinioKnowledgeServiceQueryRepository,
 )
+from julee_ceap.infrastructure.services.system_data import (
+    FixtureSystemDataService,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +239,11 @@ class StartupDependenciesProvider:
         query_repo = await self.get_knowledge_service_query_repository()
         assembly_spec_repo = await self.get_assembly_specification_repository()
         use_case = InitializeSystemDataUseCase(
-            config_repo, document_repo, query_repo, assembly_spec_repo
+            config_repo,
+            document_repo,
+            query_repo,
+            assembly_spec_repo,
+            FixtureSystemDataService(),
         )
 
         # Create and return service

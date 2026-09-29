@@ -1066,7 +1066,7 @@ wheels = [
 [[package]]
 name = "julee"
 version = "0.13.0"
-source = { git = "https://github.com/pyx-industries/julee.git?branch=deep-clean#6e9e54073dc37be4fc82e681c15d05d03b256a22" }
+source = { git = "https://github.com/pyx-industries/julee.git?branch=deep-clean#5af17c177b3dc22cce5e563f704cdb6afb205816" }
 dependencies = [
     { name = "pydantic" },
 ]
