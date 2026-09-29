@@ -32,6 +32,9 @@ from julee_ceap.infrastructure.repositories.memory.knowledge_service_config impo
 from julee_ceap.infrastructure.repositories.memory.knowledge_service_query import (
     MemoryKnowledgeServiceQueryRepository,
 )
+from julee_ceap.infrastructure.services.system_data import (
+    FixtureSystemDataService,
+)
 from julee_ceap.usecases.initialize_system_data import (
     InitializeSystemDataRequest,
     InitializeSystemDataUseCase,
@@ -80,6 +83,7 @@ def use_case(
         memory_document_repository,
         memory_query_repository,
         memory_assembly_spec_repository,
+        system_data=FixtureSystemDataService(),
     )
 
 
@@ -278,12 +282,13 @@ class TestInitializeSystemDataUseCase:
             memory_document_repository,
             memory_query_repository,
             memory_assembly_spec_repository,
+            system_data=FixtureSystemDataService(),
         )
         assert use_case.config_repo is memory_config_repository
         assert use_case.document_repo is memory_document_repository
         assert use_case.query_repo is memory_query_repository
         assert use_case.assembly_spec_repo is memory_assembly_spec_repository
-        assert use_case.logger is not None
+        assert use_case.system_data is not None
 
     @pytest.mark.asyncio
     async def test_config_initialization_only(
@@ -300,6 +305,7 @@ class TestInitializeSystemDataUseCase:
             memory_document_repository,
             memory_query_repository,
             memory_assembly_spec_repository,
+            system_data=FixtureSystemDataService(),
         )
 
         # Execute the use case to initialize configs
@@ -366,45 +372,15 @@ class TestYamlFixtureIntegration:
             "Duplicate knowledge_service_id found in fixture"
         )
 
-    @pytest.mark.asyncio
-    async def test_load_fixture_configurations_method(
-        self, use_case: InitializeSystemDataUseCase
-    ) -> None:
-        """Test the _load_fixture_configurations method directly."""
-        configs = use_case._load_fixture_configurations()
+    # Two tests here asked the use case to load a fixture file and to
+    # build a config from what it found. Both methods moved to
+    # FixtureSystemDataService, and the questions moved with them —
+    # infrastructure/services/system_data/tests/test_fixtures.py.
 
-        assert isinstance(configs, list)
-        assert len(configs) > 0
-
-        # Verify each config has required structure
-        for config in configs:
-            assert isinstance(config, dict)
-            assert "knowledge_service_id" in config
-            assert "name" in config
-            assert "description" in config
-            assert "service_api" in config
-
-    @pytest.mark.asyncio
-    async def test_create_config_from_fixture_data_method(
-        self,
-        use_case: InitializeSystemDataUseCase,
-        fixture_configs: list[dict],
-    ) -> None:
-        """Test the _create_config_from_fixture_data method directly."""
-        fixture_config = fixture_configs[0]
-
-        created_config = use_case._create_config_from_fixture_data(fixture_config)
-
-        assert isinstance(created_config, KnowledgeServiceConfig)
-        assert (
-            created_config.knowledge_service_id
-            == fixture_config["knowledge_service_id"]
-        )
-        assert created_config.name == fixture_config["name"]
-        assert created_config.description == fixture_config["description"]
-        assert created_config.service_api.value == fixture_config["service_api"]
-        assert created_config.created_at is not None
-        assert created_config.updated_at is not None
+    # Two tests here asked the use case to load a fixture file and to
+    # build a config from what it found. Both methods moved to
+    # FixtureSystemDataService, and the questions moved with them —
+    # infrastructure/services/system_data/tests/test_fixtures.py.
 
 
 class TestInitializeSystemDataUseCaseIntegration:
