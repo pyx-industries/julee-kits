@@ -5,7 +5,7 @@ Do not edit — regenerate with generate-crud.sh.
 
 from typing import Any
 
-from julee.core.entities.text import Slug
+from julee.core.entities.text import Name, Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -14,7 +14,7 @@ from julee.core.usecases.generic_crud import (
     UpdateUseCase,
 )
 
-from julee_c4.domain.models.deployment_node import DeploymentNode
+from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
 from julee_c4.domain.repositories.deployment_node import DeploymentNodeRepository
 
 from ..dtos.crud_deployment_node import (
@@ -43,7 +43,7 @@ class GetDeploymentNodeUseCase(GetUseCase[DeploymentNode, DeploymentNodeReposito
     ) -> GetDeploymentNodeResponse:
         """Execute the get deployment_node use case."""
         entity = await self._get_by_id(request.slug)
-        return GetDeploymentNodeResponse(deployment_node=entity)
+        return GetDeploymentNodeResponse.of(entity)
 
 
 class ListDeploymentNodesUseCase(ListUseCase[DeploymentNode, DeploymentNodeRepository]):
@@ -58,9 +58,7 @@ class ListDeploymentNodesUseCase(ListUseCase[DeploymentNode, DeploymentNodeRepos
     ) -> ListDeploymentNodesResponse:
         """Execute the list deployment_nodes use case."""
         entities = await self._list_all()
-        return ListDeploymentNodesResponse(
-            deployment_nodes=entities, total_count=len(entities)
-        )
+        return ListDeploymentNodesResponse.of(entities)
 
 
 class CreateDeploymentNodeUseCase(
@@ -82,9 +80,9 @@ class CreateDeploymentNodeUseCase(
         """Execute the create deployment_node use case."""
         entity = await self._create(
             entity_id=request.slug,
-            name=request.name,
+            name=Name(request.name),
             environment=request.environment,
-            node_type=request.node_type,
+            node_type=NodeType(request.node_type),
             description=request.description,
             technology=request.technology,
             instances=request.instances,
@@ -92,7 +90,7 @@ class CreateDeploymentNodeUseCase(
             tags=request.tags,
             docname=request.docname,
         )
-        return CreateDeploymentNodeResponse(deployment_node=entity)
+        return CreateDeploymentNodeResponse.of(entity)
 
 
 class UpdateDeploymentNodeUseCase(
@@ -108,8 +106,13 @@ class UpdateDeploymentNodeUseCase(
         self, request: UpdateDeploymentNodeRequest
     ) -> UpdateDeploymentNodeResponse:
         """Execute the update deployment_node use case."""
-        entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateDeploymentNodeResponse(deployment_node=entity)
+        changes = request.changes()
+        if changes.get("name") is not None:
+            changes["name"] = Name(changes["name"])
+        if changes.get("node_type") is not None:
+            changes["node_type"] = NodeType(changes["node_type"])
+        entity = await self._update_by_id(request.slug, changes)
+        return UpdateDeploymentNodeResponse.of(entity)
 
 
 class DeleteDeploymentNodeUseCase(

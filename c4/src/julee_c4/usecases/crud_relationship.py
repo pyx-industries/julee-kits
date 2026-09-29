@@ -14,7 +14,7 @@ from julee.core.usecases.generic_crud import (
     UpdateUseCase,
 )
 
-from julee_c4.domain.models.relationship import Relationship
+from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 
 from ..dtos.crud_relationship import (
@@ -41,7 +41,7 @@ class GetRelationshipUseCase(GetUseCase[Relationship, RelationshipRepository]):
     async def execute(self, request: GetRelationshipRequest) -> GetRelationshipResponse:
         """Execute the get relationship use case."""
         entity = await self._get_by_id(request.slug)
-        return GetRelationshipResponse(relationship=entity)
+        return GetRelationshipResponse.of(entity)
 
 
 class ListRelationshipsUseCase(ListUseCase[Relationship, RelationshipRepository]):
@@ -56,9 +56,7 @@ class ListRelationshipsUseCase(ListUseCase[Relationship, RelationshipRepository]
     ) -> ListRelationshipsResponse:
         """Execute the list relationships use case."""
         entities = await self._list_all()
-        return ListRelationshipsResponse(
-            relationships=entities, total_count=len(entities)
-        )
+        return ListRelationshipsResponse.of(entities)
 
 
 class CreateRelationshipUseCase(CreateUseCase[Relationship, RelationshipRepository]):
@@ -85,17 +83,17 @@ class CreateRelationshipUseCase(CreateUseCase[Relationship, RelationshipReposito
         """Execute the create relationship use case."""
         entity = await self._create(
             entity_id=request.slug,
-            source_type=request.source_type,
-            source_slug=request.source_slug,
-            destination_type=request.destination_type,
-            destination_slug=request.destination_slug,
+            source_type=ElementType(request.source_type),
+            source_slug=Slug(request.source_slug),
+            destination_type=ElementType(request.destination_type),
+            destination_slug=Slug(request.destination_slug),
             description=request.description,
             technology=request.technology,
             tags=request.tags,
             bidirectional=request.bidirectional,
             docname=request.docname,
         )
-        return CreateRelationshipResponse(relationship=entity)
+        return CreateRelationshipResponse.of(entity)
 
 
 class UpdateRelationshipUseCase(UpdateUseCase[Relationship, RelationshipRepository]):
@@ -109,8 +107,17 @@ class UpdateRelationshipUseCase(UpdateUseCase[Relationship, RelationshipReposito
         self, request: UpdateRelationshipRequest
     ) -> UpdateRelationshipResponse:
         """Execute the update relationship use case."""
-        entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateRelationshipResponse(relationship=entity)
+        changes = request.changes()
+        if changes.get("destination_slug") is not None:
+            changes["destination_slug"] = Slug(changes["destination_slug"])
+        if changes.get("destination_type") is not None:
+            changes["destination_type"] = ElementType(changes["destination_type"])
+        if changes.get("source_slug") is not None:
+            changes["source_slug"] = Slug(changes["source_slug"])
+        if changes.get("source_type") is not None:
+            changes["source_type"] = ElementType(changes["source_type"])
+        entity = await self._update_by_id(request.slug, changes)
+        return UpdateRelationshipResponse.of(entity)
 
 
 class DeleteRelationshipUseCase(DeleteUseCase[Relationship, RelationshipRepository]):

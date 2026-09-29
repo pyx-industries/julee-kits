@@ -3,11 +3,53 @@
 Do not edit — regenerate with generate-crud.sh.
 """
 
+from collections.abc import Mapping
 from typing import Any
 
 from pydantic import BaseModel
 
 from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
+from julee_c4.domain.values.container_instance import ContainerInstance
+
+
+class DeploymentNodeMessage(BaseModel):
+    """What a DeploymentNode is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    slug: str
+    name: str
+    environment: str
+    node_type: NodeType
+    description: str
+    technology: str
+    instances: int
+    parent_slug: str | None
+    container_instances: tuple[ContainerInstance, ...]
+    properties: Mapping[str, str]
+    tags: tuple[str, ...]
+    docname: str
+
+    @classmethod
+    def of(cls, entity: DeploymentNode) -> "DeploymentNodeMessage":
+        """The message for one deployment_node."""
+        return cls(
+            slug=str(entity.slug),
+            name=str(entity.name),
+            environment=entity.environment,
+            node_type=entity.node_type,
+            description=entity.description,
+            technology=entity.technology,
+            instances=entity.instances,
+            parent_slug=None if entity.parent_slug is None else str(entity.parent_slug),
+            container_instances=entity.container_instances,
+            properties=entity.properties,
+            tags=entity.tags,
+            docname=entity.docname,
+        )
 
 
 class GetDeploymentNodeRequest(BaseModel):
@@ -19,7 +61,12 @@ class GetDeploymentNodeRequest(BaseModel):
 class GetDeploymentNodeResponse(BaseModel):
     """Response for getting a DeploymentNode."""
 
-    deployment_node: DeploymentNode
+    deployment_node: DeploymentNodeMessage
+
+    @classmethod
+    def of(cls, entity: DeploymentNode) -> "GetDeploymentNodeResponse":
+        """The response for the deployment_node that was found."""
+        return cls(deployment_node=DeploymentNodeMessage.of(entity))
 
 
 class ListDeploymentNodesRequest(BaseModel):
@@ -27,10 +74,21 @@ class ListDeploymentNodesRequest(BaseModel):
 
 
 class ListDeploymentNodesResponse(BaseModel):
-    """Response for listing all DeploymentNodes."""
+    """Response for listing all DeploymentNodes.
 
-    deployment_nodes: list[DeploymentNode]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    deployment_nodes: list[DeploymentNodeMessage]
+
+    @classmethod
+    def of(cls, entities: list[DeploymentNode]) -> "ListDeploymentNodesResponse":
+        """The response for the deployment_nodes that were found."""
+        return cls(
+            deployment_nodes=[DeploymentNodeMessage.of(entity) for entity in entities]
+        )
 
 
 class CreateDeploymentNodeRequest(BaseModel):
@@ -51,7 +109,12 @@ class CreateDeploymentNodeRequest(BaseModel):
 class CreateDeploymentNodeResponse(BaseModel):
     """Response for creating a DeploymentNode."""
 
-    deployment_node: DeploymentNode
+    deployment_node: DeploymentNodeMessage
+
+    @classmethod
+    def of(cls, entity: DeploymentNode) -> "CreateDeploymentNodeResponse":
+        """The response for the deployment_node that was created."""
+        return cls(deployment_node=DeploymentNodeMessage.of(entity))
 
 
 class UpdateDeploymentNodeRequest(BaseModel):
@@ -86,7 +149,12 @@ class UpdateDeploymentNodeRequest(BaseModel):
 class UpdateDeploymentNodeResponse(BaseModel):
     """Response for updating a DeploymentNode."""
 
-    deployment_node: DeploymentNode
+    deployment_node: DeploymentNodeMessage
+
+    @classmethod
+    def of(cls, entity: DeploymentNode) -> "UpdateDeploymentNodeResponse":
+        """The response for the deployment_node as it now is."""
+        return cls(deployment_node=DeploymentNodeMessage.of(entity))
 
 
 class DeleteDeploymentNodeRequest(BaseModel):

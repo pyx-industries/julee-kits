@@ -10,6 +10,42 @@ from pydantic import BaseModel
 from julee_c4.domain.models.relationship import ElementType, Relationship
 
 
+class RelationshipMessage(BaseModel):
+    """What a Relationship is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    source_type: ElementType
+    source_slug: str
+    destination_type: ElementType
+    destination_slug: str
+    description: str
+    technology: str
+    tags: tuple[str, ...]
+    bidirectional: bool
+    docname: str
+    slug: str
+
+    @classmethod
+    def of(cls, entity: Relationship) -> "RelationshipMessage":
+        """The message for one relationship."""
+        return cls(
+            source_type=entity.source_type,
+            source_slug=str(entity.source_slug),
+            destination_type=entity.destination_type,
+            destination_slug=str(entity.destination_slug),
+            description=entity.description,
+            technology=entity.technology,
+            tags=entity.tags,
+            bidirectional=entity.bidirectional,
+            docname=entity.docname,
+            slug=str(entity.slug),
+        )
+
+
 class GetRelationshipRequest(BaseModel):
     """Request for getting a Relationship by slug."""
 
@@ -19,7 +55,12 @@ class GetRelationshipRequest(BaseModel):
 class GetRelationshipResponse(BaseModel):
     """Response for getting a Relationship."""
 
-    relationship: Relationship
+    relationship: RelationshipMessage
+
+    @classmethod
+    def of(cls, entity: Relationship) -> "GetRelationshipResponse":
+        """The response for the relationship that was found."""
+        return cls(relationship=RelationshipMessage.of(entity))
 
 
 class ListRelationshipsRequest(BaseModel):
@@ -27,10 +68,21 @@ class ListRelationshipsRequest(BaseModel):
 
 
 class ListRelationshipsResponse(BaseModel):
-    """Response for listing all Relationships."""
+    """Response for listing all Relationships.
 
-    relationships: list[Relationship]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    relationships: list[RelationshipMessage]
+
+    @classmethod
+    def of(cls, entities: list[Relationship]) -> "ListRelationshipsResponse":
+        """The response for the relationships that were found."""
+        return cls(
+            relationships=[RelationshipMessage.of(entity) for entity in entities]
+        )
 
 
 class CreateRelationshipRequest(BaseModel):
@@ -51,7 +103,12 @@ class CreateRelationshipRequest(BaseModel):
 class CreateRelationshipResponse(BaseModel):
     """Response for creating a Relationship."""
 
-    relationship: Relationship
+    relationship: RelationshipMessage
+
+    @classmethod
+    def of(cls, entity: Relationship) -> "CreateRelationshipResponse":
+        """The response for the relationship that was created."""
+        return cls(relationship=RelationshipMessage.of(entity))
 
 
 class UpdateRelationshipRequest(BaseModel):
@@ -86,7 +143,12 @@ class UpdateRelationshipRequest(BaseModel):
 class UpdateRelationshipResponse(BaseModel):
     """Response for updating a Relationship."""
 
-    relationship: Relationship
+    relationship: RelationshipMessage
+
+    @classmethod
+    def of(cls, entity: Relationship) -> "UpdateRelationshipResponse":
+        """The response for the relationship as it now is."""
+        return cls(relationship=RelationshipMessage.of(entity))
 
 
 class DeleteRelationshipRequest(BaseModel):

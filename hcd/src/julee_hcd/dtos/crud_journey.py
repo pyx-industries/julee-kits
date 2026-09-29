@@ -7,7 +7,52 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from julee_hcd.domain.models.journey import Journey, JourneyStep
+from julee_hcd.domain.models.journey import Journey
+from julee_hcd.domain.values.journey_step import JourneyStep
+
+
+class JourneyMessage(BaseModel):
+    """What a Journey is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    solution_slug: str
+    docname: str
+    page_title: str
+    preamble_rst: str
+    epilogue_rst: str
+    slug: str
+    persona: str
+    intent: str
+    outcome: str
+    goal: str
+    depends_on: tuple[str, ...]
+    steps: tuple[JourneyStep, ...]
+    preconditions: tuple[str, ...]
+    postconditions: tuple[str, ...]
+
+    @classmethod
+    def of(cls, entity: Journey) -> "JourneyMessage":
+        """The message for one journey."""
+        return cls(
+            solution_slug=entity.solution_slug,
+            docname=entity.docname,
+            page_title=entity.page_title,
+            preamble_rst=entity.preamble_rst,
+            epilogue_rst=entity.epilogue_rst,
+            slug=str(entity.slug),
+            persona=entity.persona,
+            intent=entity.intent,
+            outcome=entity.outcome,
+            goal=entity.goal,
+            depends_on=tuple(str(item) for item in entity.depends_on),
+            steps=entity.steps,
+            preconditions=entity.preconditions,
+            postconditions=entity.postconditions,
+        )
 
 
 class GetJourneyRequest(BaseModel):
@@ -19,7 +64,12 @@ class GetJourneyRequest(BaseModel):
 class GetJourneyResponse(BaseModel):
     """Response for getting a Journey."""
 
-    journey: Journey
+    journey: JourneyMessage
+
+    @classmethod
+    def of(cls, entity: Journey) -> "GetJourneyResponse":
+        """The response for the journey that was found."""
+        return cls(journey=JourneyMessage.of(entity))
 
 
 class ListJourneysRequest(BaseModel):
@@ -27,10 +77,19 @@ class ListJourneysRequest(BaseModel):
 
 
 class ListJourneysResponse(BaseModel):
-    """Response for listing all Journeys."""
+    """Response for listing all Journeys.
 
-    journeys: list[Journey]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    journeys: list[JourneyMessage]
+
+    @classmethod
+    def of(cls, entities: list[Journey]) -> "ListJourneysResponse":
+        """The response for the journeys that were found."""
+        return cls(journeys=[JourneyMessage.of(entity) for entity in entities])
 
 
 class CreateJourneyRequest(BaseModel):
@@ -55,7 +114,12 @@ class CreateJourneyRequest(BaseModel):
 class CreateJourneyResponse(BaseModel):
     """Response for creating a Journey."""
 
-    journey: Journey
+    journey: JourneyMessage
+
+    @classmethod
+    def of(cls, entity: Journey) -> "CreateJourneyResponse":
+        """The response for the journey that was created."""
+        return cls(journey=JourneyMessage.of(entity))
 
 
 class UpdateJourneyRequest(BaseModel):
@@ -94,7 +158,12 @@ class UpdateJourneyRequest(BaseModel):
 class UpdateJourneyResponse(BaseModel):
     """Response for updating a Journey."""
 
-    journey: Journey
+    journey: JourneyMessage
+
+    @classmethod
+    def of(cls, entity: Journey) -> "UpdateJourneyResponse":
+        """The response for the journey as it now is."""
+        return cls(journey=JourneyMessage.of(entity))
 
 
 class DeleteJourneyRequest(BaseModel):

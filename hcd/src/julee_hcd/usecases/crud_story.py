@@ -41,7 +41,7 @@ class GetStoryUseCase(GetUseCase[Story, StoryRepository]):
     async def execute(self, request: GetStoryRequest) -> GetStoryResponse:
         """Execute the get story use case."""
         entity = await self._get_by_id(request.slug)
-        return GetStoryResponse(story=entity)
+        return GetStoryResponse.of(entity)
 
 
 class ListStoriesUseCase(ListUseCase[Story, StoryRepository]):
@@ -54,7 +54,7 @@ class ListStoriesUseCase(ListUseCase[Story, StoryRepository]):
     async def execute(self, request: ListStoriesRequest) -> ListStoriesResponse:
         """Execute the list stories use case."""
         entities = await self._list_all()
-        return ListStoriesResponse(stories=entities, total_count=len(entities))
+        return ListStoriesResponse.of(entities)
 
 
 class CreateStoryUseCase(CreateUseCase[Story, StoryRepository]):
@@ -86,7 +86,7 @@ class CreateStoryUseCase(CreateUseCase[Story, StoryRepository]):
             preamble_rst=request.preamble_rst,
             epilogue_rst=request.epilogue_rst,
         )
-        return CreateStoryResponse(story=entity)
+        return CreateStoryResponse.of(entity)
 
 
 class UpdateStoryUseCase(UpdateUseCase[Story, StoryRepository]):
@@ -106,7 +106,7 @@ class UpdateStoryUseCase(UpdateUseCase[Story, StoryRepository]):
         if changes.get("persona") is not None:
             changes["persona"] = Name(changes["persona"])
         entity = await self._update_by_id(request.slug, changes)
-        return UpdateStoryResponse(story=entity)
+        return UpdateStoryResponse.of(entity)
 
 
 class DeleteStoryUseCase(DeleteUseCase[Story, StoryRepository]):

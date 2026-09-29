@@ -41,7 +41,7 @@ class GetJourneyUseCase(GetUseCase[Journey, JourneyRepository]):
     async def execute(self, request: GetJourneyRequest) -> GetJourneyResponse:
         """Execute the get journey use case."""
         entity = await self._get_by_id(request.slug)
-        return GetJourneyResponse(journey=entity)
+        return GetJourneyResponse.of(entity)
 
 
 class ListJourneysUseCase(ListUseCase[Journey, JourneyRepository]):
@@ -54,7 +54,7 @@ class ListJourneysUseCase(ListUseCase[Journey, JourneyRepository]):
     async def execute(self, request: ListJourneysRequest) -> ListJourneysResponse:
         """Execute the list journeys use case."""
         entities = await self._list_all()
-        return ListJourneysResponse(journeys=entities, total_count=len(entities))
+        return ListJourneysResponse.of(entities)
 
 
 class CreateJourneyUseCase(CreateUseCase[Journey, JourneyRepository]):
@@ -86,7 +86,7 @@ class CreateJourneyUseCase(CreateUseCase[Journey, JourneyRepository]):
             preamble_rst=request.preamble_rst,
             epilogue_rst=request.epilogue_rst,
         )
-        return CreateJourneyResponse(journey=entity)
+        return CreateJourneyResponse.of(entity)
 
 
 class UpdateJourneyUseCase(UpdateUseCase[Journey, JourneyRepository]):
@@ -99,7 +99,7 @@ class UpdateJourneyUseCase(UpdateUseCase[Journey, JourneyRepository]):
     async def execute(self, request: UpdateJourneyRequest) -> UpdateJourneyResponse:
         """Execute the update journey use case."""
         entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateJourneyResponse(journey=entity)
+        return UpdateJourneyResponse.of(entity)
 
 
 class DeleteJourneyUseCase(DeleteUseCase[Journey, JourneyRepository]):

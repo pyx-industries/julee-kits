@@ -10,6 +10,50 @@ from pydantic import BaseModel
 from julee_hcd.domain.models.app import App, AppInterface, AppType
 
 
+class AppMessage(BaseModel):
+    """What a App is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    solution_slug: str
+    docname: str
+    page_title: str
+    preamble_rst: str
+    epilogue_rst: str
+    slug: str
+    name: str
+    app_type: AppType
+    status: str | None
+    description: str
+    interface: AppInterface
+    technology: str
+    accelerators: tuple[str, ...]
+    manifest_path: str
+
+    @classmethod
+    def of(cls, entity: App) -> "AppMessage":
+        """The message for one app."""
+        return cls(
+            solution_slug=entity.solution_slug,
+            docname=entity.docname,
+            page_title=entity.page_title,
+            preamble_rst=entity.preamble_rst,
+            epilogue_rst=entity.epilogue_rst,
+            slug=str(entity.slug),
+            name=str(entity.name),
+            app_type=entity.app_type,
+            status=entity.status,
+            description=entity.description,
+            interface=entity.interface,
+            technology=entity.technology,
+            accelerators=entity.accelerators,
+            manifest_path=entity.manifest_path,
+        )
+
+
 class GetAppRequest(BaseModel):
     """Request for getting a App by slug."""
 
@@ -19,7 +63,12 @@ class GetAppRequest(BaseModel):
 class GetAppResponse(BaseModel):
     """Response for getting a App."""
 
-    app: App
+    app: AppMessage
+
+    @classmethod
+    def of(cls, entity: App) -> "GetAppResponse":
+        """The response for the app that was found."""
+        return cls(app=AppMessage.of(entity))
 
 
 class ListAppsRequest(BaseModel):
@@ -27,10 +76,19 @@ class ListAppsRequest(BaseModel):
 
 
 class ListAppsResponse(BaseModel):
-    """Response for listing all Apps."""
+    """Response for listing all Apps.
 
-    apps: list[App]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    apps: list[AppMessage]
+
+    @classmethod
+    def of(cls, entities: list[App]) -> "ListAppsResponse":
+        """The response for the apps that were found."""
+        return cls(apps=[AppMessage.of(entity) for entity in entities])
 
 
 class CreateAppRequest(BaseModel):
@@ -55,7 +113,12 @@ class CreateAppRequest(BaseModel):
 class CreateAppResponse(BaseModel):
     """Response for creating a App."""
 
-    app: App
+    app: AppMessage
+
+    @classmethod
+    def of(cls, entity: App) -> "CreateAppResponse":
+        """The response for the app that was created."""
+        return cls(app=AppMessage.of(entity))
 
 
 class UpdateAppRequest(BaseModel):
@@ -94,7 +157,12 @@ class UpdateAppRequest(BaseModel):
 class UpdateAppResponse(BaseModel):
     """Response for updating a App."""
 
-    app: App
+    app: AppMessage
+
+    @classmethod
+    def of(cls, entity: App) -> "UpdateAppResponse":
+        """The response for the app as it now is."""
+        return cls(app=AppMessage.of(entity))
 
 
 class DeleteAppRequest(BaseModel):

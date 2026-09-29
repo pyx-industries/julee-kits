@@ -5,7 +5,7 @@ Do not edit — regenerate with generate-crud.sh.
 
 from typing import Any
 
-from julee.core.entities.text import Slug
+from julee.core.entities.text import Name, Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -41,7 +41,7 @@ class GetComponentUseCase(GetUseCase[Component, ComponentRepository]):
     async def execute(self, request: GetComponentRequest) -> GetComponentResponse:
         """Execute the get component use case."""
         entity = await self._get_by_id(request.slug)
-        return GetComponentResponse(component=entity)
+        return GetComponentResponse.of(entity)
 
 
 class ListComponentsUseCase(ListUseCase[Component, ComponentRepository]):
@@ -54,7 +54,7 @@ class ListComponentsUseCase(ListUseCase[Component, ComponentRepository]):
     async def execute(self, request: ListComponentsRequest) -> ListComponentsResponse:
         """Execute the list components use case."""
         entities = await self._list_all()
-        return ListComponentsResponse(components=entities, total_count=len(entities))
+        return ListComponentsResponse.of(entities)
 
 
 class CreateComponentUseCase(CreateUseCase[Component, ComponentRepository]):
@@ -72,9 +72,9 @@ class CreateComponentUseCase(CreateUseCase[Component, ComponentRepository]):
         """Execute the create component use case."""
         entity = await self._create(
             entity_id=request.slug,
-            name=request.name,
-            container_slug=request.container_slug,
-            system_slug=request.system_slug,
+            name=Name(request.name),
+            container_slug=Slug(request.container_slug),
+            system_slug=Slug(request.system_slug),
             description=request.description,
             technology=request.technology,
             interface=request.interface,
@@ -82,7 +82,7 @@ class CreateComponentUseCase(CreateUseCase[Component, ComponentRepository]):
             tags=request.tags,
             docname=request.docname,
         )
-        return CreateComponentResponse(component=entity)
+        return CreateComponentResponse.of(entity)
 
 
 class UpdateComponentUseCase(UpdateUseCase[Component, ComponentRepository]):
@@ -94,8 +94,15 @@ class UpdateComponentUseCase(UpdateUseCase[Component, ComponentRepository]):
 
     async def execute(self, request: UpdateComponentRequest) -> UpdateComponentResponse:
         """Execute the update component use case."""
-        entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateComponentResponse(component=entity)
+        changes = request.changes()
+        if changes.get("container_slug") is not None:
+            changes["container_slug"] = Slug(changes["container_slug"])
+        if changes.get("name") is not None:
+            changes["name"] = Name(changes["name"])
+        if changes.get("system_slug") is not None:
+            changes["system_slug"] = Slug(changes["system_slug"])
+        entity = await self._update_by_id(request.slug, changes)
+        return UpdateComponentResponse.of(entity)
 
 
 class DeleteComponentUseCase(DeleteUseCase[Component, ComponentRepository]):

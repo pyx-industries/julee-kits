@@ -10,6 +10,38 @@ from pydantic import BaseModel
 from julee_hcd.domain.models.epic import Epic
 
 
+class EpicMessage(BaseModel):
+    """What a Epic is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    solution_slug: str
+    docname: str
+    page_title: str
+    preamble_rst: str
+    epilogue_rst: str
+    slug: str
+    description: str
+    story_refs: tuple[str, ...]
+
+    @classmethod
+    def of(cls, entity: Epic) -> "EpicMessage":
+        """The message for one epic."""
+        return cls(
+            solution_slug=entity.solution_slug,
+            docname=entity.docname,
+            page_title=entity.page_title,
+            preamble_rst=entity.preamble_rst,
+            epilogue_rst=entity.epilogue_rst,
+            slug=str(entity.slug),
+            description=entity.description,
+            story_refs=entity.story_refs,
+        )
+
+
 class GetEpicRequest(BaseModel):
     """Request for getting a Epic by slug."""
 
@@ -19,7 +51,12 @@ class GetEpicRequest(BaseModel):
 class GetEpicResponse(BaseModel):
     """Response for getting a Epic."""
 
-    epic: Epic
+    epic: EpicMessage
+
+    @classmethod
+    def of(cls, entity: Epic) -> "GetEpicResponse":
+        """The response for the epic that was found."""
+        return cls(epic=EpicMessage.of(entity))
 
 
 class ListEpicsRequest(BaseModel):
@@ -27,10 +64,19 @@ class ListEpicsRequest(BaseModel):
 
 
 class ListEpicsResponse(BaseModel):
-    """Response for listing all Epics."""
+    """Response for listing all Epics.
 
-    epics: list[Epic]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    epics: list[EpicMessage]
+
+    @classmethod
+    def of(cls, entities: list[Epic]) -> "ListEpicsResponse":
+        """The response for the epics that were found."""
+        return cls(epics=[EpicMessage.of(entity) for entity in entities])
 
 
 class CreateEpicRequest(BaseModel):
@@ -49,7 +95,12 @@ class CreateEpicRequest(BaseModel):
 class CreateEpicResponse(BaseModel):
     """Response for creating a Epic."""
 
-    epic: Epic
+    epic: EpicMessage
+
+    @classmethod
+    def of(cls, entity: Epic) -> "CreateEpicResponse":
+        """The response for the epic that was created."""
+        return cls(epic=EpicMessage.of(entity))
 
 
 class UpdateEpicRequest(BaseModel):
@@ -82,7 +133,12 @@ class UpdateEpicRequest(BaseModel):
 class UpdateEpicResponse(BaseModel):
     """Response for updating a Epic."""
 
-    epic: Epic
+    epic: EpicMessage
+
+    @classmethod
+    def of(cls, entity: Epic) -> "UpdateEpicResponse":
+        """The response for the epic as it now is."""
+        return cls(epic=EpicMessage.of(entity))
 
 
 class DeleteEpicRequest(BaseModel):

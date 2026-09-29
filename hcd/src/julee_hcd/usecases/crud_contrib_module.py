@@ -45,7 +45,7 @@ class GetContribModuleUseCase(GetUseCase[ContribModule, ContribModuleRepository]
     ) -> GetContribModuleResponse:
         """Execute the get contrib_module use case."""
         entity = await self._get_by_id(request.slug)
-        return GetContribModuleResponse(contrib_module=entity)
+        return GetContribModuleResponse.of(entity)
 
 
 class ListContribModulesUseCase(ListUseCase[ContribModule, ContribModuleRepository]):
@@ -60,9 +60,7 @@ class ListContribModulesUseCase(ListUseCase[ContribModule, ContribModuleReposito
     ) -> ListContribModulesResponse:
         """Execute the list contrib_modules use case."""
         entities = await self._list_all()
-        return ListContribModulesResponse(
-            contrib_modules=entities, total_count=len(entities)
-        )
+        return ListContribModulesResponse.of(entities)
 
 
 class CreateContribModuleUseCase(CreateUseCase[ContribModule, ContribModuleRepository]):
@@ -92,7 +90,7 @@ class CreateContribModuleUseCase(CreateUseCase[ContribModule, ContribModuleRepos
             preamble_rst=request.preamble_rst,
             epilogue_rst=request.epilogue_rst,
         )
-        return CreateContribModuleResponse(contrib_module=entity)
+        return CreateContribModuleResponse.of(entity)
 
 
 class UpdateContribModuleUseCase(UpdateUseCase[ContribModule, ContribModuleRepository]):
@@ -107,7 +105,7 @@ class UpdateContribModuleUseCase(UpdateUseCase[ContribModule, ContribModuleRepos
     ) -> UpdateContribModuleResponse:
         """Execute the update contrib_module use case."""
         entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateContribModuleResponse(contrib_module=entity)
+        return UpdateContribModuleResponse.of(entity)
 
 
 class DeleteContribModuleUseCase(DeleteUseCase[ContribModule, ContribModuleRepository]):

@@ -7,11 +7,48 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from julee_hcd.domain.models.integration import (
-    Direction,
-    ExternalDependency,
-    Integration,
-)
+from julee_hcd.domain.models.integration import Direction, Integration
+from julee_hcd.domain.values.external_dependency import ExternalDependency
+
+
+class IntegrationMessage(BaseModel):
+    """What a Integration is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    solution_slug: str
+    docname: str
+    page_title: str
+    preamble_rst: str
+    epilogue_rst: str
+    slug: str
+    module: str
+    name: str
+    description: str
+    direction: Direction
+    depends_on: tuple[ExternalDependency, ...]
+    manifest_path: str
+
+    @classmethod
+    def of(cls, entity: Integration) -> "IntegrationMessage":
+        """The message for one integration."""
+        return cls(
+            solution_slug=entity.solution_slug,
+            docname=entity.docname,
+            page_title=entity.page_title,
+            preamble_rst=entity.preamble_rst,
+            epilogue_rst=entity.epilogue_rst,
+            slug=str(entity.slug),
+            module=str(entity.module),
+            name=str(entity.name),
+            description=entity.description,
+            direction=entity.direction,
+            depends_on=entity.depends_on,
+            manifest_path=entity.manifest_path,
+        )
 
 
 class GetIntegrationRequest(BaseModel):
@@ -23,7 +60,12 @@ class GetIntegrationRequest(BaseModel):
 class GetIntegrationResponse(BaseModel):
     """Response for getting a Integration."""
 
-    integration: Integration
+    integration: IntegrationMessage
+
+    @classmethod
+    def of(cls, entity: Integration) -> "GetIntegrationResponse":
+        """The response for the integration that was found."""
+        return cls(integration=IntegrationMessage.of(entity))
 
 
 class ListIntegrationsRequest(BaseModel):
@@ -31,10 +73,19 @@ class ListIntegrationsRequest(BaseModel):
 
 
 class ListIntegrationsResponse(BaseModel):
-    """Response for listing all Integrations."""
+    """Response for listing all Integrations.
 
-    integrations: list[Integration]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    integrations: list[IntegrationMessage]
+
+    @classmethod
+    def of(cls, entities: list[Integration]) -> "ListIntegrationsResponse":
+        """The response for the integrations that were found."""
+        return cls(integrations=[IntegrationMessage.of(entity) for entity in entities])
 
 
 class CreateIntegrationRequest(BaseModel):
@@ -57,7 +108,12 @@ class CreateIntegrationRequest(BaseModel):
 class CreateIntegrationResponse(BaseModel):
     """Response for creating a Integration."""
 
-    integration: Integration
+    integration: IntegrationMessage
+
+    @classmethod
+    def of(cls, entity: Integration) -> "CreateIntegrationResponse":
+        """The response for the integration that was created."""
+        return cls(integration=IntegrationMessage.of(entity))
 
 
 class UpdateIntegrationRequest(BaseModel):
@@ -94,7 +150,12 @@ class UpdateIntegrationRequest(BaseModel):
 class UpdateIntegrationResponse(BaseModel):
     """Response for updating a Integration."""
 
-    integration: Integration
+    integration: IntegrationMessage
+
+    @classmethod
+    def of(cls, entity: Integration) -> "UpdateIntegrationResponse":
+        """The response for the integration as it now is."""
+        return cls(integration=IntegrationMessage.of(entity))
 
 
 class DeleteIntegrationRequest(BaseModel):
