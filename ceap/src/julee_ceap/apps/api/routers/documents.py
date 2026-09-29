@@ -20,7 +20,7 @@ from fastapi.responses import Response
 from fastapi_pagination import Page, paginate
 
 from julee_ceap.apps.api.dependencies import get_document_repository
-from julee_ceap.domain.models.document import Document
+from julee_ceap.apps.api.responses import DocumentResponse
 from julee_ceap.domain.repositories.document import DocumentRepository
 
 logger = logging.getLogger(__name__)
@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", response_model=Page[Document])
+@router.get("/", response_model=Page[DocumentResponse])
 async def list_documents(
     repository: DocumentRepository = Depends(get_document_repository),
-) -> Page[Document]:
+) -> Page[DocumentResponse]:
     """
     List all documents with pagination.
 
@@ -53,7 +53,10 @@ async def list_documents(
         logger.info("Retrieved %d documents", len(documents))
 
         # Return paginated result using fastapi-pagination
-        return cast(Page[Document], paginate(documents))
+        return cast(
+            Page[DocumentResponse],
+            paginate([DocumentResponse.of(d) for d in documents]),
+        )
 
     except Exception as e:
         logger.error("Failed to list documents: %s", e)
@@ -62,11 +65,11 @@ async def list_documents(
         ) from e
 
 
-@router.get("/{document_id}", response_model=Document)
+@router.get("/{document_id}", response_model=DocumentResponse)
 async def get_document(
     document_id: str = Path(..., description="Document ID"),
     repository: DocumentRepository = Depends(get_document_repository),
-) -> Document:
+) -> DocumentResponse:
     """
     Get a single document by ID with metadata only.
 
@@ -93,7 +96,7 @@ async def get_document(
             )
 
         logger.info("Retrieved document metadata: %s", document_id)
-        return document
+        return DocumentResponse.of(document)
 
     except HTTPException:
         # Re-raise HTTP exceptions (like 404) without wrapping
