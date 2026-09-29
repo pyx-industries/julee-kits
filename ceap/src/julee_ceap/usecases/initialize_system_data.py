@@ -31,6 +31,7 @@ from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.domain.repositories.assembly_specification import (
     AssemblySpecificationRepository,
 )
@@ -666,7 +667,7 @@ class InitializeSystemDataUseCase:
             assembly_specification_id=spec_data["assembly_specification_id"],
             name=spec_data["name"],
             applicability=spec_data["applicability"],
-            jsonschema=spec_data["jsonschema"],
+            jsonschema=JsonSchema(spec_data["jsonschema"]),
             knowledge_service_queries=knowledge_service_queries,
             status=status,
             version=version,

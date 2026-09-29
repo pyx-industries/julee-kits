@@ -29,6 +29,7 @@ from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 
 from .factories import AssemblyFactory
 
@@ -155,14 +156,14 @@ class TestAssemblyInstantiation:
                 assembly_specification_id=NonEmptyText(assembly_specification_id),
                 name=Name(name),
                 applicability=NonEmptyText(applicability),
-                jsonschema=jsonschema,
+                jsonschema=JsonSchema(jsonschema),
             )
             assert (
                 assembly.assembly_specification_id == assembly_specification_id.strip()
             )
             assert assembly.name == name.strip()
             assert assembly.applicability == applicability.strip()
-            assert assembly.jsonschema == jsonschema
+            assert assembly.jsonschema.document == jsonschema
             assert assembly.status == AssemblySpecificationStatus.ACTIVE  # Default
             assert assembly.version == "0.1.0"  # Default
         else:
@@ -172,7 +173,7 @@ class TestAssemblyInstantiation:
                     assembly_specification_id=NonEmptyText(assembly_specification_id),
                     name=Name(name),
                     applicability=NonEmptyText(applicability),
-                    jsonschema=jsonschema,
+                    jsonschema=JsonSchema(jsonschema),
                 )
 
 
@@ -192,10 +193,12 @@ class TestAssemblyKnowledgeServiceQueriesValidation:
                 assembly_specification_id=NonEmptyText("test-id"),
                 name=Name("Test Assembly"),
                 applicability=NonEmptyText("Test applicability"),
-                jsonschema={
-                    "type": "object",
-                    "properties": {"test": {"type": "string"}},
-                },
+                jsonschema=JsonSchema(
+                    {
+                        "type": "object",
+                        "properties": {"test": {"type": "string"}},
+                    }
+                ),
                 knowledge_service_queries={"/properties/test": NonEmptyText("")},
             )
 
@@ -234,10 +237,12 @@ class TestAssemblyKnowledgeServiceQueriesValidation:
                 assembly_specification_id=NonEmptyText("test-id"),
                 name=Name("Test Assembly"),
                 applicability=NonEmptyText("Test applicability"),
-                jsonschema={
-                    "type": "object",
-                    "properties": {"test": {"type": "string"}},
-                },
+                jsonschema=JsonSchema(
+                    {
+                        "type": "object",
+                        "properties": {"test": {"type": "string"}},
+                    }
+                ),
                 knowledge_service_queries=knowledge_service_queries,
             )
             assert assembly.knowledge_service_queries == knowledge_service_queries
@@ -248,10 +253,12 @@ class TestAssemblyKnowledgeServiceQueriesValidation:
                     assembly_specification_id=NonEmptyText("test-id"),
                     name=Name("Test Assembly"),
                     applicability=NonEmptyText("Test applicability"),
-                    jsonschema={
-                        "type": "object",
-                        "properties": {"test": {"type": "string"}},
-                    },
+                    jsonschema=JsonSchema(
+                        {
+                            "type": "object",
+                            "properties": {"test": {"type": "string"}},
+                        }
+                    ),
                     knowledge_service_queries=knowledge_service_queries,
                 )
 
@@ -339,9 +346,9 @@ class TestAssemblyJsonSchemaValidation:
                 assembly_specification_id=NonEmptyText("test-id"),
                 name=Name("Test Assembly"),
                 applicability=NonEmptyText("Test applicability"),
-                jsonschema=jsonschema,
+                jsonschema=JsonSchema(jsonschema),
             )
-            assert assembly.jsonschema == jsonschema
+            assert assembly.jsonschema.document == jsonschema
         else:
             # Should raise validation error
             with pytest.raises(Exception) as exc_info:
@@ -349,7 +356,7 @@ class TestAssemblyJsonSchemaValidation:
                     assembly_specification_id=NonEmptyText("test-id"),
                     name=Name("Test Assembly"),
                     applicability=NonEmptyText("Test applicability"),
-                    jsonschema=jsonschema,
+                    jsonschema=JsonSchema(jsonschema),
                 )
 
             assert error_message_contains in str(exc_info.value)
@@ -395,7 +402,7 @@ class TestAssemblySerialization:
             assembly_specification_id="meeting-minutes-v1",
             name="Meeting Minutes",
             applicability="Corporate meeting recordings",
-            jsonschema=complex_schema,
+            jsonschema=JsonSchema(complex_schema),
         )
 
         json_str = (
@@ -413,10 +420,16 @@ class TestAssemblySerialization:
         assert json_data["version"] == assembly.version
 
         # JSON Schema should be preserved as structured data
-        assert json_data["jsonschema"] == complex_schema
-        assert json_data["jsonschema"]["type"] == "object"
-        assert "meeting_info" in json_data["jsonschema"]["properties"]
-        assert "action_items" in json_data["jsonschema"]["properties"]
+        # Nested under "document": the field holds a JsonSchema, and the
+        # serialised form says what the field is rather than flattening it
+        # away. This is the domain's own shape, which is what MinIO stores;
+        # what a client sees is AssemblySpecificationResponse, and that
+        # sends the document alone.
+        stored_schema = json_data["jsonschema"]["document"]
+        assert stored_schema == complex_schema
+        assert stored_schema["type"] == "object"
+        assert "meeting_info" in stored_schema["properties"]
+        assert "action_items" in stored_schema["properties"]
 
     def test_assembly_json_roundtrip(self) -> None:
         """Test that AssemblySpecification can be serialized to JSON and
@@ -432,7 +445,9 @@ class TestAssemblySerialization:
         json_data = json.loads(json_str)
 
         # Deserialize back to AssemblySpecification
-        reconstructed_assembly = AssemblySpecification(**json_data)
+        reconstructed_assembly = TypeAdapter(AssemblySpecification).validate_python(
+            json_data
+        )
 
         # Should be equivalent
         assert (
@@ -455,10 +470,12 @@ class TestAssemblyDefaults:
             assembly_specification_id=NonEmptyText("test-id"),
             name=Name("Test Assembly"),
             applicability=NonEmptyText("Test applicability"),
-            jsonschema={
-                "type": "object",
-                "properties": {"test": {"type": "string"}},
-            },
+            jsonschema=JsonSchema(
+                {
+                    "type": "object",
+                    "properties": {"test": {"type": "string"}},
+                }
+            ),
         )
 
         assert minimal_assembly.status == AssemblySpecificationStatus.ACTIVE
@@ -472,10 +489,12 @@ class TestAssemblyDefaults:
             assembly_specification_id=NonEmptyText("custom-id"),
             name=Name("Custom Assembly"),
             applicability=NonEmptyText("Custom applicability"),
-            jsonschema={
-                "type": "object",
-                "properties": {"custom": {"type": "string"}},
-            },
+            jsonschema=JsonSchema(
+                {
+                    "type": "object",
+                    "properties": {"custom": {"type": "string"}},
+                }
+            ),
             status=AssemblySpecificationStatus.DRAFT,
             version=NonEmptyText("2.0.0"),
             knowledge_service_queries={
@@ -546,9 +565,9 @@ class TestAssemblyRefSchemaValidation:
             assembly_specification_id=NonEmptyText("ref-test"),
             name=Name("Ref Test"),
             applicability=NonEmptyText("Testing $ref support"),
-            jsonschema={"$ref": url},
+            jsonschema=JsonSchema({"$ref": url}),
         )
-        assert spec.jsonschema == {"$ref": url}
+        assert spec.jsonschema.document == {"$ref": url}
 
     def test_ref_with_fragment_is_accepted(self, schema_server) -> None:
         """A $ref with a JSON Pointer fragment is resolved to validate the
@@ -569,9 +588,9 @@ class TestAssemblyRefSchemaValidation:
             assembly_specification_id=NonEmptyText("fragment-test"),
             name=Name("Fragment Test"),
             applicability=NonEmptyText("Testing fragment $ref support"),
-            jsonschema={"$ref": ref},
+            jsonschema=JsonSchema({"$ref": ref}),
         )
-        assert spec.jsonschema == {"$ref": ref}
+        assert spec.jsonschema.document == {"$ref": ref}
 
     def test_ref_to_unresolvable_url_is_accepted(self) -> None:
         """A $ref pointing at an unresolvable URL is accepted as-is.
@@ -583,9 +602,9 @@ class TestAssemblyRefSchemaValidation:
             assembly_specification_id=NonEmptyText("bad-ref-test"),
             name=Name("Bad Ref Test"),
             applicability=NonEmptyText("Testing invalid $ref"),
-            jsonschema={"$ref": _UNRESOLVABLE_URL},
+            jsonschema=JsonSchema({"$ref": _UNRESOLVABLE_URL}),
         )
-        assert spec.jsonschema == {"$ref": _UNRESOLVABLE_URL}
+        assert spec.jsonschema.document == {"$ref": _UNRESOLVABLE_URL}
 
     def test_ref_survives_serialisation_roundtrip(self, schema_server) -> None:
         """The $ref value is preserved through model_dump_json and
@@ -598,13 +617,13 @@ class TestAssemblyRefSchemaValidation:
             assembly_specification_id=NonEmptyText("roundtrip-test"),
             name=Name("Roundtrip Test"),
             applicability=NonEmptyText("Testing serialisation roundtrip"),
-            jsonschema={"$ref": url},
+            jsonschema=JsonSchema({"$ref": url}),
         )
         data = json.loads(
             TypeAdapter(AssemblySpecification).dump_json(original).decode("utf-8")
         )
-        restored = AssemblySpecification(**data)
-        assert restored.jsonschema == {"$ref": url}
+        restored = TypeAdapter(AssemblySpecification).validate_python(data)
+        assert restored.jsonschema.document == {"$ref": url}
 
     def test_knowledge_service_queries_format_validated_for_ref_schema(self) -> None:
         """JSON Pointer keys in knowledge_service_queries are format-validated
@@ -614,7 +633,7 @@ class TestAssemblyRefSchemaValidation:
             assembly_specification_id=NonEmptyText("ksq-ref-test"),
             name=Name("KSQ Ref Test"),
             applicability=NonEmptyText("Testing pointer validation against $ref"),
-            jsonschema={"$ref": _UNRESOLVABLE_URL},
+            jsonschema=JsonSchema({"$ref": _UNRESOLVABLE_URL}),
             knowledge_service_queries={"/properties/sku": NonEmptyText("extract-sku")},
         )
         assert spec.knowledge_service_queries == {"/properties/sku": "extract-sku"}
@@ -629,7 +648,7 @@ class TestAssemblyRefSchemaValidation:
             assembly_specification_id=NonEmptyText("deferred-pointer-test"),
             name=Name("Deferred Pointer Test"),
             applicability=NonEmptyText("Testing pointer deferral for $ref schemas"),
-            jsonschema={"$ref": _UNRESOLVABLE_URL},
+            jsonschema=JsonSchema({"$ref": _UNRESOLVABLE_URL}),
             knowledge_service_queries={
                 "/properties/nonexistent": NonEmptyText("query-1")
             },
@@ -646,6 +665,6 @@ class TestAssemblyRefSchemaValidation:
                 assembly_specification_id=NonEmptyText("bad-format-test"),
                 name=Name("Bad Format Test"),
                 applicability=NonEmptyText("Testing malformed pointer rejection"),
-                jsonschema={"$ref": _UNRESOLVABLE_URL},
+                jsonschema=JsonSchema({"$ref": _UNRESOLVABLE_URL}),
                 knowledge_service_queries={"not-a-pointer": NonEmptyText("query-1")},
             )

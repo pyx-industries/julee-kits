@@ -1,5 +1,4 @@
-from typing import Any
-
+from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.domain.oracles.schema import SchemaOracle
 
 
@@ -10,7 +9,7 @@ class MemorySchemaOracle(SchemaOracle):
     def register(self, url: str, schema: dict) -> None:
         self._schemas[url] = schema
 
-    async def fetch(self, url: str) -> dict[str, Any]:
+    async def fetch(self, url: str) -> JsonSchema:
         if url not in self._schemas:
             raise ValueError(f"No schema registered for URL: {url}")
-        return dict(self._schemas[url])
+        return JsonSchema(dict(self._schemas[url]))

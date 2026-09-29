@@ -23,6 +23,8 @@ import jsonpointer
 import jsonschema
 from julee.core.entities.text import Name, NonEmptyText
 
+from julee_ceap.domain.models.schema import JsonSchema
+
 
 class AssemblySpecificationStatus(StrEnum):
     """Status of an assembly specification configuration."""
@@ -56,7 +58,7 @@ class AssemblySpecification:
     applicability: NonEmptyText
     """Text description identifying to what type of information this assembly applies, such as an online transcript of a video meeting. This information may be used by knowledge service for document-assembly matching."""
 
-    jsonschema: Mapping[str, Any]
+    jsonschema: JsonSchema
     """JSON Schema defining the structure of data to be extracted for this assembly."""
 
     # AssemblySpecification configuration
@@ -83,8 +85,8 @@ class AssemblySpecification:
         Raises:
             ValueError: If the schema or any pointer into it is bad
         """
-        refuse_a_bad_schema(self.jsonschema)
-        refuse_a_bad_pointer(self.knowledge_service_queries, self.jsonschema)
+        refuse_a_bad_schema(self.jsonschema.document)
+        refuse_a_bad_pointer(self.knowledge_service_queries, self.jsonschema.document)
 
 
 def refuse_a_bad_schema(v: Mapping[str, Any]) -> None:

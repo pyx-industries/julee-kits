@@ -7,7 +7,6 @@ AssemblySpecification domain objects with sensible defaults.
 
 import uuid
 from datetime import UTC, datetime
-from typing import Any
 
 from factory.base import Factory
 from factory.declarations import LazyAttribute, LazyFunction
@@ -18,6 +17,7 @@ from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecificationStatus,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 
 
 class AssemblyFactory(Factory):
@@ -34,22 +34,24 @@ class AssemblyFactory(Factory):
 
     # Valid JSON Schema for testing
     @LazyAttribute
-    def jsonschema(self) -> dict[str, Any]:
-        return {
-            "type": "object",
-            "properties": {
-                "title": {"type": "string"},
-                "content": {"type": "string"},
-                "metadata": {
-                    "type": "object",
-                    "properties": {
-                        "author": {"type": "string"},
-                        "created_date": {"type": "string", "format": "date"},
+    def jsonschema(self) -> JsonSchema:
+        return JsonSchema(
+            {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "content": {"type": "string"},
+                    "metadata": {
+                        "type": "object",
+                        "properties": {
+                            "author": {"type": "string"},
+                            "created_date": {"type": "string", "format": "date"},
+                        },
                     },
                 },
-            },
-            "required": ["title"],
-        }
+                "required": ["title"],
+            }
+        )
 
     # Assembly configuration
     status = AssemblySpecificationStatus.ACTIVE
