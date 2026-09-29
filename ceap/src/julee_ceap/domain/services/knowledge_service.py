@@ -12,54 +12,19 @@ services (Anthropic, OpenAI, etc.) and are created via factory functions.
 """
 
 from collections.abc import Mapping
-from datetime import UTC, datetime
 from typing import (
-    TYPE_CHECKING,
     Any,
     Protocol,
     runtime_checkable,
 )
 
-from pydantic import BaseModel, Field
-
-if TYPE_CHECKING:
-    from julee_ceap.domain.models.knowledge_service_config import (
-        KnowledgeServiceConfig,
-    )
-
-
 from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig
+from julee_ceap.domain.models.query_result import (
+    FileRegistrationResult,
+    QueryResult,
+)
 from julee_ceap.domain.models.schema import JsonSchema
-
-
-class QueryResult(BaseModel):
-    """Result of a knowledge service query execution."""
-
-    query_id: str = Field(description="Unique identifier for this query execution")
-    query_text: str = Field(description="The original query text that was executed")
-    result_data: dict[str, Any] = Field(
-        default_factory=dict,
-        description="The structured result data from the query",
-    )
-    execution_time_ms: int | None = Field(
-        default=None,
-        description="Time taken to execute the query in milliseconds",
-    )
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
-
-
-class FileRegistrationResult(BaseModel):
-    """Result of registering a file with a knowledge service."""
-
-    document_id: str = Field(description="The original document ID from our system")
-    knowledge_service_file_id: str = Field(
-        description="The file identifier assigned by the knowledge service"
-    )
-    registration_metadata: dict[str, Any] = Field(
-        default_factory=dict,
-        description="Additional metadata from the registration process",
-    )
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
 
 
 @runtime_checkable
@@ -74,7 +39,7 @@ class KnowledgeService(Protocol):
 
     async def register_file(
         self,
-        config: "KnowledgeServiceConfig",
+        config: KnowledgeServiceConfig,
         document: Document,
         content: bytes,
     ) -> FileRegistrationResult:
@@ -116,7 +81,7 @@ class KnowledgeService(Protocol):
 
     async def execute_query(
         self,
-        config: "KnowledgeServiceConfig",
+        config: KnowledgeServiceConfig,
         query_text: str,
         output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,

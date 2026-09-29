@@ -20,8 +20,8 @@ from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
+from julee_ceap.domain.services.knowledge_service import QueryResult
 
-from ..knowledge_service import QueryResult
 from .knowledge_service import MemoryKnowledgeService
 
 pytestmark = pytest.mark.unit

@@ -1,14 +1,15 @@
-"""
-Knowledge Service module for julee domain.
+"""Knowledge service adapters, and the factory that chooses one.
 
-This module provides the KnowledgeService protocol and factory function for
-creating configured knowledge service instances. The factory routes to the
-appropriate implementation based on the service_api configuration.
+The protocol itself is domain — a driven port is what a use case depends
+on — and lives in ``domain/services/``. It sat here, so two use cases
+imported infrastructure to get it, and the driven port rule never read
+it: that rule scans ``domain/``, so being in the wrong directory was
+what exempted its two pydantic result types from ever being checked.
 """
 
 import logging
 
-from .knowledge_service import (
+from julee_ceap.domain.services.knowledge_service import (
     FileRegistrationResult,
     KnowledgeService,
     QueryResult,
