@@ -117,6 +117,32 @@ async def test_listing_returns_every_one(
     assert sorted(p.name for p in response.personas) == ["One", "Two"]
 
 
+async def test_clearing_a_field_the_entity_forbids_is_refused(
+    repo: MemoryPersonaRepository,
+) -> None:
+    """Persona.context is a str; the update request admits None for it.
+
+    The request widens every field so "clear it" can be told from "not
+    mentioned", which left None free to reach a str field, and the
+    entity stored it (julee#350). This kit's generated update hands
+    the change to a base class that refuses it now. Asserted here as
+    well as in julee, because julee's test runs against a fixture
+    entity and nothing in this kit would notice if the pin regressed.
+    """
+    await CreatePersonaUseCase(repo).execute(
+        CreatePersonaRequest(name="Knowledge Curator", context="Reading room")
+    )
+
+    with pytest.raises(ValueError, match="context"):
+        await UpdatePersonaUseCase(repo).execute(
+            UpdatePersonaRequest(slug="knowledge-curator", context=None)
+        )
+
+    kept = await repo.get("knowledge-curator")
+    assert kept is not None
+    assert kept.context == "Reading room"
+
+
 async def test_deleting_reports_whether_there_was_anything_to_delete(
     repo: MemoryPersonaRepository,
 ) -> None:
