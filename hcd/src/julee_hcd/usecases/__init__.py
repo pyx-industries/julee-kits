@@ -3,16 +3,17 @@
 CRUD is generated from the entities (ADR 008) and committed, because a
 kit ships as a wheel. Deleting is hand-written: the generator does not
 emit it yet (julee#198).
+
+The persona calculations used to be re-exported from here. They are in
+domain/calculators/personas.py now, and callers reach them there: a
+calculation is not a use case, and an adapter asking this package for
+one was how it came to look like two use cases were calling each other.
 """
 
 from .derive_personas import (
     DerivePersonasRequest,
     DerivePersonasResponse,
     DerivePersonasUseCase,
-    derive_personas_by_app_type,
-    derive_personas_from_stories,
-    get_apps_for_persona,
-    get_epics_for_persona,
 )
 from .epic_orchestration import (
     EpicCondition,
@@ -108,14 +109,10 @@ __all__ = [
     "ValidateAcceleratorsRequest",
     "ValidateAcceleratorsResponse",
     "ValidateAcceleratorsUseCase",
-    "derive_personas_by_app_type",
-    "derive_personas_from_stories",
     "get_apps_for_accelerator",
-    "get_apps_for_persona",
     "get_code_info_for_accelerator",
     "get_dependent_accelerators",
     "get_epics_for_app",
-    "get_epics_for_persona",
     "get_epics_for_story",
     "get_fed_by_accelerators",
     "get_journeys_for_accelerator",

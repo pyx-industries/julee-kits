@@ -15,12 +15,15 @@ from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
 
 from julee_hcd.domain.models.epic import Epic
+from julee_hcd.domain.models.persona import (
+    derive_personas_from_stories,
+    get_epics_for_persona,
+)
 from julee_hcd.domain.repositories import EpicRepository
 from julee_hcd.parsers.docutils_parser import (
     content_before_nested,
     extract_story_refs,
 )
-from julee_hcd.usecases import derive_personas_from_stories, get_epics_for_persona
 
 from ...utils import path_to_root
 from .base import HCDDirective

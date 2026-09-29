@@ -8,14 +8,16 @@ from julee.core.utils import normalize_name
 from julee_hcd.domain.models.app import App
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.journey import Journey
-from julee_hcd.domain.models.persona import Persona
+from julee_hcd.domain.models.persona import (
+    Persona,
+    derive_personas_from_stories,
+)
 from julee_hcd.domain.models.story import Story
 
 from ..dtos.resolve_app_references import (
     ResolveAppReferencesRequest,
     ResolveAppReferencesResponse,
 )
-from .derive_personas import derive_personas_from_stories
 
 
 def get_stories_for_app(

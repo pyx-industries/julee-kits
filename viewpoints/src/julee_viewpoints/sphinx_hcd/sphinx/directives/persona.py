@@ -20,8 +20,8 @@ from docutils.parsers.rst import directives
 from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name, slugify
 
-from julee_hcd.domain.models.persona import Persona
-from julee_hcd.usecases import (
+from julee_hcd.domain.models.persona import (
+    Persona,
     derive_personas_by_app_type,
     derive_personas_from_stories,
     get_epics_for_persona,
