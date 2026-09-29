@@ -26,7 +26,7 @@ from temporalio.client import (
 )
 
 from julee_polling.apps.worker.pipelines import NewDataDetectionPipeline
-from julee_polling.domain.models.polling_config import (
+from julee_polling.domain.values.polling_config import (
     PollingConfig,
     SchedulingPolicy,
 )

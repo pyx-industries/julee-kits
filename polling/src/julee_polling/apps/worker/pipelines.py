@@ -17,11 +17,11 @@ from julee_polling.domain.calculators.new_data import NewDataCalculator
 from julee_polling.domain.handlers.polling_result_handler import (
     PollingResultHandler,
 )
-from julee_polling.domain.models.handoff import Handoff
-from julee_polling.domain.models.polling_config import PollingConfig
+from julee_polling.domain.values.handoff import Handoff
+from julee_polling.domain.values.polling_config import PollingConfig
 from julee_polling.dtos.poll_data import PollDataRequest
 from julee_polling.infrastructure.temporal.proxies import (
-    WorkflowPollerServiceProxy,
+    WorkflowPollerOracleProxy,
 )
 from julee_polling.usecases.poll_data import PollDataUseCase
 
@@ -156,7 +156,7 @@ class NewDataDetectionPipeline:
                 previous_content=seen[1],
             )
             use_case = PollDataUseCase(
-                poller=WorkflowPollerServiceProxy(),  # type: ignore[abstract]
+                poller=WorkflowPollerOracleProxy(),  # type: ignore[abstract]
                 handler=self.get_handler(),
                 calculator=self.get_calculator(),
             )

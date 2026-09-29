@@ -20,7 +20,7 @@ would be wrong.
 import pytest
 from temporalio.contrib.pydantic import pydantic_data_converter
 
-from julee_polling.domain.models.polling_config import PollingResult
+from julee_polling.domain.values.polling_config import PollingResult
 
 pytestmark = pytest.mark.unit
 

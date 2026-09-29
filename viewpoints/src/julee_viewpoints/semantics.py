@@ -17,9 +17,9 @@ from pathlib import Path
 from typing import Any
 
 from docutils import nodes
-from julee.core.entities.claim import Claim
 from julee.core.kits import adopted_kits
 from julee.core.semantics import kit_claims, load_semantics
+from julee.core.values.claim import Claim
 from sphinx.util.docutils import SphinxDirective
 
 __all__ = ["SemanticsIndexDirective", "KitClaimsDirective", "setup"]

@@ -13,8 +13,8 @@ into Temporal workflows. Import directly from specific modules:
 
 - from julee_polling.infrastructure.temporal.activity_names import POLLING_SERVICE_ACTIVITY_BASE
 - from julee_polling.infrastructure.temporal.manager import PollingManager
-- from julee_polling.infrastructure.temporal.proxies import WorkflowPollerServiceProxy
-- from julee_polling.infrastructure.temporal.activities import TemporalPollerService
+- from julee_polling.infrastructure.temporal.proxies import WorkflowPollerOracleProxy
+- from julee_polling.infrastructure.temporal.activities import TemporalPollerOracle
 """
 
 __all__ = []

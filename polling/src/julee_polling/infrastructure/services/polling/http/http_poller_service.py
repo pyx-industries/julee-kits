@@ -1,5 +1,5 @@
 """
-HTTP implementation of the PollerService protocol.
+HTTP implementation of the PollerOracle protocol.
 
 This module provides HTTP-specific polling functionality including
 REST API endpoints, webhooks, and other HTTP-based data sources.
@@ -12,15 +12,15 @@ from typing import Any
 
 import httpx
 
-from julee_polling.domain.models.polling_config import (
+from julee_polling.domain.oracles.poller import PollerOracle
+from julee_polling.domain.values.polling_config import (
     PollingConfig,
     PollingResult,
 )
-from julee_polling.domain.services.poller import PollerService
 
 
-class HttpPollerService(PollerService):
-    """HTTP implementation of PollerService protocol."""
+class HttpPollerOracle(PollerOracle):
+    """HTTP implementation of PollerOracle protocol."""
 
     def __init__(
         self,
@@ -81,7 +81,7 @@ class HttpPollerService(PollerService):
         """Close the HTTP client connection."""
         await self.client.aclose()
 
-    async def __aenter__(self) -> "HttpPollerService":
+    async def __aenter__(self) -> "HttpPollerOracle":
         """Async context manager entry."""
         return self
 
