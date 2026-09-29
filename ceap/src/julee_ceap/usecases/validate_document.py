@@ -18,7 +18,6 @@ from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol
-from pydantic import BaseModel
 
 from julee_ceap.domain.models import (
     Document,
@@ -42,16 +41,12 @@ from julee_ceap.infrastructure.services.knowledge_service import (
     KnowledgeService,
 )
 
+from ..dtos.validate_document import (
+    ValidateDocumentRequest,
+    ValidateDocumentResponse,
+)
+
 logger = logging.getLogger(__name__)
-
-
-class ValidateDocumentRequest(BaseModel):
-    document_id: str
-    policy_id: str
-
-
-class ValidateDocumentResponse(BaseModel):
-    validation: DocumentPolicyValidation
 
 
 class ValidateDocumentUseCase:

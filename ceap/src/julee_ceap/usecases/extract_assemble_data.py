@@ -21,7 +21,6 @@ from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol, validate_parameter_types
 from julee.core.witnesses import ClockWitness, ExecutionWitness, SystemClockWitness
 from julee.core.witnesses.execution import DefaultExecutionWitness
-from pydantic import BaseModel
 
 from julee_ceap._schema_ref import extract_schema_from_fetched
 from julee_ceap.domain.models import (
@@ -48,18 +47,13 @@ from julee_ceap.infrastructure.services.knowledge_service import (
     KnowledgeService,
 )
 
+from ..dtos.extract_assemble_data import (
+    ExtractAssembleDataRequest,
+    ExtractAssembleDataResponse,
+)
 from .pointable_json_schema import PointableJSONSchema
 
 logger = logging.getLogger(__name__)
-
-
-class ExtractAssembleDataRequest(BaseModel):
-    document_id: str
-    assembly_specification_id: str
-
-
-class ExtractAssembleDataResponse(BaseModel):
-    assembly: Assembly
 
 
 class ExtractAssembleDataUseCase:
