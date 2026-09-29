@@ -52,11 +52,10 @@ class ValidateDocumentUseCase:
     framework-agnostic. It depends only on repository protocols, not
     concrete implementations.
 
-    In workflow contexts, this use case is called from workflow code with
-    repository stubs that delegate to Temporal activities for durability.
-    The use case remains completely unaware of whether it's running in a
-    workflow context or a simple async context - it just calls repository
-    methods and expects them to work correctly.
+    The repositories and services are whatever the composition root hands
+    in. The use case does not know what stands behind them - a durable
+    runtime or a plain async one is the caller's business - it just calls
+    the methods the ports promise and expects them to work.
 
     Architectural Notes:
 
@@ -93,14 +92,14 @@ class ValidateDocumentUseCase:
                 validation operations
             knowledge_service: Knowledge service instance for external
                 operations
-            now_fn: Function to get current time (e.g., workflow.now for
-                Temporal workflows)
+            now_fn: Function to get the current time; a composition root
+                whose runtime replays passes the runtime's
 
         .. note::
 
             The repositories passed here may be concrete implementations
-            (for testing or direct execution) or workflow stubs (for
-            Temporal workflow execution). The use case doesn't know or care
+            (for testing or direct execution) or stubs that reach a durable
+            runtime. The use case doesn't know or care
             which - it just calls the methods defined in the protocols.
 
             Repositories are validated at construction time to catch

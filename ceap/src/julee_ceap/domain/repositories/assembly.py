@@ -23,8 +23,6 @@ repositories:
 - **Aggregate Boundary**: Repository handles Assembly entities with their
   assembled document references.
 
-In Temporal workflow contexts, these protocols are implemented by workflow
-stubs that delegate to activities for durability and proper error handling.
 """
 
 from typing import Protocol, runtime_checkable

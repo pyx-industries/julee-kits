@@ -166,9 +166,7 @@ async def run_worker() -> None:
 
     # Create temporal knowledge service for activity registration
     # Pass the document repository for dependency injection
-    temporal_knowledge_service = TemporalKnowledgeService(
-        document_repo=temporal_document_repo
-    )
+    temporal_knowledge_service = TemporalKnowledgeService()
 
     # Automatically collect all activities from decorated instances
     # This uses the same _discover_protocol_methods that the decorator uses,

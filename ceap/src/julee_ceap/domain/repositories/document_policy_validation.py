@@ -25,8 +25,6 @@ repositories:
   entities with their status tracking, score recording, and transformation
   results for the quality assurance workflow.
 
-In Temporal workflow contexts, these protocols are implemented by workflow
-stubs that delegate to activities for durability and proper error handling.
 """
 
 from typing import Protocol, runtime_checkable

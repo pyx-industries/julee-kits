@@ -69,12 +69,6 @@ class KnowledgeService(Protocol):
         - Document content is accessed directly from the Document object
         - Should handle various document formats and sizes
 
-        .. rubric:: Workflow Context
-
-        In Temporal workflows, this method is implemented as an activity
-        to ensure registration results are durably stored and consistent
-        across workflow replays.
-
         """
         ...
 
@@ -129,12 +123,6 @@ class KnowledgeService(Protocol):
           etc.)
         - Should validate that service_file_ids exist in the service before
           including them in the query context
-
-        .. rubric:: Workflow Context
-
-        In Temporal workflows, this method is implemented as an activity
-        to ensure query results are durably stored and can be replayed
-        consistently.
 
         """
         ...
