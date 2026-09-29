@@ -7,10 +7,10 @@ nodes in a specific environment.
 """
 
 from julee_c4.domain.models.container import Container
-from julee_c4.domain.models.diagrams import DeploymentDiagram
 from julee_c4.domain.repositories.container import ContainerRepository
 from julee_c4.domain.repositories.deployment_node import DeploymentNodeRepository
 from julee_c4.domain.repositories.relationship import RelationshipRepository
+from julee_c4.domain.values.diagrams import DeploymentDiagram
 from julee_c4.dtos.diagrams.deployment_diagram import (
     GetDeploymentDiagramRequest,
     GetDeploymentDiagramResponse,

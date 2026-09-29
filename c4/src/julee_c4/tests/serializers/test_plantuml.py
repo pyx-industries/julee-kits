@@ -12,7 +12,10 @@ from julee.core.entities.text import Name, Slug
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container, ContainerType
 from julee_c4.domain.models.deployment_node import DeploymentNode
-from julee_c4.domain.models.diagrams import (
+from julee_c4.domain.models.dynamic_step import DynamicStep
+from julee_c4.domain.models.relationship import ElementType, Relationship
+from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
+from julee_c4.domain.values.diagrams import (
     ComponentDiagram,
     ContainerDiagram,
     DeploymentDiagram,
@@ -21,9 +24,6 @@ from julee_c4.domain.models.diagrams import (
     SystemContextDiagram,
     SystemLandscapeDiagram,
 )
-from julee_c4.domain.models.dynamic_step import DynamicStep
-from julee_c4.domain.models.relationship import ElementType, Relationship
-from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
 from julee_c4.serializers.plantuml import PlantUMLSerializer
 
 pytestmark = pytest.mark.unit

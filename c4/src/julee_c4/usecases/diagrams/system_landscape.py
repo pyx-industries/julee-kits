@@ -6,10 +6,10 @@ A System Landscape diagram shows all software systems and persons
 within an enterprise or organization, plus their relationships.
 """
 
-from julee_c4.domain.models.diagrams import SystemLandscapeDiagram
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
+from julee_c4.domain.values.diagrams import SystemLandscapeDiagram
 from julee_c4.dtos.diagrams.system_landscape import (
     GetSystemLandscapeDiagramRequest,
     GetSystemLandscapeDiagramResponse,

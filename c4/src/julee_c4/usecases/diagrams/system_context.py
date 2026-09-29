@@ -6,11 +6,11 @@ A System Context diagram shows the software system in scope and its
 relationships with users (persons) and other software systems.
 """
 
-from julee_c4.domain.models.diagrams import SystemContextDiagram
 from julee_c4.domain.models.relationship import ElementType
 from julee_c4.domain.models.software_system import SoftwareSystem
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
+from julee_c4.domain.values.diagrams import SystemContextDiagram
 from julee_c4.dtos.diagrams.system_context import (
     GetSystemContextDiagramRequest,
     GetSystemContextDiagramResponse,

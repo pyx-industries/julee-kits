@@ -6,12 +6,12 @@ A Container diagram shows the containers (applications, data stores, etc.)
 that make up a software system, plus the relationships between them.
 """
 
-from julee_c4.domain.models.diagrams import ContainerDiagram
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.models.software_system import SoftwareSystem
 from julee_c4.domain.repositories.container import ContainerRepository
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
+from julee_c4.domain.values.diagrams import ContainerDiagram
 from julee_c4.dtos.diagrams.container_diagram import (
     GetContainerDiagramRequest,
     GetContainerDiagramResponse,
