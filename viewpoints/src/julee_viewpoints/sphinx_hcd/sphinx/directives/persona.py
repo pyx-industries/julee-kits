@@ -17,8 +17,8 @@ from typing import Any
 
 from docutils import nodes
 from docutils.parsers.rst import directives
-from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name, slugify
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.persona import (
     Persona,

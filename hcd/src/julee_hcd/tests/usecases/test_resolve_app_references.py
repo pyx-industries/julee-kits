@@ -5,7 +5,7 @@ are about, in tests/models/test_app_references.py.
 """
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText, Slug
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.domain.models.epic import Epic

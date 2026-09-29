@@ -10,7 +10,7 @@ together.
 from pathlib import Path
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,

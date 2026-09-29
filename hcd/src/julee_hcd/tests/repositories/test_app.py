@@ -2,7 +2,7 @@
 
 import pytest
 import pytest_asyncio
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.infrastructure.repositories.memory.app import MemoryAppRepository

@@ -18,7 +18,7 @@ and type safety, following the patterns established in the sample project.
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 
 from julee_ceap.domain.values.query_metadata import QueryMetadata
 

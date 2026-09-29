@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.app import AppType
 from julee_hcd.domain.models.integration import Direction

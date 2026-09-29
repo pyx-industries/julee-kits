@@ -9,7 +9,7 @@ DeploymentNode that holds it, and was read as a second aggregate there.
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 
 @dataclass(frozen=True)

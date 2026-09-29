@@ -1,7 +1,7 @@
 """Tests for AppInterface and the C4 labels an App derives from it."""
 
 import pytest
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from julee_hcd.domain.models.app import App, AppInterface
 

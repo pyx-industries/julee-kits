@@ -8,7 +8,7 @@ Provides directives for contrib modules (reusable utilities):
 
 from docutils import nodes
 from docutils.parsers.rst import directives
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.contrib import ContribModule
 from julee_hcd.domain.repositories import ContribRepository

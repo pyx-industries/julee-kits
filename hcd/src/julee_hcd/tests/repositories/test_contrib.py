@@ -1,7 +1,7 @@
 """Tests for MemoryContribRepository's own query."""
 
 import pytest
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.contrib import ContribModule
 from julee_hcd.infrastructure.repositories.memory.contrib import (

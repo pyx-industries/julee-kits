@@ -8,7 +8,7 @@ a contrib module and reasons with an accelerator.
 
 from dataclasses import dataclass
 
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from .base import Authored
 

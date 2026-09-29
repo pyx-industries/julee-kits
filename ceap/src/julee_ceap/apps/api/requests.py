@@ -10,7 +10,7 @@ duplication while maintaining single source of truth in the domain layer.
 from datetime import UTC, datetime
 from typing import Any
 
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from julee_ceap.domain.models import (

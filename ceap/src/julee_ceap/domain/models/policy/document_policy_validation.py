@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 
 class DocumentPolicyValidationStatus(StrEnum):

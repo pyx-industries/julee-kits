@@ -2,7 +2,7 @@
 
 import pytest
 from julee.core.entities.accelerator import Accelerator
-from julee.core.entities.text import Name, NonEmptyText, Slug
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models import (
     App,

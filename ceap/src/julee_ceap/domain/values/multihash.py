@@ -38,7 +38,7 @@ that is not one.
 import hashlib
 import re
 
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 __all__ = [
     "SHA2_256_PREFIX",

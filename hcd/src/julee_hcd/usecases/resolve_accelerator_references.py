@@ -5,8 +5,8 @@ Finds apps, stories, journeys, and integrations related to an accelerator.
 
 from julee.core.entities.accelerator import Accelerator
 from julee.core.entities.bounded_context_info import BoundedContextInfo
-from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.app import App
 from julee_hcd.domain.models.integration import Integration

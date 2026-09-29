@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import pytest
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidation,

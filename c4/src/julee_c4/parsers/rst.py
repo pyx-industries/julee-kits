@@ -9,7 +9,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container, ContainerType

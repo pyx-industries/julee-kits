@@ -1,7 +1,7 @@
 """Tests for Journey domain model."""
 
 import pytest
-from julee.core.entities.text import NonEmptyText, Slug
+from julee.core.values.text import NonEmptyText, Slug
 
 from julee_hcd.domain.models.journey import Journey
 from julee_hcd.domain.values.journey_step import (

@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 from julee_ceap.domain.values.multihash import ContentMultihash
 

@@ -1,7 +1,7 @@
 """Tests for resolve_story_references use case."""
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText, Slug
+from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.journey import Journey, JourneyStep

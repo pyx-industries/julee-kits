@@ -12,7 +12,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from fastapi_pagination import add_pagination
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 
 from julee_ceap.apps.api.dependencies import (
     get_assembly_specification_repository,

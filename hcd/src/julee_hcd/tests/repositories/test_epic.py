@@ -2,7 +2,7 @@
 
 import pytest
 import pytest_asyncio
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.infrastructure.repositories.memory.epic import MemoryEpicRepository

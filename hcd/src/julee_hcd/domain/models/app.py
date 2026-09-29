@@ -7,8 +7,8 @@ Apps are defined via YAML manifests in apps/*/app.yaml.
 from dataclasses import dataclass
 from enum import StrEnum
 
-from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
+from julee.core.values.text import Name, Slug
 
 from .base import Authored
 from .epic import Epic

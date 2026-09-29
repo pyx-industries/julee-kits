@@ -23,7 +23,7 @@ import hashlib
 import json
 
 import pytest
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 from pydantic import TypeAdapter, ValidationError
 
 from julee_ceap.domain.models.document import Document

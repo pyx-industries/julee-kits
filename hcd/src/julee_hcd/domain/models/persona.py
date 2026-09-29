@@ -17,8 +17,8 @@ either, so it lives with the entity it is about, as
 from dataclasses import dataclass, replace
 from typing import Any, Self, cast
 
-from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
+from julee.core.values.text import Name, Slug
 
 from .app import App
 from .base import Authored

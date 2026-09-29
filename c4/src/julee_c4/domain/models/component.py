@@ -5,7 +5,7 @@ A grouping of related functionality within a container.
 
 from dataclasses import dataclass, field, replace
 
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 
 @dataclass(frozen=True)

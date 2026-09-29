@@ -9,7 +9,7 @@ behavior (like field copying and conversion methods) functions as expected.
 from datetime import datetime
 
 import pytest
-from julee.core.entities.text import Name, NonEmptyText
+from julee.core.values.text import Name, NonEmptyText
 from pydantic import ValidationError
 
 from julee_ceap.apps.api.requests import (

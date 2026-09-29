@@ -3,8 +3,8 @@
 import logging
 from pathlib import Path
 
-from julee.core.entities.text import Name, Slug
 from julee.core.utils import normalize_name
+from julee.core.values.text import Name, Slug
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.domain.repositories.app import AppRepository

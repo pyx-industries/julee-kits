@@ -14,7 +14,7 @@ was read as a second aggregate there.
 from dataclasses import dataclass
 from enum import StrEnum
 
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 
 class StepType(StrEnum):

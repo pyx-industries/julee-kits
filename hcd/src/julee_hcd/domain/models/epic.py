@@ -6,8 +6,8 @@ Epics are defined via RST directives and group related stories together.
 
 from dataclasses import dataclass, replace
 
-from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
+from julee.core.values.text import Slug
 
 from .base import Authored
 

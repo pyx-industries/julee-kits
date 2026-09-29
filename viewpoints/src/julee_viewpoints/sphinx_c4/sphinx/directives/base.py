@@ -5,7 +5,7 @@ docutils nodes shared by the define-*, diagram, and index directives.
 """
 
 from docutils import nodes
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 from sphinx.util.docutils import SphinxDirective
 
 from julee_c4.domain.models.relationship import ElementType
@@ -23,7 +23,7 @@ _ELEMENT_TYPE_PREFIXES = {
 def parse_element_ref(ref: str) -> tuple[ElementType, Slug]:
     """Split an element reference like ``container:api-app`` into its parts.
 
-    The slug comes back as a :class:`~julee.core.entities.text.Slug`,
+    The slug comes back as a :class:`~julee.core.values.text.Slug`,
     which is what makes a reference written in a document match the
     element it names however the author spelled it. This is the
     boundary: text a person typed becomes a value the domain can use

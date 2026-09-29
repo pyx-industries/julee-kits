@@ -11,7 +11,7 @@ from typing import Any
 
 from factory.base import Factory
 from factory.declarations import LazyAttribute, LazyFunction
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
 from julee_ceap.domain.values.multihash import (

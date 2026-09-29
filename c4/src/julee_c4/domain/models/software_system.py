@@ -6,7 +6,7 @@ The highest level of abstraction in C4 - something that delivers value to users.
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 
-from julee.core.entities.text import Name, Slug
+from julee.core.values.text import Name, Slug
 
 
 class SystemType(StrEnum):

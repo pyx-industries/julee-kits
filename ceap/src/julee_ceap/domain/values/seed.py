@@ -7,7 +7,7 @@ whoever knows where such descriptions are kept.
 
 from dataclasses import dataclass
 
-from julee.core.entities.text import NonEmptyText
+from julee.core.values.text import NonEmptyText
 
 
 @dataclass(frozen=True)

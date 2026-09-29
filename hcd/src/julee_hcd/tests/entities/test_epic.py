@@ -1,7 +1,7 @@
 """Tests for Epic domain model."""
 
 import pytest
-from julee.core.entities.text import Slug
+from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.epic import Epic
 
