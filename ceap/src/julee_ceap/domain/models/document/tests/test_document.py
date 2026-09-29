@@ -27,8 +27,8 @@ from julee.core.entities.text import NonEmptyText
 from pydantic import TypeAdapter, ValidationError
 
 from julee_ceap.domain.models.document import Document
-from julee_ceap.domain.models.document.multihash import ContentMultihash
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.values.multihash import ContentMultihash
+from julee_ceap.domain.values.multihash import (
     content_multihash as multihash_of,
 )
 

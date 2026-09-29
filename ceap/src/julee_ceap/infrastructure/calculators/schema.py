@@ -17,7 +17,7 @@ import jsonpointer
 import jsonschema
 from jsonpointer import JsonPointer
 
-from julee_ceap.domain.models.schema import AssembledData, JsonSchema
+from julee_ceap.domain.values.schema import AssembledData, JsonSchema
 
 
 class LibrarySchemaCalculator:

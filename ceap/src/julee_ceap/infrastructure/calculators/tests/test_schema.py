@@ -9,7 +9,7 @@ jsonschema — belong on this side of the port.
 
 import pytest
 
-from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.calculators.schema import LibrarySchemaCalculator
 
 pytestmark = pytest.mark.unit

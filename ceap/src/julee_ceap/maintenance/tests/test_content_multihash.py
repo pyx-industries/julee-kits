@@ -5,7 +5,7 @@ The decisions the migration rests on, tested without a store.
 
 import pytest
 
-from julee_ceap.domain.models.document.multihash import content_multihash
+from julee_ceap.domain.values.multihash import content_multihash
 from julee_ceap.maintenance.content_multihash import (
     Naming,
     classify,

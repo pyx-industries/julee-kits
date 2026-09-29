@@ -20,11 +20,11 @@ from typing import (
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig
-from julee_ceap.domain.models.query_result import (
+from julee_ceap.domain.values.query_result import (
     FileRegistrationResult,
     QueryResult,
 )
-from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.values.schema import JsonSchema
 
 
 @runtime_checkable

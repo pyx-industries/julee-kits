@@ -14,7 +14,7 @@ from factory.declarations import LazyAttribute, LazyFunction
 from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.values.multihash import (
     ContentMultihash,
     content_multihash,
 )

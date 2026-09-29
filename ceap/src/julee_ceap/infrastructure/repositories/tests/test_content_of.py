@@ -29,11 +29,11 @@ from julee.core.entities.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.repositories.document import DocumentRepository
+from julee_ceap.domain.values.multihash import (
     ContentMultihash,
     content_multihash,
 )
-from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.infrastructure.repositories.memory.document import (
     MemoryDocumentRepository,
 )

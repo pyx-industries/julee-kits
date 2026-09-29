@@ -34,7 +34,7 @@ from typing import Protocol, runtime_checkable
 from julee.core.repositories.base import BaseRepository
 
 from julee_ceap.domain.models import Document
-from julee_ceap.domain.models.document.multihash import ContentMultihash
+from julee_ceap.domain.values.multihash import ContentMultihash
 
 
 @runtime_checkable

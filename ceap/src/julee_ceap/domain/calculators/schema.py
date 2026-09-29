@@ -8,7 +8,7 @@ rather than services (ADR 016) and workflow code may call them directly.
 
 from typing import Protocol, runtime_checkable
 
-from julee_ceap.domain.models.schema import AssembledData, JsonSchema
+from julee_ceap.domain.values.schema import AssembledData, JsonSchema
 
 
 @runtime_checkable

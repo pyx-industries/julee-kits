@@ -11,7 +11,7 @@ import pytest
 from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.values.multihash import (
     ContentMultihash,
     content_multihash,
     is_content_multihash,
@@ -99,7 +99,9 @@ class TestWhatADocumentAccepts:
 
     def test_the_factory_names_the_content_it_builds(self) -> None:
         """It was Faker("sha256"), unrelated to the factory's own content."""
-        from .factories import DocumentFactory
+        from julee_ceap.domain.models.document.tests.factories import (
+            DocumentFactory,
+        )
 
         document = DocumentFactory.build()
 

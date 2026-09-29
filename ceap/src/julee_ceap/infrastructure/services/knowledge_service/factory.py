@@ -14,8 +14,8 @@ from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
-from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.domain.services.knowledge_service import KnowledgeService
+from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.services.knowledge_service import (
     FileRegistrationResult,
     QueryResult,

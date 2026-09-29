@@ -24,7 +24,7 @@ from julee_ceap.domain.models.assembly_specification import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig
-from julee_ceap.domain.models.seed import DocumentSeed
+from julee_ceap.domain.values.seed import DocumentSeed
 
 
 @runtime_checkable

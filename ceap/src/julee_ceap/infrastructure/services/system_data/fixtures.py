@@ -31,8 +31,8 @@ from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
-from julee_ceap.domain.models.schema import JsonSchema
-from julee_ceap.domain.models.seed import DocumentSeed
+from julee_ceap.domain.values.schema import JsonSchema
+from julee_ceap.domain.values.seed import DocumentSeed
 
 logger = logging.getLogger(__name__)
 

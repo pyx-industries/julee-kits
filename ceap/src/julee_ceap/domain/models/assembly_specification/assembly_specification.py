@@ -23,7 +23,7 @@ import jsonpointer
 import jsonschema
 from julee.core.entities.text import Name, NonEmptyText
 
-from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.values.schema import JsonSchema
 
 
 class AssemblySpecificationStatus(StrEnum):

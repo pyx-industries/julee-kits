@@ -11,13 +11,13 @@ import pytest
 from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.models.document.multihash import ContentMultihash
-from julee_ceap.domain.models.document.multihash import (
-    content_multihash as multihash_of,
-)
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
+)
+from julee_ceap.domain.values.multihash import ContentMultihash
+from julee_ceap.domain.values.multihash import (
+    content_multihash as multihash_of,
 )
 from julee_ceap.infrastructure.services.knowledge_service import (
     ensure_knowledge_service,

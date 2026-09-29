@@ -10,8 +10,8 @@ import pytest
 from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.models.document.multihash import ContentMultihash
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.values.multihash import ContentMultihash
+from julee_ceap.domain.values.multihash import (
     content_multihash as multihash_of,
 )
 from julee_ceap.infrastructure.repositories.memory.document import (

@@ -10,7 +10,7 @@ import json
 import pytest
 from julee.integrations.minio.testing import FakeMinioClient
 
-from julee_ceap.domain.models.document.multihash import content_multihash
+from julee_ceap.domain.values.multihash import content_multihash
 from julee_ceap.maintenance.content_multihash import legacy_content_multihash
 from julee_ceap.maintenance.migrate import (
     CONTENT_BUCKET,
