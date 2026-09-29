@@ -16,15 +16,15 @@ and type safety, following the patterns established in the sample project.
 """
 
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Name, NonEmptyText
-from pydantic import Field
 
 
-class KnowledgeServiceQuery(Entity):
+@dataclass(frozen=True, kw_only=True)
+class KnowledgeServiceQuery:
     """Knowledge service query configuration for extracting specific data.
 
     A KnowledgeServiceQuery represents a specific extraction operation that
@@ -68,32 +68,22 @@ class KnowledgeServiceQuery(Entity):
     """
 
     # Core query identification
-    query_id: NonEmptyText = Field(description="Unique identifier for this query")
-    name: Name = Field(description="Human-readable name describing the query purpose")
+    query_id: NonEmptyText
+    """Unique identifier for this query."""
+    name: Name
+    """Human-readable name describing the query purpose."""
 
     # Knowledge service configuration
-    knowledge_service_id: NonEmptyText = Field(
-        description="Identifier of the knowledge service to query"
-    )
-    prompt: NonEmptyText = Field(
-        description="The specific prompt to send to the knowledge service "
-        "for this extraction"
-    )
+    knowledge_service_id: NonEmptyText
+    """Identifier of the knowledge service to query."""
+    prompt: NonEmptyText
+    """The specific prompt to send to the knowledge service for this extraction."""
 
     # Service-specific configuration
-    query_metadata: Mapping[str, Any] | None = Field(
-        default_factory=dict,
-        description="Service-specific metadata and configuration options "
-        "such as model selection, temperature, max_tokens, etc. "
-        "The structure depends on the specific knowledge service being used.",
-    )
-    assistant_prompt: str | None = Field(
-        default=None,
-        description="Optional assistant message content to constrain "
-        "or prime the model's response. This is added as the final "
-        "assistant message before the model generates its response, "
-        "allowing control over response format and structure.",
-    )
+    query_metadata: Mapping[str, Any] | None = field(default_factory=dict)
+    """Service-specific metadata and configuration options such as model selection, temperature, max_tokens, etc. The structure depends on the specific knowledge service being used."""
+    assistant_prompt: str | None = None
+    """Optional assistant message content to constrain or prime the model's response. This is added as the final assistant message before the model generates its response, allowing control over response format and structure."""
 
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
-    updated_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))

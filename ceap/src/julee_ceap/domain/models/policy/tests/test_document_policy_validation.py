@@ -17,7 +17,7 @@ from datetime import UTC, datetime
 
 import pytest
 from julee.core.entities.text import NonEmptyText
-from pydantic import ValidationError
+from pydantic import TypeAdapter
 
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidation,
@@ -208,7 +208,7 @@ class TestDocumentPolicyValidationFieldValidation:
         # None, so a caller that had lost the message reported success
         # (#71). Leaving it out still says there was no error.
         with pytest.raises(ValueError, match="cannot be empty"):
-            DocumentPolicyValidation.model_validate(
+            TypeAdapter(DocumentPolicyValidation).validate_python(
                 {
                     "validation_id": "val-123",
                     "input_document_id": "doc-123",
@@ -272,8 +272,8 @@ class TestValidationScores:
         goes rather than only where a DocumentPolicyValidation is built
         (#306).
         """
-        with pytest.raises(ValidationError) as exc_info:
-            DocumentPolicyValidation.model_validate(
+        with pytest.raises(ValueError) as exc_info:
+            TypeAdapter(DocumentPolicyValidation).validate_python(
                 {
                     "validation_id": "val-123",
                     "input_document_id": "doc-123",
@@ -282,12 +282,12 @@ class TestValidationScores:
                 }
             )
 
-        assert any("cannot be empty" in str(error) for error in exc_info.value.errors())
+        assert "cannot be empty" in str(exc_info.value)
 
     def test_validation_scores_score_range(self) -> None:
         """Test validation_scores score range validation."""
         # Score too low
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
@@ -295,11 +295,10 @@ class TestValidationScores:
                 validation_scores=((NonEmptyText("query1"), -1),),
             )
 
-        errors = exc_info.value.errors()
-        assert any("must be between 0 and 100" in str(error) for error in errors)
+        assert "must be between 0 and 100" in str(exc_info.value)
 
         # Score too high
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
@@ -307,8 +306,7 @@ class TestValidationScores:
                 validation_scores=((NonEmptyText("query1"), 101),),
             )
 
-        errors = exc_info.value.errors()
-        assert any("must be between 0 and 100" in str(error) for error in errors)
+        assert "must be between 0 and 100" in str(exc_info.value)
 
         # Valid edge cases
         validation = DocumentPolicyValidation(
@@ -327,7 +325,7 @@ class TestValidationScores:
 
     def test_validation_scores_no_duplicates(self) -> None:
         """Test that validation_scores cannot have duplicate query_ids."""
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
@@ -338,8 +336,7 @@ class TestValidationScores:
                 ),
             )
 
-        errors = exc_info.value.errors()
-        assert any("Duplicate query ID 'query1'" in str(error) for error in errors)
+        assert "Duplicate query ID 'query1'" in str(exc_info.value)
 
 
 class TestPostTransformValidationScores:
@@ -380,7 +377,7 @@ class TestPostTransformValidationScores:
         """Test that post_transform_validation_scores follows same rules as
         validation_scores."""
         # Same score range validation
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
@@ -388,11 +385,10 @@ class TestPostTransformValidationScores:
                 post_transform_validation_scores=((NonEmptyText("query1"), -5),),
             )
 
-        errors = exc_info.value.errors()
-        assert any("must be between 0 and 100" in str(error) for error in errors)
+        assert "must be between 0 and 100" in str(exc_info.value)
 
         # Same duplicate detection
-        with pytest.raises(ValidationError) as exc_info:
+        with pytest.raises(ValueError) as exc_info:
             DocumentPolicyValidation(
                 validation_id="val-123",
                 input_document_id=NonEmptyText("doc-123"),
@@ -403,8 +399,7 @@ class TestPostTransformValidationScores:
                 ),
             )
 
-        errors = exc_info.value.errors()
-        assert any("Duplicate query ID 'query1'" in str(error) for error in errors)
+        assert "Duplicate query ID 'query1'" in str(exc_info.value)
 
 
 class TestDocumentPolicyValidationStatusEnum:

@@ -24,7 +24,7 @@ from datetime import UTC, datetime
 
 import pytest
 from julee.core.entities.text import NonEmptyText
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from julee_ceap.domain.models.assembly import Assembly, AssemblyStatus
 
@@ -111,7 +111,7 @@ class TestAssemblySerialization:
             assembled_document_id="output-doc-456",
         )
 
-        json_str = assembly.model_dump_json()
+        json_str = TypeAdapter(Assembly).dump_json(assembly).decode("utf-8")
         json_data = json.loads(json_str)
 
         # All fields should be present in JSON
@@ -134,7 +134,7 @@ class TestAssemblySerialization:
         )
 
         # Serialize to JSON
-        json_str = original_assembly.model_dump_json()
+        json_str = TypeAdapter(Assembly).dump_json(original_assembly).decode("utf-8")
         json_data = json.loads(json_str)
 
         # Deserialize back to Assembly
@@ -444,8 +444,13 @@ class TestAssemblyExecutionIdValidation:
         assert assembly.execution_id == "trim-execution-id"
 
     def test_execution_id_required(self) -> None:
-        """Test that execution_id is required."""
-        with pytest.raises((ValueError, ValidationError)):
+        """Test that execution_id is required.
+
+        A missing keyword is a TypeError from a dataclass, where
+        pydantic raised ValidationError. The rule is the same: the
+        field has no default and must be given.
+        """
+        with pytest.raises((TypeError, ValueError, ValidationError)):
             Assembly(  # type: ignore[call-arg]
                 assembly_id=NonEmptyText("asm-id"),
                 assembly_specification_id=NonEmptyText("spec-id"),

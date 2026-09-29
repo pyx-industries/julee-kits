@@ -5,11 +5,12 @@ This module provides factory_boy factories for creating test instances of
 Policy domain objects with sensible defaults.
 """
 
+import uuid
 from datetime import UTC, datetime
 
 from factory.base import Factory
 from factory.declarations import LazyFunction
-from factory.faker import Faker
+from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidation,
@@ -25,9 +26,9 @@ class DocumentPolicyValidationFactory(Factory):
         model = DocumentPolicyValidation
 
     # Core validation identification
-    validation_id = Faker("uuid4")
-    input_document_id = Faker("uuid4")
-    policy_id = Faker("uuid4")
+    validation_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
+    input_document_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
+    policy_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
 
     # Validation process status
     status = DocumentPolicyValidationStatus.PENDING

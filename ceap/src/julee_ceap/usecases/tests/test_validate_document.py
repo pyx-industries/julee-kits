@@ -13,7 +13,6 @@ from unittest.mock import AsyncMock
 import pytest
 from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import Name, NonEmptyText
-from pydantic import ValidationError
 
 from julee_ceap.domain.models import (
     Document,
@@ -1269,8 +1268,10 @@ class TestValidateDocumentUseCase:
         )
 
         # Act & Assert
+        # ValueError, not pydantic's ValidationError: the rule is the
+        # entity's own __post_init__ now. The message is unchanged.
         with pytest.raises(
-            ValidationError,
+            ValueError,
             match="must be between 0 and 100",
         ):
             await configured_use_case.validate_document(

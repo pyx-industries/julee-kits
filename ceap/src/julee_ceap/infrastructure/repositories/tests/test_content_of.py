@@ -18,6 +18,7 @@ settled on for FakeMinioClient itself.
 """
 
 import io
+from dataclasses import replace
 
 import pytest
 from julee.core.entities.content_stream import ContentStream
@@ -118,7 +119,9 @@ class TestReadingContentThroughThePort:
         failure, not an empty result. A partial write looks like this."""
         document = await a_stored_document(repository)
         await repository.save(document)
-        never_stored = document.evolve(content_multihash=content_multihash(b"other"))
+        never_stored = replace(
+            document, content_multihash=ContentMultihash(content_multihash(b"other"))
+        )
 
         with pytest.raises(ValueError, match="names content"):
             await repository.content_of(never_stored)

@@ -24,7 +24,7 @@ import json
 
 import pytest
 from julee.core.entities.text import NonEmptyText
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.document.multihash import ContentMultihash
@@ -212,7 +212,7 @@ class TestDocumentSerialization:
         """
         doc = DocumentFactory.build(size_bytes=27)
 
-        json_str = doc.model_dump_json()
+        json_str = TypeAdapter(Document).dump_json(doc).decode("utf-8")
         json_data = json.loads(json_str)
 
         assert "content" not in json_data
@@ -268,7 +268,7 @@ class TestDocumentNeedsNoContentToBeValid:
             "content_multihash": multihash_of(b"test_hash"),
         }
 
-        doc = Document.model_validate(document_data)
+        doc = TypeAdapter(Document).validate_python(document_data)
 
         assert doc.document_id == "test-temporal"
 

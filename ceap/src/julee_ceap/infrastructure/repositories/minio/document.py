@@ -21,7 +21,7 @@ from julee.core.entities.content_stream import (
 )
 from julee.integrations.minio.client import MinioClient, MinioRepositoryMixin
 from minio.error import S3Error
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, TypeAdapter
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.document.multihash import content_multihash
@@ -100,7 +100,11 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
             # that wanted a name and a status paid for a second request
             # and got a stream it never read. content_of() is for the
             # callers that want the bytes.
-            return Document(**document_dict)
+            # Through a TypeAdapter, so every field is rebuilt as what
+            # the entity declares. Document(**document_dict) handed each
+            # one the raw JSON: a str where the multihash belongs, with
+            # its format never checked (#44).
+            return TypeAdapter(Document).validate_python(document_dict)
 
         except S3Error as e:
             if getattr(e, "code", None) == "NoSuchKey":
@@ -321,7 +325,9 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
                 continue
 
             try:
-                result[document_id] = Document(**metadata.model_dump())
+                result[document_id] = TypeAdapter(Document).validate_python(
+                    metadata.model_dump()
+                )
             except Exception as e:
                 self.logger.error(
                     "Failed to create Document from metadata",
@@ -396,7 +402,7 @@ class MinioDocumentRepository(DocumentRepository, MinioRepositoryMixin):
         object_name = document.document_id
 
         # Serialize metadata (content stream and content_string excluded)
-        metadata_json = document.model_dump_json().encode("utf-8")
+        metadata_json = TypeAdapter(Document).dump_json(document)
 
         try:
             # Check if metadata already exists and is identical (idempotency)

@@ -6,6 +6,7 @@ query repository implementation, using the fake client to avoid external
 dependencies during testing.
 """
 
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -200,8 +201,10 @@ class TestMinioKnowledgeServiceQueryRepositoryListAll:
         await query_repo.save(sample_query)
 
         # Update the query
-        sample_query = sample_query.model_copy(
-            update={"name": "Updated Query Name", "prompt": "Updated prompt"}
+        sample_query = replace(
+            sample_query,
+            name=Name("Updated Query Name"),
+            prompt=NonEmptyText("Updated prompt"),
         )
         await query_repo.save(sample_query)
 
@@ -392,13 +395,12 @@ class TestMinioKnowledgeServiceQueryRepositoryFullWorkflow:
         assert queries[0].name == "Initial Query"
 
         # Update the query
-        query = query.model_copy(
-            update={
-                "name": "Updated Query",
-                "knowledge_service_id": "updated-service",
-                "prompt": "Updated prompt",
-                "query_metadata": {"version": 2},
-            }
+        query = replace(
+            query,
+            name=Name("Updated Query"),
+            knowledge_service_id=NonEmptyText("updated-service"),
+            prompt=NonEmptyText("Updated prompt"),
+            query_metadata={"version": 2},
         )
         await query_repo.save(query)
 
@@ -439,9 +441,7 @@ class TestMinioKnowledgeServiceQueryRepositoryFullWorkflow:
         assert all(result is not None for result in subset_result.values())
 
         # Update one query and verify list is updated
-        sample_queries[1] = sample_queries[1].model_copy(
-            update={"name": "Modified Query"}
-        )
+        sample_queries[1] = replace(sample_queries[1], name=Name("Modified Query"))
         await query_repo.save(sample_queries[1])
 
         updated_queries = await query_repo.list_all()

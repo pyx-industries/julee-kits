@@ -17,12 +17,11 @@ All domain models use Pydantic BaseModel for validation, serialization,
 and type safety, following the patterns established in the sample project.
 """
 
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import NonEmptyText
-from pydantic import Field, field_validator
 
 
 class DocumentPolicyValidationStatus(StrEnum):
@@ -39,7 +38,8 @@ class DocumentPolicyValidationStatus(StrEnum):
     ERROR = "error"
 
 
-class DocumentPolicyValidation(Entity):
+@dataclass(frozen=True, kw_only=True)
+class DocumentPolicyValidation:
     """Represents the validation of a document against a policy configuration.
 
     A DocumentPolicyValidation tracks the complete lifecycle of validating
@@ -58,86 +58,55 @@ class DocumentPolicyValidation(Entity):
     """
 
     # Core validation identification
-    validation_id: str = Field(
-        description="Unique identifier for this validation instance"
-    )
-    input_document_id: NonEmptyText = Field(
-        description="ID of the document being validated against the policy"
-    )
-    policy_id: NonEmptyText = Field(
-        description="ID of the policy configuration used for validation"
-    )
+    validation_id: str
+    """Unique identifier for this validation instance."""
+    input_document_id: NonEmptyText
+    """ID of the document being validated against the policy."""
+    policy_id: NonEmptyText
+    """ID of the policy configuration used for validation."""
 
     # Validation process status
     status: DocumentPolicyValidationStatus = DocumentPolicyValidationStatus.PENDING
 
     # Initial validation results
-    validation_scores: tuple[tuple[NonEmptyText, int], ...] = Field(
-        default_factory=tuple,
-        description="List of (knowledge_service_query_id, actual_score) "
-        "tuples representing the scores achieved during initial validation. "
-        "Scores are between 0 and 100",
-    )
+    validation_scores: tuple[tuple[NonEmptyText, int], ...] = ()
+    """List of (knowledge_service_query_id, actual_score) tuples representing the scores achieved during initial validation. Scores are between 0 and 100."""
 
     # Transformation results (if applicable)
-    transformed_document_id: NonEmptyText | None = Field(
-        default=None,
-        description="ID of the document after transformations have been "
-        "applied. Only present if the policy includes transformation queries "
-        "and they were executed",
-    )
-    post_transform_validation_scores: tuple[tuple[NonEmptyText, int], ...] | None = (
-        Field(
-            default=None,
-            description="List of (knowledge_service_query_id, actual_score) "
-            "tuples representing scores achieved after transformation. "
-            "Only present if transformations were applied and re-validation "
-            "occurred",
-        )
-    )
+    transformed_document_id: NonEmptyText | None = None
+    """ID of the document after transformations have been applied. Only present if the policy includes transformation queries and they were executed."""
+    post_transform_validation_scores: tuple[tuple[NonEmptyText, int], ...] | None = None
+    """List of (knowledge_service_query_id, actual_score) tuples representing scores achieved after transformation. Only present if transformations were applied and re-validation occurred."""
 
     # Validation metadata
-    started_at: datetime | None = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="When the validation process was initiated",
-    )
-    completed_at: datetime | None = Field(
-        default=None, description="When the validation process completed"
-    )
-    error_message: NonEmptyText | None = Field(
-        default=None, description="Error message if validation process failed"
-    )
+    started_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
+    """When the validation process was initiated."""
+    completed_at: datetime | None = None
+    """When the validation process completed."""
+    error_message: NonEmptyText | None = None
+    """Error message if validation process failed."""
 
     # Results summary
-    passed: bool | None = Field(
-        default=None,
-        description="Whether the document passed policy validation. "
-        "None while validation is in progress, True/False when complete",
-    )
+    passed: bool | None = None
+    """Whether the document passed policy validation. None while validation is in progress, True/False when complete."""
 
-    @field_validator("validation_scores")
-    @classmethod
-    def validation_scores_must_be_valid(
-        cls, v: tuple[tuple[NonEmptyText, int], ...]
-    ) -> tuple[tuple[NonEmptyText, int], ...]:
-        """No query scored twice, and every score a percentage.
+    def __post_init__(self) -> None:
+        """Check both sets of scores.
 
-        An empty tuple is valid: a validation that has not run yet has
-        no scores. There is nothing to check in one, which is what
-        asking the helper about it already does.
+        No query scored twice, and every score a percentage. An empty
+        tuple is valid: a validation that has not run yet has no
+        scores, and None on the post-transform set means the transform
+        has not run.
+
+        Raises:
+            ValueError: If either set is malformed
         """
-        cls._refuse_bad_score_tuples(v, "validation_scores")
-        return v
-
-    @field_validator("post_transform_validation_scores")
-    @classmethod
-    def post_transform_scores_must_be_valid(
-        cls, v: tuple[tuple[NonEmptyText, int], ...] | None
-    ) -> tuple[tuple[NonEmptyText, int], ...] | None:
-        """The same rules, where None means the transform has not run."""
-        if v is not None:
-            cls._refuse_bad_score_tuples(v, "post_transform_validation_scores")
-        return v
+        self._refuse_bad_score_tuples(self.validation_scores, "validation_scores")
+        if self.post_transform_validation_scores is not None:
+            self._refuse_bad_score_tuples(
+                self.post_transform_validation_scores,
+                "post_transform_validation_scores",
+            )
 
     @classmethod
     def _refuse_bad_score_tuples(

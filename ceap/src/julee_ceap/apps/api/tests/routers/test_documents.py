@@ -7,6 +7,7 @@ focusing on the core functionality of listing documents with pagination.
 
 import io
 from collections.abc import Generator
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -257,7 +258,7 @@ class TestGetDocumentContent:
         stored = await memory_repo.store_content(
             ContentStream(io.BytesIO(b"test content"))
         )
-        doc = doc.evolve(content_multihash=stored)
+        doc = replace(doc, content_multihash=ContentMultihash(stored))
         await memory_repo.save(doc)
 
         # Make request
