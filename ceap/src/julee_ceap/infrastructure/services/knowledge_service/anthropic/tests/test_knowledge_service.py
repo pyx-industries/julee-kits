@@ -21,6 +21,7 @@ from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.infrastructure.services.knowledge_service.anthropic import (
     knowledge_service as anthropic_ks,
 )
@@ -356,7 +357,7 @@ class TestAnthropicKnowledgeService:
             result = await service.execute_query(
                 knowledge_service_config,
                 query_text,
-                output_schema=output_schema,
+                output_schema=JsonSchema(output_schema),
                 assistant_prompt=assistant_prompt,
             )
 
@@ -409,7 +410,7 @@ class TestAnthropicKnowledgeService:
             result = await service.execute_query(
                 knowledge_service_config,
                 query_text,
-                output_schema=output_schema,
+                output_schema=JsonSchema(output_schema),
             )
 
             # Verify the response was parsed as JSON directly
@@ -458,6 +459,6 @@ class TestAnthropicKnowledgeService:
                 await service.execute_query(
                     knowledge_service_config,
                     "Test query",
-                    output_schema=output_schema,
+                    output_schema=JsonSchema(output_schema),
                     assistant_prompt=assistant_prompt,
                 )

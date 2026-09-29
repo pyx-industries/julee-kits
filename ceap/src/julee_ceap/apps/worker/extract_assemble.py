@@ -15,6 +15,9 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 from julee_ceap.domain.models.assembly import Assembly
+from julee_ceap.infrastructure.calculators.schema import (
+    LibrarySchemaCalculator,
+)
 from julee_ceap.infrastructure.repositories.temporal.proxies import (
     WorkflowAssemblyRepositoryProxy,
     WorkflowAssemblySpecificationRepositoryProxy,
@@ -129,6 +132,10 @@ class ExtractAssembleWorkflow:
                 knowledge_service_config_repo=knowledge_service_config_repo,
                 knowledge_service=knowledge_service,
                 schema_oracle=WorkflowSchemaOracleProxy(),  # type: ignore[abstract]
+                # A calculator, so workflow code calls it directly rather
+                # than through an activity: it reads a schema it was
+                # handed and answers the same way every replay (ADR 016).
+                schema_calculator=LibrarySchemaCalculator(),
                 clock_witness=clock_witness,
                 execution_witness=execution_witness,
             )

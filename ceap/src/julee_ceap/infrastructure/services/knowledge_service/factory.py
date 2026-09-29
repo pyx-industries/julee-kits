@@ -14,6 +14,7 @@ from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
+from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.infrastructure.services.knowledge_service import (
     FileRegistrationResult,
     QueryResult,
@@ -51,7 +52,7 @@ class ConfigurableKnowledgeService(KnowledgeService):
         self,
         config: KnowledgeServiceConfig,
         query_text: str,
-        output_schema: dict[str, Any] | None = None,
+        output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,
         query_metadata: Mapping[str, Any] | None = None,
         assistant_prompt: str | None = None,

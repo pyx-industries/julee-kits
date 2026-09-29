@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 
 
 from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.schema import JsonSchema
 
 
 class QueryResult(BaseModel):
@@ -117,7 +118,7 @@ class KnowledgeService(Protocol):
         self,
         config: "KnowledgeServiceConfig",
         query_text: str,
-        output_schema: dict[str, Any] | None = None,
+        output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,
         query_metadata: Mapping[str, Any] | None = None,
         assistant_prompt: str | None = None,
