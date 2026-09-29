@@ -21,11 +21,11 @@ from minio.error import S3Error
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 
 from julee_ceap.domain.models.document import Document
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.repositories.document import DocumentRepository
+from julee_ceap.domain.values.multihash import (
     ContentMultihash,
     content_multihash,
 )
-from julee_ceap.domain.repositories.document import DocumentRepository
 
 
 class RawMetadata(BaseModel):

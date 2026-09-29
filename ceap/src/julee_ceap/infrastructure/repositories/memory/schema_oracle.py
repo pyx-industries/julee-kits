@@ -1,5 +1,5 @@
-from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.domain.oracles.schema import SchemaOracle
+from julee_ceap.domain.values.schema import JsonSchema
 
 
 class MemorySchemaOracle(SchemaOracle):

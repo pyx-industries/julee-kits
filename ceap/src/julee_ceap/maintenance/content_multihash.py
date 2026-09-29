@@ -34,7 +34,7 @@ import hashlib
 from collections.abc import Iterable, Mapping
 from enum import StrEnum
 
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.values.multihash import (
     SHA2_256_PREFIX,
     content_multihash,
 )

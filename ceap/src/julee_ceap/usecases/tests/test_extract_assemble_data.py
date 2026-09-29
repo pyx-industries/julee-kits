@@ -23,10 +23,10 @@ from julee_ceap.domain.models import (
     KnowledgeServiceConfig,
     KnowledgeServiceQuery,
 )
-from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
-from julee_ceap.domain.models.schema import JsonSchema
 from julee_ceap.domain.repositories.document import DocumentRepository
+from julee_ceap.domain.values.multihash import ContentMultihash
+from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.calculators.schema import (
     LibrarySchemaCalculator,
 )

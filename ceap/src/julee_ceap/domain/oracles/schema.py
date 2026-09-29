@@ -1,6 +1,6 @@
 from typing import Protocol, runtime_checkable
 
-from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.values.schema import JsonSchema
 
 
 @runtime_checkable
@@ -14,7 +14,7 @@ class SchemaOracle(Protocol):
 
     It returned ``dict[str, Any]``, and the docstring said that was
     because a fetched schema is "not something CEAP has modelled". It is
-    modelled now — :class:`~julee_ceap.domain.models.schema.JsonSchema` —
+    modelled now — :class:`~julee_ceap.domain.values.schema.JsonSchema` —
     which is what let the Any go.
 
     Reached from workflow code through an activity. It performs I/O, so

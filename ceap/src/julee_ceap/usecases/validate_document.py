@@ -26,7 +26,6 @@ from julee_ceap.domain.models import (
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidationStatus,
 )
-from julee_ceap.domain.models.schema import AssembledData
 from julee_ceap.domain.repositories import (
     DocumentPolicyValidationRepository,
     DocumentRepository,
@@ -37,6 +36,7 @@ from julee_ceap.domain.repositories import (
 from julee_ceap.domain.services.knowledge_service import (
     KnowledgeService,
 )
+from julee_ceap.domain.values.schema import AssembledData
 
 from ..dtos.validate_document import (
     ValidateDocumentRequest,

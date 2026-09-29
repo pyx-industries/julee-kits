@@ -17,11 +17,11 @@ from typing import Any
 from julee.repositories.memory import MemoryRepositoryMixin
 
 from julee_ceap.domain.models.document import Document
-from julee_ceap.domain.models.document.multihash import (
+from julee_ceap.domain.repositories.document import DocumentRepository
+from julee_ceap.domain.values.multihash import (
     ContentMultihash,
     content_multihash,
 )
-from julee_ceap.domain.repositories.document import DocumentRepository
 
 logger = logging.getLogger(__name__)
 

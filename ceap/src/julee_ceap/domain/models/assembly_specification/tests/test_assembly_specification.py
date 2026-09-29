@@ -29,7 +29,7 @@ from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
 )
-from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.values.schema import JsonSchema
 
 from .factories import AssemblyFactory
 

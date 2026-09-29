@@ -25,10 +25,6 @@ from julee_ceap.domain.models import (
     DocumentStatus,
     KnowledgeServiceQuery,
 )
-from julee_ceap.domain.models.document.multihash import (
-    content_multihash,
-)
-from julee_ceap.domain.models.schema import AssembledData, JsonSchema
 from julee_ceap.domain.oracles import SchemaOracle
 from julee_ceap.domain.repositories import (
     AssemblyRepository,
@@ -40,6 +36,10 @@ from julee_ceap.domain.repositories import (
 from julee_ceap.domain.services.knowledge_service import (
     KnowledgeService,
 )
+from julee_ceap.domain.values.multihash import (
+    content_multihash,
+)
+from julee_ceap.domain.values.schema import AssembledData, JsonSchema
 
 from ..dtos.extract_assemble_data import (
     ExtractAssembleDataRequest,

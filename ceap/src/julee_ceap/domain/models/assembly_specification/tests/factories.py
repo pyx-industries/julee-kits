@@ -17,7 +17,7 @@ from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecificationStatus,
     KnowledgeServiceQuery,
 )
-from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.values.schema import JsonSchema
 
 
 class AssemblyFactory(Factory):

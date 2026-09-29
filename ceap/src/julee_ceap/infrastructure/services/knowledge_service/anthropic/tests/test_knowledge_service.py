@@ -13,15 +13,15 @@ import pytest
 from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.models.document.multihash import ContentMultihash
-from julee_ceap.domain.models.document.multihash import (
-    content_multihash as multihash_of,
-)
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
-from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.values.multihash import ContentMultihash
+from julee_ceap.domain.values.multihash import (
+    content_multihash as multihash_of,
+)
+from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.services.knowledge_service.anthropic import (
     knowledge_service as anthropic_ks,
 )

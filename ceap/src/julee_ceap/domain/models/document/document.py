@@ -16,7 +16,7 @@ from typing import Any
 
 from julee.core.entities.text import NonEmptyText
 
-from julee_ceap.domain.models.document.multihash import ContentMultihash
+from julee_ceap.domain.values.multihash import ContentMultihash
 
 
 class DocumentStatus(StrEnum):
