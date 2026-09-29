@@ -5,7 +5,7 @@ Pydantic lives here and nowhere else in the bounded context (ADR 001).
 
 from pydantic import BaseModel, Field
 
-from julee_c4.domain.models.diagrams import DeploymentDiagram
+from julee_c4.domain.values.diagrams import DeploymentDiagram
 
 
 class GetDeploymentDiagramRequest(BaseModel):

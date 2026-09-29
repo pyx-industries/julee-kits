@@ -8,13 +8,13 @@ accomplish a specific use case or scenario.
 
 from julee_c4.domain.models.component import Component
 from julee_c4.domain.models.container import Container
-from julee_c4.domain.models.diagrams import DynamicDiagram
 from julee_c4.domain.models.relationship import ElementType
 from julee_c4.domain.models.software_system import SoftwareSystem
 from julee_c4.domain.repositories.component import ComponentRepository
 from julee_c4.domain.repositories.container import ContainerRepository
 from julee_c4.domain.repositories.dynamic_step import DynamicStepRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
+from julee_c4.domain.values.diagrams import DynamicDiagram
 from julee_c4.dtos.diagrams.dynamic_diagram import (
     GetDynamicDiagramRequest,
     GetDynamicDiagramResponse,

@@ -7,13 +7,13 @@ plus the relationships between them.
 """
 
 from julee_c4.domain.models.container import Container
-from julee_c4.domain.models.diagrams import ComponentDiagram
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.models.software_system import SoftwareSystem
 from julee_c4.domain.repositories.component import ComponentRepository
 from julee_c4.domain.repositories.container import ContainerRepository
 from julee_c4.domain.repositories.relationship import RelationshipRepository
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
+from julee_c4.domain.values.diagrams import ComponentDiagram
 from julee_c4.dtos.diagrams.component_diagram import (
     GetComponentDiagramRequest,
     GetComponentDiagramResponse,

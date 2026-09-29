@@ -1,18 +1,24 @@
-"""C4 Diagram domain models.
+"""The C4 diagrams this context works out.
 
-These models represent the computed data for various C4 diagram types.
-They are domain objects that can be serialized to different output formats
-(PlantUML, Structurizr DSL, etc.) by serializers.
+Values, not entities (ADR 018). A diagram is assembled on demand from
+the elements and relationships that were asked for; nothing keeps one
+under an id, and two diagrams of the same contents are the same
+diagram. They were read as entities because of the directory they sat
+in, which would have made any port returning one look bound to an
+aggregate it has not got.
+
+They are still serialized to PlantUML and Structurizr DSL by the
+serializers, which is the only thing done with them.
 """
 
 from dataclasses import dataclass, field
 
-from .component import Component
-from .container import Container
-from .deployment_node import DeploymentNode
-from .dynamic_step import DynamicStep
-from .relationship import Relationship
-from .software_system import SoftwareSystem
+from ..models.component import Component
+from ..models.container import Container
+from ..models.deployment_node import DeploymentNode
+from ..models.dynamic_step import DynamicStep
+from ..models.relationship import Relationship
+from ..models.software_system import SoftwareSystem
 
 
 @dataclass(frozen=True)

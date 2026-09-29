@@ -5,7 +5,7 @@
 
 [[claim]]
 id = "person-is-a-persona"
-source = "julee_c4.domain.models.diagrams.PersonInfo"
+source = "julee_c4.domain.values.diagrams.PersonInfo"
 kind = "is_a"
 target = "julee_hcd.domain.models.persona.Persona"
 note = """

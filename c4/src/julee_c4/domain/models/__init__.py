@@ -7,5 +7,5 @@ Import directly from submodules:
     from julee_c4.domain.models.relationship import Relationship, ElementType
     from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
     from julee_c4.domain.models.dynamic_step import DynamicStep
-    from julee_c4.domain.models.diagrams import SystemContextDiagram, ContainerDiagram, ...
+    from julee_c4.domain.values.diagrams import SystemContextDiagram, ContainerDiagram, ...
 """

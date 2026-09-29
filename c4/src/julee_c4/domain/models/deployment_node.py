@@ -9,6 +9,8 @@ from enum import StrEnum
 
 from julee.core.entities.text import Name, Slug
 
+from ..values.container_instance import ContainerInstance
+
 
 class NodeType(StrEnum):
     """Classification of deployment nodes."""
@@ -27,18 +29,6 @@ class NodeType(StrEnum):
     FIREWALL = "firewall"
     CDN = "cdn"
     OTHER = "other"
-
-
-@dataclass(frozen=True)
-class ContainerInstance:
-    """A deployed instance of a container.
-
-    Represents a container running within a deployment node.
-    """
-
-    container_slug: Slug
-    instance_count: int = 1
-    properties: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
