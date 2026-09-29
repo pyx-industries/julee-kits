@@ -31,6 +31,7 @@ from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
 
+from julee_polling.apps.worker.completion import PipelineCompletion
 from julee_polling.apps.worker.pipelines import NewDataDetectionPipeline
 from julee_polling.domain.values.handoff import Handoff
 from julee_polling.domain.values.polling_config import (
@@ -114,7 +115,7 @@ class RecordingPipeline(NewDataDetectionPipeline):
         return WholePayloadCalculator()
 
     @workflow.run
-    async def run(self, config: PollingConfig | dict[str, Any]) -> dict[str, Any]:
+    async def run(self, config: PollingConfig | dict[str, Any]) -> PipelineCompletion:
         return await super().run(config)
 
     @workflow.query
@@ -133,7 +134,7 @@ class FailingHandlerPipeline(NewDataDetectionPipeline):
         return WholePayloadCalculator()
 
     @workflow.run
-    async def run(self, config: PollingConfig | dict[str, Any]) -> dict[str, Any]:
+    async def run(self, config: PollingConfig | dict[str, Any]) -> PipelineCompletion:
         return await super().run(config)
 
 
@@ -204,7 +205,7 @@ async def start_pipeline(
     env: WorkflowEnvironment,
     config: PollingConfig,
     pipeline: type[NewDataDetectionPipeline] = RecordingPipeline,
-) -> WorkflowHandle[Any, dict[str, Any]]:
+) -> WorkflowHandle[Any, PipelineCompletion]:
     return await env.client.start_workflow(
         pipeline.run,
         config,
@@ -218,7 +219,7 @@ async def run_pipeline(
     env: WorkflowEnvironment,
     config: PollingConfig,
     previous_completion: dict[str, Any] | None = None,
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+) -> tuple[PipelineCompletion, list[dict[str, Any]]]:
     """Run RecordingPipeline as the run after previous_completion, and
     return its result with what reached the handler.
 
@@ -270,9 +271,9 @@ class TestNewDataDetectionPipelineFirstRun:
         async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
             result, _ = await run_pipeline(workflow_env, sample_config)
 
-        assert result["detection_result"]["has_new_data"] is True
-        assert result["detection_result"]["current_hash"] == content_hash(FIRST_CONTENT)
-        assert result["endpoint_id"] == "test-api"
+        assert result.detection_result.has_new_data is True
+        assert result.detection_result.current_hash == content_hash(FIRST_CONTENT)
+        assert result.endpoint_id == "test-api"
 
     async def test_completion_carries_what_the_next_run_compares(
         self, workflow_env, sample_config
@@ -282,11 +283,11 @@ class TestNewDataDetectionPipelineFirstRun:
         async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
             result, _ = await run_pipeline(workflow_env, sample_config)
 
-        polling_result = result["polling_result"]
-        assert polling_result["content_hash"] == content_hash(FIRST_CONTENT)
-        assert polling_result["content"] == FIRST_CONTENT.decode()
-        assert "polled_at" in polling_result
-        assert "completed_at" in result
+        polling_result = result.polling_result
+        assert polling_result.content_hash == content_hash(FIRST_CONTENT)
+        assert polling_result.content == FIRST_CONTENT.decode()
+        assert polling_result.polled_at
+        assert result.completed_at
 
     async def test_first_run_hands_new_items_to_handler(
         self, workflow_env, sample_config
@@ -315,7 +316,7 @@ class TestNewDataDetectionPipelineFirstRun:
                     execution_timeout=EXECUTION_TIMEOUT,
                 )
 
-        assert result["endpoint_id"] == "test-api"
+        assert result.endpoint_id == "test-api"
 
 
 class TestNewDataDetectionPipelineSubsequentRuns:
@@ -329,7 +330,7 @@ class TestNewDataDetectionPipelineSubsequentRuns:
                 workflow_env, sample_config, completion_for(FIRST_CONTENT)
             )
 
-        assert result["detection_result"]["has_new_data"] is False
+        assert result.detection_result.has_new_data is False
         assert handled == []
 
     async def test_changes_detected(self, workflow_env, sample_config):
@@ -339,13 +340,41 @@ class TestNewDataDetectionPipelineSubsequentRuns:
                 workflow_env, sample_config, completion_for(FIRST_CONTENT)
             )
 
-        assert result["detection_result"]["has_new_data"] is True
-        assert result["detection_result"]["current_hash"] == content_hash(
-            CHANGED_CONTENT
-        )
+        assert result.detection_result.has_new_data is True
+        assert result.detection_result.current_hash == content_hash(CHANGED_CONTENT)
         assert [call["new_item_ids"] for call in handled] == [
             [CHANGED_CONTENT.decode()]
         ]
+
+    async def test_a_completion_it_cannot_read_is_said_to_be_no_baseline(
+        self, workflow_env, sample_config, caplog
+    ):
+        """The warning is the point, not the starting over.
+
+        This is the shape a completion written by a version that named
+        the baseline differently would have. Read with .get() it came
+        back as None and the run reported new data -- which is what
+        happens here too, so the only thing telling the two apart is
+        that this one says so. Starting over costs one duplicate
+        notification; the silent reading cost it on every run.
+        """
+        stored = completion_for(FIRST_CONTENT)
+        stored["polling_result"]["hash"] = stored["polling_result"].pop("content_hash")
+
+        async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
+            with caplog.at_level(logging.WARNING):
+                result, handled = await run_pipeline(
+                    workflow_env, sample_config, stored
+                )
+
+        assert [r.getMessage() for r in caplog.records if r.levelno >= logging.WARNING]
+        assert any(
+            "no baseline" in r.getMessage()
+            for r in caplog.records
+            if r.levelno >= logging.WARNING
+        )
+        assert result.detection_result.has_new_data is True
+        assert handled != []
 
 
 class TestNewDataDetectionPipelineWorkflowQueries:
@@ -404,9 +433,9 @@ class TestNewDataDetectionPipelineErrorHandling:
                 )
                 result = await handle.result()
 
-        assert result["detection_result"]["has_new_data"] is True
-        assert result["detection_result"]["handoff"] == Handoff.FAILED.value
-        assert result["polling_result"]["content_hash"] is None
+        assert result.detection_result.has_new_data is True
+        assert result.detection_result.handoff == Handoff.FAILED.value
+        assert result.polling_result.content_hash is None
 
     async def test_a_failed_handoff_is_written_down(
         self, workflow_env, sample_config, caplog
@@ -452,9 +481,13 @@ class TestNewDataDetectionPipelineErrorHandling:
                 )
                 failed = await handle.result()
 
-            second, handled = await run_pipeline(workflow_env, sample_config, failed)
+            # Temporal hands the next run a dict, not the model, so that is
+            # what this passes -- the round trip is the thing under test.
+            second, handled = await run_pipeline(
+                workflow_env, sample_config, failed.model_dump(mode="json")
+            )
 
-        assert second["detection_result"]["has_new_data"] is True
+        assert second.detection_result.has_new_data is True
         assert [call["content_hash"] for call in handled] == [
             content_hash(FIRST_CONTENT)
         ]
@@ -476,8 +509,8 @@ class TestAPollThatFailed:
                 workflow_env, sample_config, completion_for(FIRST_CONTENT)
             )
 
-        assert result["detection_result"]["has_new_data"] is False
-        assert result["detection_result"]["handoff"] == Handoff.NOT_NEEDED.value
+        assert result.detection_result.has_new_data is False
+        assert result.detection_result.handoff == Handoff.NOT_NEEDED.value
 
     async def test_a_failed_poll_tells_nobody(self, workflow_env, sample_config):
         """There is nothing to tell."""
@@ -501,7 +534,7 @@ class TestAPollThatFailed:
         async with worker(workflow_env, poll_endpoint_failing()):
             result, _ = await run_pipeline(workflow_env, sample_config, previous)
 
-        assert result["polling_result"]["content_hash"] == content_hash(FIRST_CONTENT)
+        assert result.polling_result.content_hash == content_hash(FIRST_CONTENT)
 
     async def test_the_content_is_handed_over_once_polling_recovers(
         self, workflow_env, sample_config
@@ -511,9 +544,11 @@ class TestAPollThatFailed:
             failed, _ = await run_pipeline(workflow_env, sample_config)
 
         async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
-            recovered, handled = await run_pipeline(workflow_env, sample_config, failed)
+            recovered, handled = await run_pipeline(
+                workflow_env, sample_config, failed.model_dump(mode="json")
+            )
 
-        assert recovered["detection_result"]["has_new_data"] is True
+        assert recovered.detection_result.has_new_data is True
         assert [call["content_hash"] for call in handled] == [
             content_hash(FIRST_CONTENT)
         ]
@@ -533,7 +568,7 @@ class TestWhatTheHandoffReports:
         async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
             result, _ = await run_pipeline(workflow_env, sample_config)
 
-        assert result["detection_result"]["handoff"] == Handoff.DISCHARGED.value
+        assert result.detection_result.handoff == Handoff.DISCHARGED.value
 
     async def test_what_the_handler_said_travels_back(
         self, workflow_env, sample_config
@@ -542,7 +577,7 @@ class TestWhatTheHandoffReports:
         async with worker(workflow_env, poll_endpoint_returning(FIRST_CONTENT)):
             result, _ = await run_pipeline(workflow_env, sample_config)
 
-        assert result["detection_result"]["handoff_info"] == ["queued 1"]
+        assert result.detection_result.handoff_info == ("queued 1",)
 
     async def test_nothing_new_is_reported_as_nothing_to_do(
         self, workflow_env, sample_config
@@ -553,7 +588,7 @@ class TestWhatTheHandoffReports:
                 workflow_env, sample_config, completion_for(FIRST_CONTENT)
             )
 
-        assert result["detection_result"]["handoff"] == Handoff.NOT_NEEDED.value
+        assert result.detection_result.handoff == Handoff.NOT_NEEDED.value
         assert handled == []
 
 
@@ -568,9 +603,13 @@ class TestNewDataDetectionPipelineIntegration:
 
         async with worker(workflow_env, poll_endpoint):
             first, _ = await run_pipeline(workflow_env, sample_config)
-            second, _ = await run_pipeline(workflow_env, sample_config, first)
-            third, _ = await run_pipeline(workflow_env, sample_config, second)
+            second, _ = await run_pipeline(
+                workflow_env, sample_config, first.model_dump(mode="json")
+            )
+            third, _ = await run_pipeline(
+                workflow_env, sample_config, second.model_dump(mode="json")
+            )
 
-        assert first["detection_result"]["has_new_data"] is True
-        assert second["detection_result"]["has_new_data"] is False
-        assert third["detection_result"]["has_new_data"] is True
+        assert first.detection_result.has_new_data is True
+        assert second.detection_result.has_new_data is False
+        assert third.detection_result.has_new_data is True
