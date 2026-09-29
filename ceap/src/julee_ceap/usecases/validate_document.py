@@ -11,6 +11,7 @@ import io
 import json
 import logging
 from collections.abc import Callable, Sequence
+from dataclasses import replace
 from datetime import datetime
 
 from julee.core.entities.content_stream import ContentStream
@@ -217,8 +218,8 @@ class ValidateDocumentUseCase:
 
         try:
             # Step 4: Update status to in progress
-            validation = validation.evolve(
-                status=DocumentPolicyValidationStatus.IN_PROGRESS
+            validation = replace(
+                validation, status=DocumentPolicyValidationStatus.IN_PROGRESS
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -239,7 +240,8 @@ class ValidateDocumentUseCase:
             )
 
             # Step 9: Update validation with scores
-            validation = validation.evolve(
+            validation = replace(
+                validation,
                 validation_scores=validation_scores,
                 status=DocumentPolicyValidationStatus.VALIDATION_COMPLETE,
             )
@@ -290,8 +292,9 @@ class ValidateDocumentUseCase:
 
             # Step 11: Initial validation failed and transformations are
             # available
-            validation = validation.evolve(
-                status=DocumentPolicyValidationStatus.TRANSFORMATION_REQUIRED
+            validation = replace(
+                validation,
+                status=DocumentPolicyValidationStatus.TRANSFORMATION_REQUIRED,
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -306,8 +309,9 @@ class ValidateDocumentUseCase:
             )
 
             # Step 12: Apply transformations
-            validation = validation.evolve(
-                status=DocumentPolicyValidationStatus.TRANSFORMATION_IN_PROGRESS
+            validation = replace(
+                validation,
+                status=DocumentPolicyValidationStatus.TRANSFORMATION_IN_PROGRESS,
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -318,7 +322,8 @@ class ValidateDocumentUseCase:
                 document_registrations,
             )
 
-            validation = validation.evolve(
+            validation = replace(
+                validation,
                 transformed_document_id=transformed_document.document_id,
                 status=DocumentPolicyValidationStatus.TRANSFORMATION_COMPLETE,
             )
@@ -332,8 +337,8 @@ class ValidateDocumentUseCase:
             )
 
             # Step 14: Re-run validation queries on transformed document
-            validation = validation.evolve(
-                status=DocumentPolicyValidationStatus.IN_PROGRESS
+            validation = replace(
+                validation, status=DocumentPolicyValidationStatus.IN_PROGRESS
             )
             await self.document_policy_validation_repo.save(validation)
 
@@ -389,9 +394,10 @@ class ValidateDocumentUseCase:
 
         except Exception as e:
             # Mark validation as failed due to error
-            validation = validation.evolve(
+            validation = replace(
+                validation,
                 status=DocumentPolicyValidationStatus.ERROR,
-                error_message=str(e),
+                error_message=NonEmptyText(str(e)),
                 passed=False,
                 completed_at=self.now_fn(),
             )

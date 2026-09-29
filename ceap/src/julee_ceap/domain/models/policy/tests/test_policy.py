@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 
 import pytest
 from julee.core.entities.text import Name, NonEmptyText
+from pydantic import TypeAdapter
 
 from julee_ceap.domain.models.policy import (
     Policy,
@@ -209,7 +210,7 @@ class TestPolicy:
                 description=NonEmptyText("Test description"),
                 validation_scores="not-a-list",  # type: ignore
             )
-        assert "Input should be a valid tuple" in str(exc_info.value)
+        assert "must be a list" in str(exc_info.value)
 
         # Invalid tuple length should fail
         with pytest.raises(ValueError) as exc_info:
@@ -219,17 +220,12 @@ class TestPolicy:
                 description=NonEmptyText("Test description"),
                 validation_scores=[("query-id",)],  # type: ignore
             )
-        assert "Field required" in str(exc_info.value)
+        assert "must be a 2-tuple" in str(exc_info.value)
 
-        # Non-string query ID should fail
-        with pytest.raises(ValueError) as exc_info:
-            Policy(
-                policy_id=NonEmptyText("policy-001"),
-                title=Name("Test Policy"),
-                description=NonEmptyText("Test description"),
-                validation_scores=[(123, 80)],  # type: ignore
-            )
-        assert "Input should be a valid string" in str(exc_info.value)
+        # A query id that is not text, and a score that is not a number,
+        # were refused by pydantic and are not rules the entity states.
+        # Both call sites carried a type: ignore, which is the tell: mypy
+        # refuses them, and that is now the whole of the check.
 
         # Empty query ID should fail
         with pytest.raises(ValueError) as exc_info:
@@ -240,16 +236,6 @@ class TestPolicy:
                 validation_scores=((NonEmptyText(""), 80),),
             )
         assert "cannot be empty" in str(exc_info.value)
-
-        # Non-integer score should fail
-        with pytest.raises(ValueError) as exc_info:
-            Policy(
-                policy_id=NonEmptyText("policy-001"),
-                title=Name("Test Policy"),
-                description=NonEmptyText("Test description"),
-                validation_scores=[("query-id", "not-a-number")],  # type: ignore
-            )
-        assert "Input should be a valid integer" in str(exc_info.value)
 
         # Score below 0 should fail
         with pytest.raises(ValueError) as exc_info:
@@ -343,18 +329,12 @@ class TestPolicy:
                 validation_scores=((NonEmptyText("test-query"), 80),),
                 transformation_queries="not-a-list",  # type: ignore
             )
-        assert "Input should be a valid tuple" in str(exc_info.value)
+        assert "must be a list" in str(exc_info.value)
 
-        # Non-string query ID should fail
-        with pytest.raises(ValueError) as exc_info:
-            Policy(
-                policy_id=NonEmptyText("policy-001"),
-                title=Name("Test Policy"),
-                description=NonEmptyText("Test description"),
-                validation_scores=((NonEmptyText("test-query"), 80),),
-                transformation_queries=[123],  # type: ignore
-            )
-        assert "Input should be a valid string" in str(exc_info.value)
+        # A query id that is not text was refused by pydantic and is
+        # not a rule the entity states. The call site carried a
+        # ignore comment, which is the tell: mypy refuses it, and that is
+        # now the whole of the check.
 
         # Empty string query ID should fail
         with pytest.raises(ValueError) as exc_info:
@@ -513,10 +493,10 @@ class TestPolicy:
         )
 
         # Serialize to dict
-        policy_dict = original_policy.model_dump()
+        policy_dict = TypeAdapter(Policy).dump_python(original_policy)
 
         # Deserialize from dict
-        restored_policy = Policy.model_validate(policy_dict)
+        restored_policy = TypeAdapter(Policy).validate_python(policy_dict)
 
         # Verify all fields match
         assert restored_policy.policy_id == original_policy.policy_id
@@ -542,10 +522,10 @@ class TestPolicy:
         )
 
         # Serialize to JSON
-        policy_json = original_policy.model_dump_json()
+        policy_json = TypeAdapter(Policy).dump_json(original_policy).decode("utf-8")
 
         # Deserialize from JSON
-        restored_policy = Policy.model_validate_json(policy_json)
+        restored_policy = TypeAdapter(Policy).validate_json(policy_json)
 
         # Verify core fields match
         assert restored_policy.policy_id == original_policy.policy_id

@@ -123,37 +123,11 @@ class TestCreateAssemblySpecificationRequest:
         assert isinstance(domain_model.created_at, datetime)
         assert isinstance(domain_model.updated_at, datetime)
 
-    def test_field_definitions_match_domain_model(self) -> None:
-        """Test that field definitions are copied from domain model."""
-        request_fields = CreateAssemblySpecificationRequest.model_fields
-        domain_fields = AssemblySpecification.model_fields
-
-        # Verify shared fields have identical definitions
-        shared_field_names = [
-            "name",
-            "applicability",
-            "jsonschema",
-            "knowledge_service_queries",
-            "version",
-        ]
-
-        for field_name in shared_field_names:
-            assert field_name in request_fields
-            assert field_name in domain_fields
-            # Field descriptions should match
-            assert (
-                request_fields[field_name].description
-                == domain_fields[field_name].description
-            )
-            # Default values should match where applicable
-            if (
-                hasattr(domain_fields[field_name], "default")
-                and domain_fields[field_name].default is not None
-            ):
-                assert (
-                    request_fields[field_name].default
-                    == domain_fields[field_name].default
-                )
+    # A test here asserted that this request's field definitions were
+    # copied from the entity's model_fields. That coupling is gone on
+    # purpose: a request is a message, and what a client is told about
+    # a field it sends is the message's business, not the entity's. A
+    # frozen dataclass has no model_fields to copy from either.
 
 
 class TestCreateKnowledgeServiceQueryRequest:
@@ -235,34 +209,8 @@ class TestCreateKnowledgeServiceQueryRequest:
         assert isinstance(domain_model.updated_at, datetime)
         assert domain_model.created_at == domain_model.updated_at
 
-    def test_field_definitions_match_domain_model(self) -> None:
-        """Test that field definitions are copied from domain model."""
-        request_fields = CreateKnowledgeServiceQueryRequest.model_fields
-        domain_fields = KnowledgeServiceQuery.model_fields
-
-        # Verify shared fields have identical descriptions
-        shared_field_names = [
-            "name",
-            "knowledge_service_id",
-            "prompt",
-            "query_metadata",
-            "assistant_prompt",
-        ]
-
-        for field_name in shared_field_names:
-            assert field_name in request_fields
-            assert field_name in domain_fields
-            # Field descriptions should match
-            assert (
-                request_fields[field_name].description
-                == domain_fields[field_name].description
-            )
-            # Default values should match where applicable
-            if (
-                hasattr(domain_fields[field_name], "default")
-                and domain_fields[field_name].default is not None
-            ):
-                assert (
-                    request_fields[field_name].default
-                    == domain_fields[field_name].default
-                )
+    # A test here asserted that this request's field definitions were
+    # copied from the entity's model_fields. That coupling is gone on
+    # purpose: a request is a message, and what a client is told about
+    # a field it sends is the message's business, not the entity's. A
+    # frozen dataclass has no model_fields to copy from either.

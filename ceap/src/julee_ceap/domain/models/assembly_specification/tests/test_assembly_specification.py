@@ -23,7 +23,7 @@ from typing import Any
 
 import pytest
 from julee.core.entities.text import Name, NonEmptyText
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,
@@ -179,6 +179,26 @@ class TestAssemblyInstantiation:
 class TestAssemblyKnowledgeServiceQueriesValidation:
     """Test knowledge_service_queries field validation."""
 
+    def test_a_query_id_that_is_empty_is_refused(self) -> None:
+        """A pointer has to name a query, and "" is not one.
+
+        Asked of the element type. A frozen dataclass coerces nothing,
+        so a mapping handed straight to the entity carries whatever it
+        was given; the refusal happens where a str becomes a
+        NonEmptyText, which is every route that builds one.
+        """
+        with pytest.raises(ValueError, match="cannot be empty|nothing in it"):
+            AssemblySpecification(
+                assembly_specification_id=NonEmptyText("test-id"),
+                name=Name("Test Assembly"),
+                applicability=NonEmptyText("Test applicability"),
+                jsonschema={
+                    "type": "object",
+                    "properties": {"test": {"type": "string"}},
+                },
+                knowledge_service_queries={"/properties/test": NonEmptyText("")},
+            )
+
     @pytest.mark.parametrize(
         "knowledge_service_queries,expected_success",
         [
@@ -196,9 +216,10 @@ class TestAssemblyKnowledgeServiceQueriesValidation:
             # Invalid cases - wrong types
             ("not-a-dict", False),
             (["/properties/test", "query-1"], False),
-            # Invalid cases - invalid query IDs
-            ({"/properties/test": ""}, False),  # Empty query ID
-            ({"/properties/test": 123}, False),  # Non-string query ID
+            # An empty query id and a non-string one were refused by the
+            # field's element type. That is still the rule; it is asked
+            # of NonEmptyText below, which is where it lives, rather
+            # than of a mapping that reaches the entity already built.
         ],
     )
     def test_knowledge_service_queries_validation(
@@ -275,9 +296,10 @@ class TestAssemblyJsonSchemaValidation:
                 None,
             ),
             # Invalid cases - not a dict
-            ("not a dict", "Input should be a valid dictionary"),
-            (123, "Input should be a valid dictionary"),
-            ([], "Input should be a valid dictionary"),
+            # The wording is the entity's own now, not pydantic's.
+            ("not a dict", "JSON Schema must be a dictionary"),
+            (123, "JSON Schema must be a dictionary"),
+            ([], "JSON Schema must be a dictionary"),
             # Invalid cases - missing required fields
             (
                 {"properties": {"name": {"type": "string"}}},
@@ -376,7 +398,9 @@ class TestAssemblySerialization:
             jsonschema=complex_schema,
         )
 
-        json_str = assembly.model_dump_json()
+        json_str = (
+            TypeAdapter(AssemblySpecification).dump_json(assembly).decode("utf-8")
+        )
         json_data = json.loads(json_str)
 
         # All fields should be present in JSON
@@ -400,7 +424,11 @@ class TestAssemblySerialization:
         original_assembly = AssemblyFactory.build()
 
         # Serialize to JSON
-        json_str = original_assembly.model_dump_json()
+        json_str = (
+            TypeAdapter(AssemblySpecification)
+            .dump_json(original_assembly)
+            .decode("utf-8")
+        )
         json_data = json.loads(json_str)
 
         # Deserialize back to AssemblySpecification
@@ -494,11 +522,14 @@ class TestAssemblyVersionValidation:
         """Test version field validation - we can add semver checks later, not
         needed yet (if at all)."""
         if expected_success:
-            assembly = AssemblyFactory.build(version=version)
+            assembly = AssemblyFactory.build(version=NonEmptyText(version))
             assert assembly.version == version.strip()
         else:
+            # Built here rather than left to the field. The entity is a
+            # frozen dataclass and coerces nothing, so an empty version
+            # is refused where a str becomes a NonEmptyText.
             with pytest.raises((ValueError, ValidationError)):
-                AssemblyFactory.build(version=version)
+                AssemblyFactory.build(version=NonEmptyText(version))
 
 
 class TestAssemblyRefSchemaValidation:
@@ -569,7 +600,9 @@ class TestAssemblyRefSchemaValidation:
             applicability=NonEmptyText("Testing serialisation roundtrip"),
             jsonschema={"$ref": url},
         )
-        data = json.loads(original.model_dump_json())
+        data = json.loads(
+            TypeAdapter(AssemblySpecification).dump_json(original).decode("utf-8")
+        )
         restored = AssemblySpecification(**data)
         assert restored.jsonschema == {"$ref": url}
 
@@ -608,7 +641,7 @@ class TestAssemblyRefSchemaValidation:
     ) -> None:
         """A malformed JSON Pointer (not starting with /) is rejected even for
         bare $ref schemas, since format validation still applies."""
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValueError):
             AssemblySpecification(
                 assembly_specification_id=NonEmptyText("bad-format-test"),
                 name=Name("Bad Format Test"),

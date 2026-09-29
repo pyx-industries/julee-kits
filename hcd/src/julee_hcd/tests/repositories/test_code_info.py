@@ -29,10 +29,10 @@ def create_context_info(
     """Helper to create test context info."""
     return BoundedContextInfo(
         slug=slug,
-        entities=list(entities or []),
-        use_cases=list(use_cases or []),
-        repository_protocols=list(repository_protocols or []),
-        service_protocols=list(service_protocols or []),
+        entities=tuple(entities or ()),
+        use_cases=tuple(use_cases or ()),
+        repository_protocols=tuple(repository_protocols or ()),
+        service_protocols=tuple(service_protocols or ()),
         has_infrastructure=has_infrastructure,
         code_dir=code_dir or slug,
     )

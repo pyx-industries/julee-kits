@@ -5,12 +5,13 @@ This module provides factory_boy factories for creating test instances of
 AssemblySpecification domain objects with sensible defaults.
 """
 
+import uuid
 from datetime import UTC, datetime
 from typing import Any
 
 from factory.base import Factory
 from factory.declarations import LazyAttribute, LazyFunction
-from factory.faker import Faker
+from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models.assembly_specification import (
     AssemblySpecification,
@@ -27,9 +28,9 @@ class AssemblyFactory(Factory):
         model = AssemblySpecification
 
     # Core assembly identification
-    assembly_specification_id = Faker("uuid4")
-    name = "Test Assembly"
-    applicability = "Test documents for automated testing purposes"
+    assembly_specification_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
+    name = Name("Test Assembly")
+    applicability = NonEmptyText("Test documents for automated testing purposes")
 
     # Valid JSON Schema for testing
     @LazyAttribute
@@ -52,7 +53,7 @@ class AssemblyFactory(Factory):
 
     # Assembly configuration
     status = AssemblySpecificationStatus.ACTIVE
-    version = "0.1.0"
+    version = NonEmptyText("0.1.0")
 
     # Timestamps
     created_at = LazyFunction(lambda: datetime.now(UTC))
@@ -67,12 +68,12 @@ class KnowledgeServiceQueryFactory(Factory):
         model = KnowledgeServiceQuery
 
     # Core query identification
-    query_id = Faker("uuid4")
-    name = "Test Knowledge Service Query"
+    query_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
+    name = Name("Test Knowledge Service Query")
 
     # Knowledge service configuration
-    knowledge_service_id = "test-knowledge-service"
-    prompt = "Extract test data from the document"
+    knowledge_service_id = NonEmptyText("test-knowledge-service")
+    prompt = NonEmptyText("Extract test data from the document")
 
     # Timestamps
     created_at = LazyFunction(lambda: datetime.now(UTC))

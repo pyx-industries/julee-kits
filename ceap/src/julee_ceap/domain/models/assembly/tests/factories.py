@@ -5,11 +5,12 @@ This module provides factory_boy factories for creating test instances of
 Assembly domain objects with sensible defaults.
 """
 
+import uuid
 from datetime import UTC, datetime
 
 from factory.base import Factory
 from factory.declarations import LazyFunction
-from factory.faker import Faker
+from julee.core.entities.text import NonEmptyText
 
 from julee_ceap.domain.models.assembly import (
     Assembly,
@@ -24,10 +25,10 @@ class AssemblyFactory(Factory):
         model = Assembly
 
     # Core assembly identification
-    assembly_id = Faker("uuid4")
-    assembly_specification_id = Faker("uuid4")
-    input_document_id = Faker("uuid4")
-    execution_id = Faker("uuid4")
+    assembly_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
+    assembly_specification_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
+    input_document_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
+    execution_id = LazyFunction(lambda: NonEmptyText(str(uuid.uuid4())))
 
     # Assembly process tracking
     status = AssemblyStatus.PENDING

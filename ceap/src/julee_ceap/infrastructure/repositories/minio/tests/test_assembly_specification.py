@@ -6,6 +6,7 @@ specification repository implementation, using the fake client to avoid
 external dependencies during testing.
 """
 
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -184,8 +185,8 @@ class TestMinioAssemblySpecificationRepositoryStatusManagement:
         await specification_repo.save(sample_specification)
 
         # Update status to draft
-        sample_specification = sample_specification.model_copy(
-            update={"status": AssemblySpecificationStatus.DRAFT}
+        sample_specification = replace(
+            sample_specification, status=AssemblySpecificationStatus.DRAFT
         )
         await specification_repo.save(sample_specification)
 
@@ -197,8 +198,8 @@ class TestMinioAssemblySpecificationRepositoryStatusManagement:
         assert retrieved.status == AssemblySpecificationStatus.DRAFT
 
         # Update to deprecated
-        sample_specification = sample_specification.model_copy(
-            update={"status": AssemblySpecificationStatus.DEPRECATED}
+        sample_specification = replace(
+            sample_specification, status=AssemblySpecificationStatus.DEPRECATED
         )
         await specification_repo.save(sample_specification)
 
@@ -243,14 +244,16 @@ class TestMinioAssemblySpecificationRepositoryComplexScenarios:
         await specification_repo.save(specification)
 
         # Activate specification
-        specification = specification.model_copy(
-            update={"status": AssemblySpecificationStatus.ACTIVE, "version": "1.0.0"}
+        specification = replace(
+            specification,
+            status=AssemblySpecificationStatus.ACTIVE,
+            version=NonEmptyText("1.0.0"),
         )
         await specification_repo.save(specification)
 
         # Deprecate specification
-        specification = specification.model_copy(
-            update={"status": AssemblySpecificationStatus.DEPRECATED}
+        specification = replace(
+            specification, status=AssemblySpecificationStatus.DEPRECATED
         )
         await specification_repo.save(specification)
 

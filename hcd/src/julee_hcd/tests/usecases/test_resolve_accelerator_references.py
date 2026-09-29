@@ -100,7 +100,7 @@ def create_code_info(slug: str, code_dir: str | None = None) -> BoundedContextIn
     return BoundedContextInfo(
         slug=slug,
         code_dir=code_dir or slug,
-        entities=[ClassInfo(name="TestEntity", docstring="Test")],
+        entities=(ClassInfo(name="TestEntity", docstring="Test"),),
     )
 
 

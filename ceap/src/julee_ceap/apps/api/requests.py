@@ -18,6 +18,10 @@ from julee_ceap.domain.models import (
     AssemblySpecificationStatus,
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
+    refuse_a_bad_pointer,
+    refuse_a_bad_schema,
+)
 
 
 class CreateAssemblySpecificationRequest(BaseModel):
@@ -33,25 +37,37 @@ class CreateAssemblySpecificationRequest(BaseModel):
     - created_at/updated_at: System-managed timestamps
     """
 
-    # Field definitions with descriptions reused from domain model
-    name: Name = Field(
-        description=AssemblySpecification.model_fields["name"].description
-    )
+    # These descriptions were read off AssemblySpecification.model_fields,
+    # which a frozen dataclass does not have. They are written here now,
+    # which is where they belong: this is the message, and what a client
+    # is told about a field it sends is the message's business.
+    name: Name = Field(description="Human-readable name like 'meeting minutes'")
     applicability: NonEmptyText = Field(
-        description=AssemblySpecification.model_fields["applicability"].description
+        description=(
+            "Text description identifying to what type of information this "
+            "assembly applies, such as an online transcript of a video "
+            "meeting. This information may be used by knowledge service for "
+            "document-assembly matching"
+        )
     )
     jsonschema: dict[str, Any] = Field(
-        description=AssemblySpecification.model_fields["jsonschema"].description
+        description=(
+            "JSON Schema defining the structure of data to be extracted "
+            "for this assembly"
+        )
     )
     knowledge_service_queries: dict[str, NonEmptyText] = Field(
         default_factory=dict,
-        description=AssemblySpecification.model_fields[
-            "knowledge_service_queries"
-        ].description,
+        description=(
+            "Mapping from JSON Pointer paths to KnowledgeServiceQuery IDs. "
+            "Keys are JSON Pointer strings (e.g., '/properties/attendees', "
+            "'') and values are query IDs for extracting data for that "
+            "schema section"
+        ),
     )
     version: NonEmptyText = Field(
-        default=AssemblySpecification.model_fields["version"].default,
-        description=AssemblySpecification.model_fields["version"].description,
+        default=NonEmptyText("0.1.0"),
+        description="Assembly definition version",
     )
 
     # The rules that are a field's shape travel with its type now.
@@ -61,7 +77,7 @@ class CreateAssemblySpecificationRequest(BaseModel):
     @field_validator("jsonschema")
     @classmethod
     def validate_jsonschema(cls, v: dict[str, Any]) -> dict[str, Any]:
-        AssemblySpecification.jsonschema_must_be_valid(v)
+        refuse_a_bad_schema(v)
         return v
 
     @field_validator("knowledge_service_queries")
@@ -69,7 +85,9 @@ class CreateAssemblySpecificationRequest(BaseModel):
     def validate_knowledge_service_queries(
         cls, v: dict[str, NonEmptyText], info: ValidationInfo
     ) -> dict[str, NonEmptyText]:
-        AssemblySpecification.knowledge_service_queries_must_be_valid(v, info)
+        schema = info.data.get("jsonschema")
+        if schema is not None:
+            refuse_a_bad_pointer(v, schema)
         return v
 
     def to_domain_model(self, assembly_specification_id: str) -> AssemblySpecification:
@@ -108,25 +126,33 @@ class CreateKnowledgeServiceQueryRequest(BaseModel):
     - created_at/updated_at: System-managed timestamps
     """
 
-    # Field definitions with descriptions reused from domain model
-    name: Name = Field(
-        description=KnowledgeServiceQuery.model_fields["name"].description
-    )
+    # Written here rather than read off KnowledgeServiceQuery.model_fields,
+    # for the reason given above.
+    name: Name = Field(description="Human-readable name describing the query purpose")
     knowledge_service_id: NonEmptyText = Field(
-        description=KnowledgeServiceQuery.model_fields[
-            "knowledge_service_id"
-        ].description
+        description="Identifier of the knowledge service to query"
     )
     prompt: NonEmptyText = Field(
-        description=KnowledgeServiceQuery.model_fields["prompt"].description
+        description=(
+            "The specific prompt to send to the knowledge service for this extraction"
+        )
     )
     query_metadata: dict[str, Any] = Field(
         default_factory=dict,
-        description=KnowledgeServiceQuery.model_fields["query_metadata"].description,
+        description=(
+            "Service-specific metadata and configuration options such as "
+            "model selection, temperature, max_tokens, etc. The structure "
+            "depends on the specific knowledge service being used"
+        ),
     )
     assistant_prompt: str | None = Field(
-        default=KnowledgeServiceQuery.model_fields["assistant_prompt"].default,
-        description=KnowledgeServiceQuery.model_fields["assistant_prompt"].description,
+        default=None,
+        description=(
+            "Optional assistant message content to constrain or prime the "
+            "model's response. This is added as the final assistant message "
+            "before the model generates its response, allowing control over "
+            "response format and structure"
+        ),
     )
 
     # The rules that are a field's shape travel with its type now.
