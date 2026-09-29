@@ -6,6 +6,7 @@ KnowledgeService protocol, verifying file registration and query
 execution functionality.
 """
 
+import logging
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -104,16 +105,8 @@ class TestAnthropicKnowledgeService:
 
             # Verify the result structure
             assert result.query_text == query_text
-            assert (
-                result.result_data["response"]
-                == "This is a test response from Anthropic."
-            )
-            assert result.result_data["model"] == anthropic_ks_module.DEFAULT_MODEL
-            assert result.result_data["service"] == "anthropic"
-            assert result.result_data["sources"] == []
-            assert result.result_data["usage"]["input_tokens"] == 150
-            assert result.result_data["usage"]["output_tokens"] == 25
-            assert result.result_data["stop_reason"] == "end_turn"
+            assert result.answer == "This is a test response from Anthropic."
+            assert result.data is None
             assert result.execution_time_ms is not None
             assert result.execution_time_ms >= 0
             assert isinstance(result.created_at, datetime)
@@ -156,7 +149,6 @@ class TestAnthropicKnowledgeService:
 
             # Verify the result structure
             assert result.query_text == query_text
-            assert result.result_data["sources"] == service_file_ids
             assert result.execution_time_ms is not None
             assert result.execution_time_ms >= 0
 
@@ -248,9 +240,6 @@ class TestAnthropicKnowledgeService:
                 knowledge_service_config, query_text, service_file_ids=[]
             )
 
-            # Should behave the same as None
-            assert result.result_data["sources"] == []
-
             # Verify API call structure
             call_args = mock_anthropic_client.messages.create.call_args
             content_parts = call_args[1]["messages"][0]["content"]
@@ -280,8 +269,6 @@ class TestAnthropicKnowledgeService:
                 knowledge_service_config, query_text, query_metadata=metadata
             )
 
-            # Verify the result uses metadata values
-            assert result.result_data["model"] == "claude-opus-4-1-20250805"
             assert result.execution_time_ms is not None
             assert result.execution_time_ms >= 0
 
@@ -309,9 +296,6 @@ class TestAnthropicKnowledgeService:
             result = await service.execute_query(
                 knowledge_service_config, "Test query", query_metadata=QueryMetadata()
             )
-
-            # Verify defaults are used
-            assert result.result_data["model"] == anthropic_ks_module.DEFAULT_MODEL
 
             # Verify API call used defaults
             call_args = mock_anthropic_client.messages.create.call_args
@@ -361,8 +345,8 @@ class TestAnthropicKnowledgeService:
             )
 
             # Verify the response was parsed as JSON after concatenation
-            assert result.result_data["response"] == {"name": "John", "age": 30}
-            assert isinstance(result.result_data["response"], dict)
+            assert result.data is not None
+            assert result.data.value == {"name": "John", "age": 30}
 
             # Verify API call included assistant message
             mock_client.messages.create.assert_called_once()
@@ -413,8 +397,8 @@ class TestAnthropicKnowledgeService:
             )
 
             # Verify the response was parsed as JSON directly
-            assert result.result_data["response"] == {"name": "Jane", "age": 25}
-            assert isinstance(result.result_data["response"], dict)
+            assert result.data is not None
+            assert result.data.value == {"name": "Jane", "age": 25}
 
             # Verify API call had no assistant message
             mock_client.messages.create.assert_called_once()
@@ -461,3 +445,34 @@ class TestAnthropicKnowledgeService:
                     output_schema=JsonSchema(output_schema),
                     assistant_prompt=assistant_prompt,
                 )
+
+
+@patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"})
+async def test_what_the_model_was_and_cost_is_logged_not_carried(
+    knowledge_service_config: KnowledgeServiceConfig,
+    mock_anthropic_client: MagicMock,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The result carried model, usage and stop_reason in its bag.
+
+    They are this adapter's own events and go to its log (ADR 017);
+    the domain is told what was answered and nothing about how.
+    """
+    with (
+        patch(
+            "julee_ceap.infrastructure.services.knowledge_service.anthropic.knowledge_service.AsyncAnthropic"
+        ) as mock_anthropic,
+        caplog.at_level(logging.INFO),
+    ):
+        mock_anthropic.return_value = mock_anthropic_client
+        result = await anthropic_ks.AnthropicKnowledgeService().execute_query(
+            knowledge_service_config, "What is machine learning?"
+        )
+
+    answered = [r for r in caplog.records if r.getMessage() == "Anthropic answered"]
+    assert len(answered) == 1
+    assert answered[0].model == anthropic_ks_module.DEFAULT_MODEL  # type: ignore[attr-defined]
+    assert answered[0].input_tokens == 150  # type: ignore[attr-defined]
+    assert answered[0].output_tokens == 25  # type: ignore[attr-defined]
+    assert answered[0].stop_reason == "end_turn"  # type: ignore[attr-defined]
+    assert not hasattr(result, "result_data")

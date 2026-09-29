@@ -19,6 +19,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from anthropic import AsyncAnthropic
+from julee.core.observability import log_extra
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
@@ -30,6 +31,7 @@ from julee_ceap.domain.services.knowledge_service import (
     QueryResult,
 )
 from julee_ceap.domain.values.query_metadata import QueryMetadata
+from julee_ceap.domain.values.query_result import StructuredAnswer
 from julee_ceap.domain.values.schema import JsonSchema
 
 logger = logging.getLogger(__name__)
@@ -301,22 +303,21 @@ text or markdown formatting."""
                 },
             )
 
-            # Handle JSON parsing if schema was provided
+            # An answer that was asked to fit a schema is JSON, and its
+            # structured form is built from the text that parses: the
+            # prompt prefix and the response together, when the prompt
+            # opened the object for the model.
+            structured: StructuredAnswer | None = None
             if output_schema:
-                # Determine the text to parse
                 if assistant_prompt and assistant_prompt.strip().startswith("{"):
-                    # Concatenate assistant prompt with response for JSON parsing
                     json_text_to_parse = assistant_prompt + response_text
                 else:
                     json_text_to_parse = response_text
-
                 try:
-                    response_value = json.loads(json_text_to_parse.strip())
-                except json.JSONDecodeError as e:
+                    structured = StructuredAnswer(json_text_to_parse.strip())
+                except ValueError as not_json:
                     logger.error(
-                        f"Failed to parse JSON response when output schema was provided. "
-                        f"JSON text to parse: {json_text_to_parse[:500]}... "
-                        f"Parse error: {str(e)}",
+                        "Anthropic was asked for JSON and did not answer with it",
                         extra={
                             "knowledge_service_id": config.knowledge_service_id,
                             "query_id": query_id,
@@ -326,28 +327,29 @@ text or markdown formatting."""
                     )
                     raise ValueError(
                         f"Expected valid JSON response when output schema provided, "
-                        f"but failed to parse: {str(e)}"
-                    )
-            else:
-                response_value = response_text
+                        f"but failed to parse: {not_json}"
+                    ) from not_json
 
-            # Structure the result with parsed or text content
-            result_data = {
-                "response": response_value,
-                "model": model,
-                "service": "anthropic",
-                "sources": service_file_ids or [],
-                "usage": {
-                    "input_tokens": response.usage.input_tokens,
-                    "output_tokens": response.usage.output_tokens,
-                },
-                "stop_reason": response.stop_reason,
-            }
-
+            # What the service said, verbatim, and its structured form
+            # when a schema asked for one. What the model was, what it
+            # cost and why it stopped are this adapter's to log, not the
+            # domain's to carry (ADR 017).
+            logger.info(
+                "Anthropic answered",
+                extra=log_extra(
+                    query_id=query_id,
+                    model=model,
+                    stop_reason=response.stop_reason,
+                    input_tokens=response.usage.input_tokens,
+                    output_tokens=response.usage.output_tokens,
+                    sources=list(service_file_ids or []),
+                ),
+            )
             result = QueryResult(
                 query_id=query_id,
                 query_text=query_text,
-                result_data=result_data,
+                answer=response_text,
+                data=structured,
                 execution_time_ms=execution_time_ms,
                 created_at=datetime.now(UTC),
             )

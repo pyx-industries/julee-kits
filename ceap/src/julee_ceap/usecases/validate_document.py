@@ -7,10 +7,9 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import replace
 from datetime import datetime
-from typing import Any
 
 from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
@@ -482,12 +481,12 @@ class ValidateDocumentUseCase:
             )
 
             # Extract the score from the query result
-            actual_score = self._extract_score_from_result(query_result.result_data)
+            actual_score = self._extract_score_from_result(query_result.answer)
             validation_scores.append((query_id, actual_score))
 
         return tuple(validation_scores)
 
-    def _extract_score_from_result(self, result_data: Mapping[str, Any]) -> int:
+    def _extract_score_from_result(self, answer: str) -> int:
         """
         Extract a numeric score from the knowledge service query result.
 
@@ -495,7 +494,7 @@ class ValidateDocumentUseCase:
         Returns the actual score without range validation to preserve data
         integrity.
         """
-        response_text = result_data.get("response", "")
+        response_text = answer
         if not response_text:
             raise ValueError("Empty response from knowledge service")
 
@@ -606,7 +605,7 @@ class ValidateDocumentUseCase:
 
             # Extract transformed content from result
             transformed_content = self._extract_transformed_content(
-                transformation_result.result_data
+                transformation_result.answer
             )
 
         # Create new document with transformed content
@@ -635,13 +634,12 @@ class ValidateDocumentUseCase:
 
         return transformed_document
 
-    def _extract_transformed_content(self, result_data: Mapping[str, Any]) -> str:
+    def _extract_transformed_content(self, answer: str) -> str:
         """
         Extract transformed document content from knowledge service result.
 
         Args:
-            result_data: Result data from knowledge service transformation
-                query
+            answer: What the knowledge service said, verbatim
 
         Returns:
             Transformed document content as valid JSON string
@@ -650,7 +648,7 @@ class ValidateDocumentUseCase:
             ValueError: If no valid JSON content can be extracted from result
 
         """
-        response_text: str = result_data.get("response", "")
+        response_text: str = answer
 
         # Asked of AssembledData, which is what the text has to describe.
         # The original text is returned rather than what was parsed,
