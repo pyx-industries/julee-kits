@@ -27,6 +27,7 @@ from julee_ceap.domain.models.policy import (
 )
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.infrastructure.repositories.memory import (
     MemoryDocumentPolicyValidationRepository,
     MemoryDocumentRepository,
@@ -410,7 +411,7 @@ class TestValidateDocumentUseCase:
             prompt=NonEmptyText(
                 "Rate the quality of this document on a scale of 0-100"
             ),
-            query_metadata={"max_tokens": 10},
+            query_metadata=QueryMetadata(max_tokens=10),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -421,7 +422,7 @@ class TestValidateDocumentUseCase:
             prompt=NonEmptyText(
                 "Rate the clarity of this document on a scale of 0-100"
             ),
-            query_metadata={"max_tokens": 10},
+            query_metadata=QueryMetadata(max_tokens=10),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )

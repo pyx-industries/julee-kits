@@ -16,6 +16,7 @@ from julee.integrations.minio.testing import FakeMinioClient
 from julee_ceap.domain.models.assembly_specification import (
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.infrastructure.repositories.minio.knowledge_service_query import (
     MinioKnowledgeServiceQueryRepository,
 )
@@ -46,7 +47,7 @@ def sample_query() -> KnowledgeServiceQuery:
         knowledge_service_id=NonEmptyText("anthropic-claude"),
         prompt=NonEmptyText("Extract key information from the document"),
         assistant_prompt="Format the response as JSON",
-        query_metadata={"temperature": 0.2, "max_tokens": 1000},
+        query_metadata=QueryMetadata(temperature=0.2, max_tokens=1000),
         created_at=datetime.now(UTC),
         updated_at=datetime.now(UTC),
     )
@@ -63,7 +64,7 @@ def sample_queries() -> list[KnowledgeServiceQuery]:
             knowledge_service_id=NonEmptyText("anthropic-claude"),
             prompt=NonEmptyText("Extract meeting summary"),
             assistant_prompt="Format as bullet points",
-            query_metadata={},
+            query_metadata=QueryMetadata(),
             created_at=now,
             updated_at=now,
         ),
@@ -73,7 +74,7 @@ def sample_queries() -> list[KnowledgeServiceQuery]:
             knowledge_service_id=NonEmptyText("openai-gpt4"),
             prompt=NonEmptyText("Analyze document content"),
             assistant_prompt=None,
-            query_metadata={"temperature": 0.1},
+            query_metadata=QueryMetadata(temperature=0.1),
             created_at=now,
             updated_at=now,
         ),
@@ -83,7 +84,7 @@ def sample_queries() -> list[KnowledgeServiceQuery]:
             knowledge_service_id=NonEmptyText("memory-service"),
             prompt=NonEmptyText("Identify risks in the document"),
             assistant_prompt="Categorize by severity",
-            query_metadata={"max_tokens": 500},
+            query_metadata=QueryMetadata(max_tokens=500),
             created_at=now,
             updated_at=now,
         ),
@@ -301,7 +302,7 @@ class TestMinioKnowledgeServiceQueryRepositoryEdgeCases:
             knowledge_service_id=NonEmptyText("test-service"),
             prompt=NonEmptyText("Main prompt only"),
             assistant_prompt=None,
-            query_metadata={},
+            query_metadata=QueryMetadata(),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -323,7 +324,7 @@ class TestMinioKnowledgeServiceQueryRepositoryEdgeCases:
             knowledge_service_id=NonEmptyText("test-service"),
             prompt=NonEmptyText("Test prompt"),
             assistant_prompt="Test assistant prompt",
-            query_metadata={},
+            query_metadata=QueryMetadata(),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -332,19 +333,21 @@ class TestMinioKnowledgeServiceQueryRepositoryEdgeCases:
         retrieved = await query_repo.get(query.query_id)
 
         assert retrieved is not None
-        assert retrieved.query_metadata == {}
+        assert retrieved.query_metadata == QueryMetadata()
 
     @pytest.mark.asyncio
     async def test_query_with_complex_metadata(
         self, query_repo: MinioKnowledgeServiceQueryRepository
     ) -> None:
-        """Test handling query with complex metadata."""
-        complex_metadata = {
-            "temperature": 0.7,
-            "max_tokens": 2000,
-            "stop_sequences": ["END", "STOP"],
-            "nested": {"key": "value", "number": 42, "list": [1, 2, 3]},
-        }
+        """Every knob set at once still round-trips through MinIO.
+
+        It was a nested bag of stop_sequences and arbitrary structure,
+        none of which any adapter read. What matters is that all three
+        knobs survive storage together.
+        """
+        complex_metadata = QueryMetadata(
+            model="claude-sonnet-4-5", max_tokens=2000, temperature=0.7
+        )
 
         query = KnowledgeServiceQuery(
             query_id=NonEmptyText("test-query-complex-metadata"),
@@ -381,7 +384,7 @@ class TestMinioKnowledgeServiceQueryRepositoryFullWorkflow:
             knowledge_service_id=NonEmptyText("initial-service"),
             prompt=NonEmptyText("Initial prompt"),
             assistant_prompt="Initial assistant prompt",
-            query_metadata={"version": 1},
+            query_metadata=QueryMetadata(max_tokens=1000),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -400,7 +403,7 @@ class TestMinioKnowledgeServiceQueryRepositoryFullWorkflow:
             name=Name("Updated Query"),
             knowledge_service_id=NonEmptyText("updated-service"),
             prompt=NonEmptyText("Updated prompt"),
-            query_metadata={"version": 2},
+            query_metadata=QueryMetadata(max_tokens=2000),
         )
         await query_repo.save(query)
 
@@ -409,7 +412,7 @@ class TestMinioKnowledgeServiceQueryRepositoryFullWorkflow:
         assert len(queries) == 1
         assert queries[0].name == "Updated Query"
         assert queries[0].knowledge_service_id == "updated-service"
-        assert queries[0].query_metadata == {"version": 2}
+        assert queries[0].query_metadata == QueryMetadata(max_tokens=2000)
 
         # Verify individual get returns same data
         retrieved = await query_repo.get(query_id)

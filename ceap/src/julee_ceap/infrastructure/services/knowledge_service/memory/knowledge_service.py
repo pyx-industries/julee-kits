@@ -10,9 +10,7 @@ scenarios where external service dependencies should be avoided.
 import json
 import logging
 from collections import deque
-from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Any
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
@@ -23,6 +21,7 @@ from julee_ceap.domain.services.knowledge_service import (
     KnowledgeService,
     QueryResult,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
 
 logger = logging.getLogger(__name__)
@@ -211,7 +210,7 @@ class MemoryKnowledgeService(KnowledgeService):
         query_text: str,
         output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,
-        query_metadata: Mapping[str, Any] | None = None,
+        query_metadata: QueryMetadata = QueryMetadata(),
         assistant_prompt: str | None = None,
     ) -> QueryResult:
         """Execute a query by returning a canned response.

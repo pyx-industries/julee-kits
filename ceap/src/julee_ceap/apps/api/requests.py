@@ -22,6 +22,7 @@ from julee_ceap.domain.models.assembly_specification.assembly_specification impo
     refuse_a_bad_pointer,
     refuse_a_bad_schema,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
 
 
@@ -114,6 +115,43 @@ class CreateAssemblySpecificationRequest(BaseModel):
         )
 
 
+class QueryMetadataRequest(BaseModel):
+    """How a query asks to be run, on the wire.
+
+    The domain's QueryMetadata is a frozen dataclass; this is its
+    message form. It was ``dict[str, Any]``, so the OpenAPI schema said
+    only "object" and a client had to read the prose to learn what went
+    in it. The three knobs are named and typed now, and a response
+    carries all three, with null for a knob the query left unset.
+
+    Extra keys are still ignored rather than refused, as everywhere else
+    in this API — no request model here sets ``extra="forbid"``, and
+    changing that is an API policy decision, not part of naming a type.
+    """
+
+    model: str | None = Field(
+        default=None, description="Which model to use, or omit for the service's"
+    )
+    max_tokens: int | None = Field(
+        default=None, description="Token budget for the response, or omit"
+    )
+    temperature: float | None = Field(
+        default=None, description="How much the response may vary, or omit"
+    )
+
+    def to_domain_model(self) -> QueryMetadata:
+        """Build the domain value this message stands for.
+
+        Returns:
+            QueryMetadata: what the domain speaks
+        """
+        return QueryMetadata(
+            model=self.model,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature,
+        )
+
+
 class CreateKnowledgeServiceQueryRequest(BaseModel):
     """Request model for creating a knowledge service query.
 
@@ -138,13 +176,9 @@ class CreateKnowledgeServiceQueryRequest(BaseModel):
             "The specific prompt to send to the knowledge service for this extraction"
         )
     )
-    query_metadata: dict[str, Any] = Field(
-        default_factory=dict,
-        description=(
-            "Service-specific metadata and configuration options such as "
-            "model selection, temperature, max_tokens, etc. The structure "
-            "depends on the specific knowledge service being used"
-        ),
+    query_metadata: QueryMetadataRequest = Field(
+        default_factory=lambda: QueryMetadataRequest(),
+        description="How this query asks to be run. Omitted knobs are the service's",
     )
     assistant_prompt: str | None = Field(
         default=None,
@@ -175,7 +209,7 @@ class CreateKnowledgeServiceQueryRequest(BaseModel):
             name=self.name,
             knowledge_service_id=self.knowledge_service_id,
             prompt=self.prompt,
-            query_metadata=self.query_metadata,
+            query_metadata=self.query_metadata.to_domain_model(),
             assistant_prompt=self.assistant_prompt,
             created_at=now,
             updated_at=now,

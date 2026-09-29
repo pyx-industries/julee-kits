@@ -6,8 +6,6 @@ KnowledgeService instances based on the service API configuration.
 """
 
 import logging
-from collections.abc import Mapping
-from typing import Any
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
@@ -15,6 +13,7 @@ from julee_ceap.domain.models.knowledge_service_config import (
     ServiceApi,
 )
 from julee_ceap.domain.services.knowledge_service import KnowledgeService
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.services.knowledge_service import (
     FileRegistrationResult,
@@ -54,7 +53,7 @@ class ConfigurableKnowledgeService(KnowledgeService):
         query_text: str,
         output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,
-        query_metadata: Mapping[str, Any] | None = None,
+        query_metadata: QueryMetadata = QueryMetadata(),
         assistant_prompt: str | None = None,
     ) -> QueryResult:
         """Execute a query against the knowledge service."""

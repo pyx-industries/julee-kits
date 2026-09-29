@@ -19,6 +19,7 @@ from julee_ceap.apps.api.dependencies import (
 )
 from julee_ceap.apps.api.responses import ServiceStatus
 from julee_ceap.domain.models import KnowledgeServiceQuery
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.infrastructure.repositories.memory import (
     MemoryKnowledgeServiceQueryRepository,
 )
@@ -82,7 +83,7 @@ def sample_knowledge_service_query() -> KnowledgeServiceQuery:
         name=Name("Extract Meeting Summary"),
         knowledge_service_id=NonEmptyText("anthropic-claude"),
         prompt=NonEmptyText("Extract the main summary from this meeting transcript"),
-        query_metadata={"model": "claude-3", "temperature": 0.2},
+        query_metadata=QueryMetadata(model="claude-3", temperature=0.2),
         assistant_prompt="Please format as JSON",
     )
 
@@ -219,7 +220,7 @@ class TestKnowledgeServiceQueriesEndpoint:
             name=Name("Extract Attendees"),
             knowledge_service_id=NonEmptyText("openai-service"),
             prompt=NonEmptyText("Extract all attendees from this meeting"),
-            query_metadata={"model": "gpt-4", "temperature": 0.1},
+            query_metadata=QueryMetadata(model="gpt-4", temperature=0.1),
             assistant_prompt="Format as JSON array",
         )
 

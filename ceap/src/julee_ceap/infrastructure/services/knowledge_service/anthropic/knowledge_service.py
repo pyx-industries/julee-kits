@@ -15,7 +15,6 @@ import logging
 import os
 import time
 import uuid
-from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
 
@@ -30,6 +29,7 @@ from julee_ceap.domain.services.knowledge_service import (
     KnowledgeService,
     QueryResult,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
 
 logger = logging.getLogger(__name__)
@@ -177,7 +177,7 @@ class AnthropicKnowledgeService(KnowledgeService):
         query_text: str,
         output_schema: JsonSchema | None = None,
         service_file_ids: list[str] | None = None,
-        query_metadata: Mapping[str, Any] | None = None,
+        query_metadata: QueryMetadata = QueryMetadata(),
         assistant_prompt: str | None = None,
     ) -> QueryResult:
         """Execute a query against Anthropic.
@@ -209,11 +209,10 @@ class AnthropicKnowledgeService(KnowledgeService):
         start_time = time.time()
         query_id = f"anthropic_{uuid.uuid4().hex[:12]}"
 
-        # Extract configuration from query_metadata
-        metadata = query_metadata or {}
-        model = metadata.get("model", DEFAULT_MODEL)
-        max_tokens = metadata.get("max_tokens", DEFAULT_MAX_TOKENS)
-        temperature = metadata.get("temperature")
+        # A knob the query left unset is this adapter's to choose
+        model = query_metadata.model or DEFAULT_MODEL
+        max_tokens = query_metadata.max_tokens or DEFAULT_MAX_TOKENS
+        temperature = query_metadata.temperature
 
         try:
             # Get Anthropic client for this operation
@@ -256,7 +255,10 @@ text or markdown formatting."""
             if assistant_prompt:
                 messages.append({"role": "assistant", "content": assistant_prompt})
 
-            create_params = {
+            # Any is this adapter's own business: what the SDK wants is
+            # the SDK's shape, not the domain's. It was inferred before,
+            # because the knobs came out of an untyped mapping.
+            create_params: dict[str, Any] = {
                 "model": model,
                 "max_tokens": max_tokens,
                 "messages": messages,

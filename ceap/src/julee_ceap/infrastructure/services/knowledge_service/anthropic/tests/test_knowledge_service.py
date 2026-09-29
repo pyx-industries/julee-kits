@@ -21,6 +21,7 @@ from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.multihash import (
     content_multihash as multihash_of,
 )
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.services.knowledge_service.anthropic import (
     knowledge_service as anthropic_ks,
@@ -270,11 +271,9 @@ class TestAnthropicKnowledgeService:
 
             service = anthropic_ks.AnthropicKnowledgeService()
 
-            metadata = {
-                "model": "claude-opus-4-1-20250805",
-                "max_tokens": 2000,
-                "temperature": 0.7,
-            }
+            metadata = QueryMetadata(
+                model="claude-opus-4-1-20250805", max_tokens=2000, temperature=0.7
+            )
 
             query_text = "Custom query with metadata"
             result = await service.execute_query(
@@ -299,7 +298,7 @@ class TestAnthropicKnowledgeService:
         knowledge_service_config: KnowledgeServiceConfig,
         mock_anthropic_client: MagicMock,
     ) -> None:
-        """Test execute_query uses default values when metadata is None."""
+        """The adapter's defaults stand in for knobs a query left unset."""
         with patch(
             "julee_ceap.infrastructure.services.knowledge_service.anthropic.knowledge_service.AsyncAnthropic"
         ) as mock_anthropic:
@@ -308,7 +307,7 @@ class TestAnthropicKnowledgeService:
             service = anthropic_ks.AnthropicKnowledgeService()
 
             result = await service.execute_query(
-                knowledge_service_config, "Test query", query_metadata=None
+                knowledge_service_config, "Test query", query_metadata=QueryMetadata()
             )
 
             # Verify defaults are used

@@ -26,6 +26,7 @@ from julee_ceap.domain.models import (
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash
+from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.calculators.schema import (
     LibrarySchemaCalculator,
@@ -336,7 +337,7 @@ class TestExtractAssembleDataUseCase:
             name=Name("Extract Title"),
             knowledge_service_id=NonEmptyText("ks-123"),
             prompt=NonEmptyText("Extract the title from this document"),
-            query_metadata={"max_tokens": 100},
+            query_metadata=QueryMetadata(max_tokens=100),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -345,7 +346,7 @@ class TestExtractAssembleDataUseCase:
             name=Name("Extract Summary"),
             knowledge_service_id=NonEmptyText("ks-123"),
             prompt=NonEmptyText("Extract a summary from this document"),
-            query_metadata={"max_tokens": 200},
+            query_metadata=QueryMetadata(max_tokens=200),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -449,7 +450,7 @@ class TestExtractAssembleDataUseCase:
             name=Name("Extract Title"),
             knowledge_service_id=NonEmptyText("ks-123"),
             prompt=NonEmptyText("Extract the title from this document"),
-            query_metadata={"max_tokens": 100, "temperature": 0.1},
+            query_metadata=QueryMetadata(max_tokens=100, temperature=0.1),
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
@@ -517,8 +518,9 @@ class TestExtractAssembleDataUseCase:
             assert call["output_schema"].document == expected_schema
 
             # Verify original metadata is preserved (without output_schema)
-            assert call["query_metadata"]["max_tokens"] == 100
-            assert call["query_metadata"]["temperature"] == 0.1
+            assert call["query_metadata"] == QueryMetadata(
+                max_tokens=100, temperature=0.1
+            )
 
     @pytest.mark.asyncio
     async def test_assembly_fails_when_specification_not_found(
