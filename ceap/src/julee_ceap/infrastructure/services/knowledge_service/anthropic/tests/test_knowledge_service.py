@@ -240,6 +240,9 @@ class TestAnthropicKnowledgeService:
                 knowledge_service_config, query_text, service_file_ids=[]
             )
 
+            # No schema was asked for, so there is no structured answer
+            assert result.data is None
+
             # Verify API call structure
             call_args = mock_anthropic_client.messages.create.call_args
             content_parts = call_args[1]["messages"][0]["content"]
@@ -296,6 +299,9 @@ class TestAnthropicKnowledgeService:
             result = await service.execute_query(
                 knowledge_service_config, "Test query", query_metadata=QueryMetadata()
             )
+
+            # No schema was asked for, so there is no structured answer
+            assert result.data is None
 
             # Verify API call used defaults
             call_args = mock_anthropic_client.messages.create.call_args
