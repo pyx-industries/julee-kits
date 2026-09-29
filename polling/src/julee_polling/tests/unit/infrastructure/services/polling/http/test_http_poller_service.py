@@ -13,6 +13,8 @@ import pytest
 from pydantic import TypeAdapter
 
 from julee_polling.domain.values.polling_config import (
+    HttpConnection,
+    HttpPolling,
     PollingConfig,
     PollingProtocol,
 )
@@ -58,7 +60,7 @@ class TestHttpPollerOraclePollEndpoint:
             config = PollingConfig(
                 endpoint_identifier="test-api",
                 polling_protocol=PollingProtocol.HTTP,
-                connection_params={"url": "https://example.com/api"},
+                connection_params=HttpConnection(url="https://example.com/api"),
             )
 
             result = await service.poll_endpoint(config)
@@ -98,7 +100,7 @@ class TestHttpPollerOraclePollEndpoint:
             config = PollingConfig(
                 endpoint_identifier="test-api",
                 polling_protocol=PollingProtocol.HTTP,
-                connection_params={"url": "https://example.com/api"},
+                connection_params=HttpConnection(url="https://example.com/api"),
             )
 
             result = await service.poll_endpoint(config)
@@ -126,7 +128,7 @@ class TestHttpPollerOraclePollEndpoint:
             config = PollingConfig(
                 endpoint_identifier="test-api",
                 polling_protocol=PollingProtocol.HTTP,
-                connection_params={"url": "https://example.com/api"},
+                connection_params=HttpConnection(url="https://example.com/api"),
             )
 
             result = await service.poll_endpoint(config)
@@ -153,11 +155,11 @@ class TestHttpPollerOraclePollEndpoint:
             config = PollingConfig(
                 endpoint_identifier="test-api",
                 polling_protocol=PollingProtocol.HTTP,
-                connection_params={
-                    "url": "https://api.example.com/data",
-                    "headers": {"Authorization": "Bearer token123"},
-                },
-                polling_params={"method": "POST"},
+                connection_params=HttpConnection(
+                    url="https://api.example.com/data",
+                    headers={"Authorization": "Bearer token123"},
+                ),
+                polling_params=HttpPolling(method="POST"),
                 timeout_seconds=30,
             )
 
@@ -190,13 +192,13 @@ class TestHttpPollerOraclePollEndpoint:
             config = PollingConfig(
                 endpoint_identifier="test-api",
                 polling_protocol=PollingProtocol.HTTP,
-                connection_params={
-                    "url": "https://example.com/api",
-                    "headers": {
+                connection_params=HttpConnection(
+                    url="https://example.com/api",
+                    headers={
                         "Authorization": "Bearer stale-token",
                         "X-Custom": "keep",
                     },
-                },
+                ),
             )
 
             result = await service.poll_endpoint(config)
@@ -224,10 +226,10 @@ class TestHttpPollerOraclePollEndpoint:
             config = PollingConfig(
                 endpoint_identifier="test-api",
                 polling_protocol=PollingProtocol.HTTP,
-                connection_params={
-                    "url": "https://example.com/api",
-                    "headers": {"Authorization": "Bearer static-token"},
-                },
+                connection_params=HttpConnection(
+                    url="https://example.com/api",
+                    headers={"Authorization": "Bearer static-token"},
+                ),
             )
 
             result = await service.poll_endpoint(config)

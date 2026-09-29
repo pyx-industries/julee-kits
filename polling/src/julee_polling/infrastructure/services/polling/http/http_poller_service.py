@@ -32,21 +32,17 @@ class HttpPollerOracle(PollerOracle):
     async def poll_endpoint(self, config: PollingConfig) -> PollingResult:
         """Poll an HTTP endpoint."""
         try:
-            # Extract HTTP-specific params
-            url = config.connection_params["url"]
-            headers = dict(config.connection_params.get("headers", {}))
+            url = config.connection_params.url
+            headers = dict(config.connection_params.headers)
             if self._header_factory:
                 headers.update(await self._header_factory())
-            method = config.polling_params.get("method", "GET")
-            auth_params = config.connection_params.get("auth", {})
+            method = config.polling_params.method
 
-            # Make HTTP request
             response = await self.client.request(
                 method=method,
                 url=url,
                 headers=headers,
                 timeout=config.timeout_seconds,
-                **auth_params,
             )
 
             content = response.content

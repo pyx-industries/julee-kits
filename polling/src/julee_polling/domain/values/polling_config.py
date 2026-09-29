@@ -29,15 +29,53 @@ class SchedulingPolicy(StrEnum):
 
 
 @dataclass(frozen=True)
+class HttpConnection:
+    """Where an HTTP poll goes, and what it sends with the request.
+
+    This was ``connection_params: Mapping[str, Any]``, a bag the HTTP
+    poller read ``url``, ``headers`` and ``auth`` out of. The first two
+    are named here. ``auth`` was splatted into the httpx call as
+    arbitrary keyword arguments and nothing in the estate ever set it;
+    a bag inside a bag, and it goes.
+    """
+
+    url: str
+    """The endpoint to poll."""
+
+    headers: Mapping[str, str] = field(default_factory=dict)
+    """Sent with every request, before the header factory adds its own."""
+
+
+@dataclass(frozen=True)
+class HttpPolling:
+    """How an HTTP poll asks.
+
+    This was ``polling_params: Mapping[str, Any]``, of which the poller
+    read ``method`` and nothing else.
+    """
+
+    method: str = "GET"
+    """The HTTP method."""
+
+
+@dataclass(frozen=True)
 class PollingConfig:
-    """Configuration for a polling operation."""
+    """Configuration for a polling operation.
+
+    The two nested values keep the field names the bags had. A config
+    is the argument a Temporal schedule starts the pipeline with, so
+    every schedule already created carries this shape, and a rename
+    would orphan them. The names are the wire; the types are new.
+    """
 
     endpoint_identifier: str
     """Unique identifier for this endpoint."""
 
     polling_protocol: PollingProtocol
-    connection_params: Mapping[str, Any] = field(default_factory=dict)
-    polling_params: Mapping[str, Any] = field(default_factory=dict)
+    connection_params: HttpConnection
+    """Where to poll and what to send. Required: a poll needs a URL."""
+    polling_params: HttpPolling = field(default_factory=HttpPolling)
+    """How to ask. Defaults to a GET."""
     timeout_seconds: int | None = 30
 
     scheduling_policy: SchedulingPolicy = SchedulingPolicy.ALLOW_OVERLAP
