@@ -449,12 +449,13 @@ class ExtractAssembleDataUseCase:
                 query.assistant_prompt,
             )
 
-            # Knowledge service now returns parsed JSON directly
-            result_data = query_result.result_data.get("response")
-            if result_data is None:
-                raise ValueError("Knowledge service returned no response data")
+            if query_result.data is None:
+                raise ValueError(
+                    "Knowledge service answered without the structured data a "
+                    "schema-directed query asks for"
+                )
             self._store_result_in_assembled_data(
-                assembled_data, schema_pointer, result_data
+                assembled_data, schema_pointer, query_result.data.value
             )
 
         # Validate the assembled data against the JSON schema

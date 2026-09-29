@@ -324,7 +324,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="result-1",
                 query_text="Rate the quality of this document",
-                result_data={"response": "not a number"},  # Invalid score format
+                answer="not a number",  # Invalid score format
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -436,14 +436,14 @@ class TestValidateDocumentUseCase:
                 QueryResult(
                     query_id="result-1",
                     query_text="Rate the quality of this document on a scale of 0-100",
-                    result_data={"response": "85"},  # Passes requirement of 80
+                    answer="85",  # Passes requirement of 80
                     execution_time_ms=100,
                     created_at=datetime.now(UTC),
                 ),
                 QueryResult(
                     query_id="result-2",
                     query_text="Rate the clarity of this document on a scale of 0-100",
-                    result_data={"response": "75"},  # Passes requirement of 70
+                    answer="75",  # Passes requirement of 70
                     execution_time_ms=150,
                     created_at=datetime.now(UTC),
                 ),
@@ -555,7 +555,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="result-1",
                 query_text="Rate the quality of this document on a scale of 0-100",
-                result_data={"response": "60"},  # Fails requirement of 90
+                answer="60",  # Fails requirement of 90
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -658,7 +658,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="initial-validation",
                 query_text="Rate the quality of this document on a scale of 0-100",
-                result_data={"response": "60"},  # Initial score fails
+                answer="60",  # Initial score fails
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -669,11 +669,11 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="transformation",
                 query_text="Improve this document to make it higher quality",
-                result_data={
-                    "response": '{"improved_content": "This is a much '
+                answer=(
+                    '{"improved_content": "This is a much '
                     "higher quality document with better structure and "
                     'clarity."}'
-                },
+                ),
                 execution_time_ms=200,
                 created_at=datetime.now(UTC),
             )
@@ -684,7 +684,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="post-transform-validation",
                 query_text="Rate the quality of this document on a scale of 0-100",
-                result_data={"response": "85"},  # Post-transform score passes
+                answer="85",  # Post-transform score passes
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -817,7 +817,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="initial-validation",
                 query_text="Rate the quality of this document on a scale of 0-100",
-                result_data={"response": "40"},  # Initial score fails
+                answer="40",  # Initial score fails
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -828,10 +828,10 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="transformation",
                 query_text="Try to improve this document",
-                result_data={
-                    "response": '{"improved_content": "Slightly improved '
+                answer=(
+                    '{"improved_content": "Slightly improved '
                     'but still poor quality document."}'
-                },
+                ),
                 execution_time_ms=200,
                 created_at=datetime.now(UTC),
             )
@@ -842,7 +842,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="post-transform-validation",
                 query_text="Rate the quality of this document on a scale of 0-100",
-                result_data={"response": "70"},  # Still fails requirement of 95
+                answer="70",  # Still fails requirement of 95
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -958,7 +958,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="validation-only",
                 query_text="Rate the quality of this document on a scale of 0-100",
-                result_data={"response": "90"},  # Passes initial validation
+                answer="90",  # Passes initial validation
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -1072,7 +1072,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="initial-validation",
                 query_text="Rate the quality of this document on a scale of 0-100",
-                result_data={"response": "50"},  # Fails, triggers transformation
+                answer="50",  # Fails, triggers transformation
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -1083,7 +1083,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="bad-transformation",
                 query_text="Transform this document",
-                result_data={"response": "This is not valid JSON at all!"},
+                answer="This is not valid JSON at all!",
                 execution_time_ms=200,
                 created_at=datetime.now(UTC),
             )
@@ -1250,7 +1250,7 @@ class TestValidateDocumentUseCase:
             QueryResult(
                 query_id="result-1",
                 query_text="Rate this document",
-                result_data={"response": "150"},  # Out of normal 0-100 range
+                answer="150",  # Out of normal 0-100 range
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )

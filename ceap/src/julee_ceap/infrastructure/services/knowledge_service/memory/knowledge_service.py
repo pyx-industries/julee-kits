@@ -274,21 +274,13 @@ text or markdown formatting."""
         # Pop and return the next canned result
         result = self._canned_query_results.popleft()
 
-        # For memory service, the canned response should already be a parsed object
-        # This maintains compatibility with existing tests regardless of schema presence
-        response_value = result.result_data.get("response")
-
-        # Update the result to reflect the actual query parameters
+        # The canned answer, as the test gave it, under the query that
+        # was actually asked.
         updated_result = QueryResult(
             query_id=result.query_id,
             query_text=enhanced_query_text if has_schema else query_text,
-            result_data={
-                **result.result_data,
-                "response": response_value,
-                "queried_documents": service_file_ids or [],
-                "service": "memory",
-                "knowledge_service_id": config.knowledge_service_id,
-            },
+            answer=result.answer,
+            data=result.data,
             execution_time_ms=result.execution_time_ms,
             created_at=datetime.now(UTC),
         )

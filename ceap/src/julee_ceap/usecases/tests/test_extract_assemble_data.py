@@ -27,6 +27,7 @@ from julee_ceap.domain.models.knowledge_service_config import ServiceApi
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.query_metadata import QueryMetadata
+from julee_ceap.domain.values.query_result import StructuredAnswer
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.calculators.schema import (
     LibrarySchemaCalculator,
@@ -127,16 +128,18 @@ class TestExtractAssembleDataUseCase:
                 QueryResult(
                     query_id="result-1",
                     query_text="Extract the title from this document",
-                    result_data={"response": "Test Meeting"},
+                    answer="Test Meeting",
+                    data=StructuredAnswer.of("Test Meeting"),
                     execution_time_ms=100,
                     created_at=datetime.now(UTC),
                 ),
                 QueryResult(
                     query_id="result-2",
                     query_text="Extract a summary from this document",
-                    result_data={
-                        "response": "This was a test meeting about important topics"
-                    },
+                    answer="This was a test meeting about important topics",
+                    data=StructuredAnswer.of(
+                        "This was a test meeting about important topics"
+                    ),
                     execution_time_ms=150,
                     created_at=datetime.now(UTC),
                 ),
@@ -481,7 +484,8 @@ class TestExtractAssembleDataUseCase:
             return QueryResult(
                 query_id="mock-result",
                 query_text=query_text,
-                result_data={"response": "Mock Title"},
+                answer="Mock Title",
+                data=StructuredAnswer.of("Mock Title"),
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )
@@ -688,9 +692,10 @@ class TestExtractAssembleDataUseCase:
             QueryResult(
                 query_id="result-1",
                 query_text="Extract the title",
-                result_data={
-                    "response": '"Test"'
-                },  # Only returns title, missing "count" field
+                answer='"Test"',
+                data=StructuredAnswer.of(
+                    '"Test"'
+                ),  # Only returns title, missing "count" field
                 execution_time_ms=100,
                 created_at=datetime.now(UTC),
             )

@@ -70,10 +70,7 @@ def sample_query_result() -> QueryResult:
     return QueryResult(
         query_id="test-query-123",
         query_text="What is the main topic?",
-        result_data={
-            "response": "The main topic is testing",
-            "confidence": 0.95,
-        },
+        answer="The main topic is testing",
         execution_time_ms=150,
     )
 
@@ -256,14 +253,9 @@ class TestMemoryKnowledgeService:
         assert result.query_id == sample_query_result.query_id
         assert result.query_text == query_text  # Updated to actual query
         assert result.execution_time_ms == sample_query_result.execution_time_ms
-        assert result.result_data["queried_documents"] == document_ids
-        assert result.result_data["service"] == "memory"
-        assert result.result_data["knowledge_service_id"] == (
-            knowledge_service_config.knowledge_service_id
-        )
-        # Should preserve original result_data
-        assert result.result_data["response"] == "The main topic is testing"
-        assert result.result_data["confidence"] == 0.95
+        # The answer is handed through as it was canned
+        assert result.answer == "The main topic is testing"
+        assert result.data is None
 
         # Canned result should be consumed (popped)
         assert len(memory_service._canned_query_results) == 0
@@ -277,12 +269,12 @@ class TestMemoryKnowledgeService:
         result1 = QueryResult(
             query_id="query-1",
             query_text="First query",
-            result_data={"response": "First response"},
+            answer="First response",
         )
         result2 = QueryResult(
             query_id="query-2",
             query_text="Second query",
-            result_data={"response": "Second response"},
+            answer="Second response",
         )
 
         memory_service.add_canned_query_result(result1)
@@ -293,14 +285,14 @@ class TestMemoryKnowledgeService:
             knowledge_service_config, "test query 1"
         )
         assert first_returned.query_id == "query-1"
-        assert first_returned.result_data["response"] == "First response"
+        assert first_returned.answer == "First response"
 
         # Second execute_query should return second added result
         second_returned = await memory_service.execute_query(
             knowledge_service_config, "test query 2"
         )
         assert second_returned.query_id == "query-2"
-        assert second_returned.result_data["response"] == "Second response"
+        assert second_returned.answer == "Second response"
 
         # No more results should be available
         assert len(memory_service._canned_query_results) == 0
@@ -318,7 +310,7 @@ class TestMemoryKnowledgeService:
             knowledge_service_config, "test query", None
         )
 
-        assert result.result_data["queried_documents"] == []
+        assert result.answer == sample_query_result.answer
 
     async def test_execute_query_updates_created_at(
         self,
