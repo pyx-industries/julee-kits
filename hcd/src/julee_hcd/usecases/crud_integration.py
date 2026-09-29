@@ -14,10 +14,7 @@ from julee.core.usecases.generic_crud import (
     UpdateUseCase,
 )
 
-from julee_hcd.domain.models.integration import (
-    Direction,
-    Integration,
-)
+from julee_hcd.domain.models.integration import Direction, Integration
 from julee_hcd.domain.repositories.integration import IntegrationRepository
 
 from ..dtos.crud_integration import (
@@ -44,7 +41,7 @@ class GetIntegrationUseCase(GetUseCase[Integration, IntegrationRepository]):
     async def execute(self, request: GetIntegrationRequest) -> GetIntegrationResponse:
         """Execute the get integration use case."""
         entity = await self._get_by_id(request.slug)
-        return GetIntegrationResponse(integration=entity)
+        return GetIntegrationResponse.of(entity)
 
 
 class ListIntegrationsUseCase(ListUseCase[Integration, IntegrationRepository]):
@@ -59,9 +56,7 @@ class ListIntegrationsUseCase(ListUseCase[Integration, IntegrationRepository]):
     ) -> ListIntegrationsResponse:
         """Execute the list integrations use case."""
         entities = await self._list_all()
-        return ListIntegrationsResponse(
-            integrations=entities, total_count=len(entities)
-        )
+        return ListIntegrationsResponse.of(entities)
 
 
 class CreateIntegrationUseCase(CreateUseCase[Integration, IntegrationRepository]):
@@ -93,7 +88,7 @@ class CreateIntegrationUseCase(CreateUseCase[Integration, IntegrationRepository]
             preamble_rst=request.preamble_rst,
             epilogue_rst=request.epilogue_rst,
         )
-        return CreateIntegrationResponse(integration=entity)
+        return CreateIntegrationResponse.of(entity)
 
 
 class UpdateIntegrationUseCase(UpdateUseCase[Integration, IntegrationRepository]):
@@ -115,7 +110,7 @@ class UpdateIntegrationUseCase(UpdateUseCase[Integration, IntegrationRepository]
         if changes.get("name") is not None:
             changes["name"] = Name(changes["name"])
         entity = await self._update_by_id(request.slug, changes)
-        return UpdateIntegrationResponse(integration=entity)
+        return UpdateIntegrationResponse.of(entity)
 
 
 class DeleteIntegrationUseCase(DeleteUseCase[Integration, IntegrationRepository]):

@@ -41,7 +41,7 @@ class GetEpicUseCase(GetUseCase[Epic, EpicRepository]):
     async def execute(self, request: GetEpicRequest) -> GetEpicResponse:
         """Execute the get epic use case."""
         entity = await self._get_by_id(request.slug)
-        return GetEpicResponse(epic=entity)
+        return GetEpicResponse.of(entity)
 
 
 class ListEpicsUseCase(ListUseCase[Epic, EpicRepository]):
@@ -54,7 +54,7 @@ class ListEpicsUseCase(ListUseCase[Epic, EpicRepository]):
     async def execute(self, request: ListEpicsRequest) -> ListEpicsResponse:
         """Execute the list epics use case."""
         entities = await self._list_all()
-        return ListEpicsResponse(epics=entities, total_count=len(entities))
+        return ListEpicsResponse.of(entities)
 
 
 class CreateEpicUseCase(CreateUseCase[Epic, EpicRepository]):
@@ -80,7 +80,7 @@ class CreateEpicUseCase(CreateUseCase[Epic, EpicRepository]):
             preamble_rst=request.preamble_rst,
             epilogue_rst=request.epilogue_rst,
         )
-        return CreateEpicResponse(epic=entity)
+        return CreateEpicResponse.of(entity)
 
 
 class UpdateEpicUseCase(UpdateUseCase[Epic, EpicRepository]):
@@ -93,7 +93,7 @@ class UpdateEpicUseCase(UpdateUseCase[Epic, EpicRepository]):
     async def execute(self, request: UpdateEpicRequest) -> UpdateEpicResponse:
         """Execute the update epic use case."""
         entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateEpicResponse(epic=entity)
+        return UpdateEpicResponse.of(entity)
 
 
 class DeleteEpicUseCase(DeleteUseCase[Epic, EpicRepository]):

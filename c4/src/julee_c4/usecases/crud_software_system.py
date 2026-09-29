@@ -5,7 +5,7 @@ Do not edit — regenerate with generate-crud.sh.
 
 from typing import Any
 
-from julee.core.entities.text import Slug
+from julee.core.entities.text import Name, Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -14,7 +14,7 @@ from julee.core.usecases.generic_crud import (
     UpdateUseCase,
 )
 
-from julee_c4.domain.models.software_system import SoftwareSystem
+from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository
 
 from ..dtos.crud_software_system import (
@@ -43,7 +43,7 @@ class GetSoftwareSystemUseCase(GetUseCase[SoftwareSystem, SoftwareSystemReposito
     ) -> GetSoftwareSystemResponse:
         """Execute the get software_system use case."""
         entity = await self._get_by_id(request.slug)
-        return GetSoftwareSystemResponse(software_system=entity)
+        return GetSoftwareSystemResponse.of(entity)
 
 
 class ListSoftwareSystemsUseCase(ListUseCase[SoftwareSystem, SoftwareSystemRepository]):
@@ -58,9 +58,7 @@ class ListSoftwareSystemsUseCase(ListUseCase[SoftwareSystem, SoftwareSystemRepos
     ) -> ListSoftwareSystemsResponse:
         """Execute the list software_systems use case."""
         entities = await self._list_all()
-        return ListSoftwareSystemsResponse(
-            software_systems=entities, total_count=len(entities)
-        )
+        return ListSoftwareSystemsResponse.of(entities)
 
 
 class CreateSoftwareSystemUseCase(
@@ -82,16 +80,16 @@ class CreateSoftwareSystemUseCase(
         """Execute the create software_system use case."""
         entity = await self._create(
             entity_id=request.slug,
-            name=request.name,
+            name=Name(request.name),
             description=request.description,
-            system_type=request.system_type,
+            system_type=SystemType(request.system_type),
             owner=request.owner,
             technology=request.technology,
             url=request.url,
             tags=request.tags,
             docname=request.docname,
         )
-        return CreateSoftwareSystemResponse(software_system=entity)
+        return CreateSoftwareSystemResponse.of(entity)
 
 
 class UpdateSoftwareSystemUseCase(
@@ -107,8 +105,13 @@ class UpdateSoftwareSystemUseCase(
         self, request: UpdateSoftwareSystemRequest
     ) -> UpdateSoftwareSystemResponse:
         """Execute the update software_system use case."""
-        entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateSoftwareSystemResponse(software_system=entity)
+        changes = request.changes()
+        if changes.get("name") is not None:
+            changes["name"] = Name(changes["name"])
+        if changes.get("system_type") is not None:
+            changes["system_type"] = SystemType(changes["system_type"])
+        entity = await self._update_by_id(request.slug, changes)
+        return UpdateSoftwareSystemResponse.of(entity)
 
 
 class DeleteSoftwareSystemUseCase(

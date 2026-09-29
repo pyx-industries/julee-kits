@@ -41,7 +41,7 @@ class GetPersonaUseCase(GetUseCase[Persona, PersonaRepository]):
     async def execute(self, request: GetPersonaRequest) -> GetPersonaResponse:
         """Execute the get persona use case."""
         entity = await self._get_by_id(request.slug)
-        return GetPersonaResponse(persona=entity)
+        return GetPersonaResponse.of(entity)
 
 
 class ListPersonasUseCase(ListUseCase[Persona, PersonaRepository]):
@@ -54,7 +54,7 @@ class ListPersonasUseCase(ListUseCase[Persona, PersonaRepository]):
     async def execute(self, request: ListPersonasRequest) -> ListPersonasResponse:
         """Execute the list personas use case."""
         entities = await self._list_all()
-        return ListPersonasResponse(personas=entities, total_count=len(entities))
+        return ListPersonasResponse.of(entities)
 
 
 class CreatePersonaUseCase(CreateUseCase[Persona, PersonaRepository]):
@@ -94,7 +94,7 @@ class CreatePersonaUseCase(CreateUseCase[Persona, PersonaRepository]):
             preamble_rst=request.preamble_rst,
             epilogue_rst=request.epilogue_rst,
         )
-        return CreatePersonaResponse(persona=entity)
+        return CreatePersonaResponse.of(entity)
 
 
 class UpdatePersonaUseCase(UpdateUseCase[Persona, PersonaRepository]):
@@ -110,7 +110,7 @@ class UpdatePersonaUseCase(UpdateUseCase[Persona, PersonaRepository]):
         if changes.get("name") is not None:
             changes["name"] = Name(changes["name"])
         entity = await self._update_by_id(request.slug, changes)
-        return UpdatePersonaResponse(persona=entity)
+        return UpdatePersonaResponse.of(entity)
 
 
 class DeletePersonaUseCase(DeleteUseCase[Persona, PersonaRepository]):

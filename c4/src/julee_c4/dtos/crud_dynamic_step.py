@@ -7,7 +7,48 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from julee_c4.domain.models.dynamic_step import DynamicStep, ElementType
+from julee_c4.domain.models.dynamic_step import DynamicStep
+from julee_c4.domain.models.relationship import ElementType
+
+
+class DynamicStepMessage(BaseModel):
+    """What a DynamicStep is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    sequence_name: str
+    step_number: int
+    source_type: ElementType
+    source_slug: str
+    destination_type: ElementType
+    destination_slug: str
+    description: str
+    technology: str
+    return_value: str
+    is_async: bool
+    docname: str
+    slug: str
+
+    @classmethod
+    def of(cls, entity: DynamicStep) -> "DynamicStepMessage":
+        """The message for one dynamic_step."""
+        return cls(
+            sequence_name=str(entity.sequence_name),
+            step_number=entity.step_number,
+            source_type=entity.source_type,
+            source_slug=str(entity.source_slug),
+            destination_type=entity.destination_type,
+            destination_slug=str(entity.destination_slug),
+            description=entity.description,
+            technology=entity.technology,
+            return_value=entity.return_value,
+            is_async=entity.is_async,
+            docname=entity.docname,
+            slug=str(entity.slug),
+        )
 
 
 class GetDynamicStepRequest(BaseModel):
@@ -19,7 +60,12 @@ class GetDynamicStepRequest(BaseModel):
 class GetDynamicStepResponse(BaseModel):
     """Response for getting a DynamicStep."""
 
-    dynamic_step: DynamicStep
+    dynamic_step: DynamicStepMessage
+
+    @classmethod
+    def of(cls, entity: DynamicStep) -> "GetDynamicStepResponse":
+        """The response for the dynamic_step that was found."""
+        return cls(dynamic_step=DynamicStepMessage.of(entity))
 
 
 class ListDynamicStepsRequest(BaseModel):
@@ -27,10 +73,19 @@ class ListDynamicStepsRequest(BaseModel):
 
 
 class ListDynamicStepsResponse(BaseModel):
-    """Response for listing all DynamicSteps."""
+    """Response for listing all DynamicSteps.
 
-    dynamic_steps: list[DynamicStep]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    dynamic_steps: list[DynamicStepMessage]
+
+    @classmethod
+    def of(cls, entities: list[DynamicStep]) -> "ListDynamicStepsResponse":
+        """The response for the dynamic_steps that were found."""
+        return cls(dynamic_steps=[DynamicStepMessage.of(entity) for entity in entities])
 
 
 class CreateDynamicStepRequest(BaseModel):
@@ -53,7 +108,12 @@ class CreateDynamicStepRequest(BaseModel):
 class CreateDynamicStepResponse(BaseModel):
     """Response for creating a DynamicStep."""
 
-    dynamic_step: DynamicStep
+    dynamic_step: DynamicStepMessage
+
+    @classmethod
+    def of(cls, entity: DynamicStep) -> "CreateDynamicStepResponse":
+        """The response for the dynamic_step that was created."""
+        return cls(dynamic_step=DynamicStepMessage.of(entity))
 
 
 class UpdateDynamicStepRequest(BaseModel):
@@ -90,7 +150,12 @@ class UpdateDynamicStepRequest(BaseModel):
 class UpdateDynamicStepResponse(BaseModel):
     """Response for updating a DynamicStep."""
 
-    dynamic_step: DynamicStep
+    dynamic_step: DynamicStepMessage
+
+    @classmethod
+    def of(cls, entity: DynamicStep) -> "UpdateDynamicStepResponse":
+        """The response for the dynamic_step as it now is."""
+        return cls(dynamic_step=DynamicStepMessage.of(entity))
 
 
 class DeleteDynamicStepRequest(BaseModel):

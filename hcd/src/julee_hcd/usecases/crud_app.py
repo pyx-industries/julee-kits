@@ -41,7 +41,7 @@ class GetAppUseCase(GetUseCase[App, AppRepository]):
     async def execute(self, request: GetAppRequest) -> GetAppResponse:
         """Execute the get app use case."""
         entity = await self._get_by_id(request.slug)
-        return GetAppResponse(app=entity)
+        return GetAppResponse.of(entity)
 
 
 class ListAppsUseCase(ListUseCase[App, AppRepository]):
@@ -54,7 +54,7 @@ class ListAppsUseCase(ListUseCase[App, AppRepository]):
     async def execute(self, request: ListAppsRequest) -> ListAppsResponse:
         """Execute the list apps use case."""
         entities = await self._list_all()
-        return ListAppsResponse(apps=entities, total_count=len(entities))
+        return ListAppsResponse.of(entities)
 
 
 class CreateAppUseCase(CreateUseCase[App, AppRepository]):
@@ -86,7 +86,7 @@ class CreateAppUseCase(CreateUseCase[App, AppRepository]):
             preamble_rst=request.preamble_rst,
             epilogue_rst=request.epilogue_rst,
         )
-        return CreateAppResponse(app=entity)
+        return CreateAppResponse.of(entity)
 
 
 class UpdateAppUseCase(UpdateUseCase[App, AppRepository]):
@@ -106,7 +106,7 @@ class UpdateAppUseCase(UpdateUseCase[App, AppRepository]):
         if changes.get("name") is not None:
             changes["name"] = Name(changes["name"])
         entity = await self._update_by_id(request.slug, changes)
-        return UpdateAppResponse(app=entity)
+        return UpdateAppResponse.of(entity)
 
 
 class DeleteAppUseCase(DeleteUseCase[App, AppRepository]):

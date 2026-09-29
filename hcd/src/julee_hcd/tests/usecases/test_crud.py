@@ -100,17 +100,21 @@ async def test_getting_a_persona_that_is_not_there_raises(
         await GetPersonaUseCase(repo).execute(GetPersonaRequest(slug="nobody"))
 
 
-async def test_listing_reports_how_many_there_are(
+async def test_listing_returns_every_one(
     repo: MemoryPersonaRepository,
 ) -> None:
-    """The index pages need the count as well as the personas."""
+    """The list and nothing else.
+
+    It carried a total_count too. A count is paging, which is a thing
+    HTTP cares about; a router that needs one wraps the list, and an
+    index page in the same process has the list to count.
+    """
     await CreatePersonaUseCase(repo).execute(CreatePersonaRequest(name="One"))
     await CreatePersonaUseCase(repo).execute(CreatePersonaRequest(name="Two"))
 
     response = await ListPersonasUseCase(repo).execute(ListPersonasRequest())
 
-    assert response.total_count == 2
-    assert len(response.personas) == 2
+    assert sorted(p.name for p in response.personas) == ["One", "Two"]
 
 
 async def test_deleting_reports_whether_there_was_anything_to_delete(

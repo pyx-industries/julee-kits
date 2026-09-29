@@ -10,6 +10,42 @@ from pydantic import BaseModel
 from julee_hcd.domain.models.contrib import ContribModule
 
 
+class ContribModuleMessage(BaseModel):
+    """What a ContribModule is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    solution_slug: str
+    docname: str
+    page_title: str
+    preamble_rst: str
+    epilogue_rst: str
+    slug: str
+    name: str
+    description: str
+    technology: str
+    code_path: str
+
+    @classmethod
+    def of(cls, entity: ContribModule) -> "ContribModuleMessage":
+        """The message for one contrib_module."""
+        return cls(
+            solution_slug=entity.solution_slug,
+            docname=entity.docname,
+            page_title=entity.page_title,
+            preamble_rst=entity.preamble_rst,
+            epilogue_rst=entity.epilogue_rst,
+            slug=str(entity.slug),
+            name=entity.name,
+            description=entity.description,
+            technology=entity.technology,
+            code_path=entity.code_path,
+        )
+
+
 class GetContribModuleRequest(BaseModel):
     """Request for getting a ContribModule by slug."""
 
@@ -19,7 +55,12 @@ class GetContribModuleRequest(BaseModel):
 class GetContribModuleResponse(BaseModel):
     """Response for getting a ContribModule."""
 
-    contrib_module: ContribModule
+    contrib_module: ContribModuleMessage
+
+    @classmethod
+    def of(cls, entity: ContribModule) -> "GetContribModuleResponse":
+        """The response for the contrib_module that was found."""
+        return cls(contrib_module=ContribModuleMessage.of(entity))
 
 
 class ListContribModulesRequest(BaseModel):
@@ -27,10 +68,21 @@ class ListContribModulesRequest(BaseModel):
 
 
 class ListContribModulesResponse(BaseModel):
-    """Response for listing all ContribModules."""
+    """Response for listing all ContribModules.
 
-    contrib_modules: list[ContribModule]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    contrib_modules: list[ContribModuleMessage]
+
+    @classmethod
+    def of(cls, entities: list[ContribModule]) -> "ListContribModulesResponse":
+        """The response for the contrib_modules that were found."""
+        return cls(
+            contrib_modules=[ContribModuleMessage.of(entity) for entity in entities]
+        )
 
 
 class CreateContribModuleRequest(BaseModel):
@@ -51,7 +103,12 @@ class CreateContribModuleRequest(BaseModel):
 class CreateContribModuleResponse(BaseModel):
     """Response for creating a ContribModule."""
 
-    contrib_module: ContribModule
+    contrib_module: ContribModuleMessage
+
+    @classmethod
+    def of(cls, entity: ContribModule) -> "CreateContribModuleResponse":
+        """The response for the contrib_module that was created."""
+        return cls(contrib_module=ContribModuleMessage.of(entity))
 
 
 class UpdateContribModuleRequest(BaseModel):
@@ -86,7 +143,12 @@ class UpdateContribModuleRequest(BaseModel):
 class UpdateContribModuleResponse(BaseModel):
     """Response for updating a ContribModule."""
 
-    contrib_module: ContribModule
+    contrib_module: ContribModuleMessage
+
+    @classmethod
+    def of(cls, entity: ContribModule) -> "UpdateContribModuleResponse":
+        """The response for the contrib_module as it now is."""
+        return cls(contrib_module=ContribModuleMessage.of(entity))
 
 
 class DeleteContribModuleRequest(BaseModel):

@@ -5,7 +5,7 @@ Do not edit — regenerate with generate-crud.sh.
 
 from typing import Any
 
-from julee.core.entities.text import Slug
+from julee.core.entities.text import Name, Slug
 from julee.core.usecases.generic_crud import (
     CreateUseCase,
     DeleteUseCase,
@@ -15,6 +15,7 @@ from julee.core.usecases.generic_crud import (
 )
 
 from julee_c4.domain.models.dynamic_step import DynamicStep
+from julee_c4.domain.models.relationship import ElementType
 from julee_c4.domain.repositories.dynamic_step import DynamicStepRepository
 
 from ..dtos.crud_dynamic_step import (
@@ -41,7 +42,7 @@ class GetDynamicStepUseCase(GetUseCase[DynamicStep, DynamicStepRepository]):
     async def execute(self, request: GetDynamicStepRequest) -> GetDynamicStepResponse:
         """Execute the get dynamic_step use case."""
         entity = await self._get_by_id(request.slug)
-        return GetDynamicStepResponse(dynamic_step=entity)
+        return GetDynamicStepResponse.of(entity)
 
 
 class ListDynamicStepsUseCase(ListUseCase[DynamicStep, DynamicStepRepository]):
@@ -56,9 +57,7 @@ class ListDynamicStepsUseCase(ListUseCase[DynamicStep, DynamicStepRepository]):
     ) -> ListDynamicStepsResponse:
         """Execute the list dynamic_steps use case."""
         entities = await self._list_all()
-        return ListDynamicStepsResponse(
-            dynamic_steps=entities, total_count=len(entities)
-        )
+        return ListDynamicStepsResponse.of(entities)
 
 
 class CreateDynamicStepUseCase(CreateUseCase[DynamicStep, DynamicStepRepository]):
@@ -85,19 +84,19 @@ class CreateDynamicStepUseCase(CreateUseCase[DynamicStep, DynamicStepRepository]
         """Execute the create dynamic_step use case."""
         entity = await self._create(
             entity_id=request.slug,
-            sequence_name=request.sequence_name,
+            sequence_name=Name(request.sequence_name),
             step_number=request.step_number,
-            source_type=request.source_type,
-            source_slug=request.source_slug,
-            destination_type=request.destination_type,
-            destination_slug=request.destination_slug,
+            source_type=ElementType(request.source_type),
+            source_slug=Slug(request.source_slug),
+            destination_type=ElementType(request.destination_type),
+            destination_slug=Slug(request.destination_slug),
             description=request.description,
             technology=request.technology,
             return_value=request.return_value,
             is_async=request.is_async,
             docname=request.docname,
         )
-        return CreateDynamicStepResponse(dynamic_step=entity)
+        return CreateDynamicStepResponse.of(entity)
 
 
 class UpdateDynamicStepUseCase(UpdateUseCase[DynamicStep, DynamicStepRepository]):
@@ -111,8 +110,19 @@ class UpdateDynamicStepUseCase(UpdateUseCase[DynamicStep, DynamicStepRepository]
         self, request: UpdateDynamicStepRequest
     ) -> UpdateDynamicStepResponse:
         """Execute the update dynamic_step use case."""
-        entity = await self._update_by_id(request.slug, request.changes())
-        return UpdateDynamicStepResponse(dynamic_step=entity)
+        changes = request.changes()
+        if changes.get("destination_slug") is not None:
+            changes["destination_slug"] = Slug(changes["destination_slug"])
+        if changes.get("destination_type") is not None:
+            changes["destination_type"] = ElementType(changes["destination_type"])
+        if changes.get("sequence_name") is not None:
+            changes["sequence_name"] = Name(changes["sequence_name"])
+        if changes.get("source_slug") is not None:
+            changes["source_slug"] = Slug(changes["source_slug"])
+        if changes.get("source_type") is not None:
+            changes["source_type"] = ElementType(changes["source_type"])
+        entity = await self._update_by_id(request.slug, changes)
+        return UpdateDynamicStepResponse.of(entity)
 
 
 class DeleteDynamicStepUseCase(DeleteUseCase[DynamicStep, DynamicStepRepository]):

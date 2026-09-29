@@ -88,8 +88,10 @@ class TestCreateDeploymentNodeUseCase:
         response = await use_case.execute(request)
 
         assert response.deployment_node is not None
+        # The message carries the entity's fields, not what the entity
+        # derives from them. has_parent is the entity's own; this is
+        # the fact it derives it from.
         assert response.deployment_node.parent_slug == "aws-region"
-        assert response.deployment_node.has_parent is True
 
     @pytest.mark.asyncio
     async def test_create_deployment_node_with_defaults(

@@ -10,6 +10,40 @@ from pydantic import BaseModel
 from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
 
 
+class SoftwareSystemMessage(BaseModel):
+    """What a SoftwareSystem is, as a use case reports it.
+
+    Built from the entity and never holding one. A checked string goes
+    out as str, a value object rides inside as it is, and an enum stays
+    what it was.
+    """
+
+    slug: str
+    name: str
+    description: str
+    system_type: SystemType
+    owner: str
+    technology: str
+    url: str
+    tags: tuple[str, ...]
+    docname: str
+
+    @classmethod
+    def of(cls, entity: SoftwareSystem) -> "SoftwareSystemMessage":
+        """The message for one software_system."""
+        return cls(
+            slug=str(entity.slug),
+            name=str(entity.name),
+            description=entity.description,
+            system_type=entity.system_type,
+            owner=entity.owner,
+            technology=entity.technology,
+            url=entity.url,
+            tags=entity.tags,
+            docname=entity.docname,
+        )
+
+
 class GetSoftwareSystemRequest(BaseModel):
     """Request for getting a SoftwareSystem by slug."""
 
@@ -19,7 +53,12 @@ class GetSoftwareSystemRequest(BaseModel):
 class GetSoftwareSystemResponse(BaseModel):
     """Response for getting a SoftwareSystem."""
 
-    software_system: SoftwareSystem
+    software_system: SoftwareSystemMessage
+
+    @classmethod
+    def of(cls, entity: SoftwareSystem) -> "GetSoftwareSystemResponse":
+        """The response for the software_system that was found."""
+        return cls(software_system=SoftwareSystemMessage.of(entity))
 
 
 class ListSoftwareSystemsRequest(BaseModel):
@@ -27,10 +66,21 @@ class ListSoftwareSystemsRequest(BaseModel):
 
 
 class ListSoftwareSystemsResponse(BaseModel):
-    """Response for listing all SoftwareSystems."""
+    """Response for listing all SoftwareSystems.
 
-    software_systems: list[SoftwareSystem]
-    total_count: int
+    The list and nothing else. Paging is a thing HTTP cares about, so
+    a router that needs a page and a count wraps this; a caller in the
+    same process does not.
+    """
+
+    software_systems: list[SoftwareSystemMessage]
+
+    @classmethod
+    def of(cls, entities: list[SoftwareSystem]) -> "ListSoftwareSystemsResponse":
+        """The response for the software_systems that were found."""
+        return cls(
+            software_systems=[SoftwareSystemMessage.of(entity) for entity in entities]
+        )
 
 
 class CreateSoftwareSystemRequest(BaseModel):
@@ -50,7 +100,12 @@ class CreateSoftwareSystemRequest(BaseModel):
 class CreateSoftwareSystemResponse(BaseModel):
     """Response for creating a SoftwareSystem."""
 
-    software_system: SoftwareSystem
+    software_system: SoftwareSystemMessage
+
+    @classmethod
+    def of(cls, entity: SoftwareSystem) -> "CreateSoftwareSystemResponse":
+        """The response for the software_system that was created."""
+        return cls(software_system=SoftwareSystemMessage.of(entity))
 
 
 class UpdateSoftwareSystemRequest(BaseModel):
@@ -84,7 +139,12 @@ class UpdateSoftwareSystemRequest(BaseModel):
 class UpdateSoftwareSystemResponse(BaseModel):
     """Response for updating a SoftwareSystem."""
 
-    software_system: SoftwareSystem
+    software_system: SoftwareSystemMessage
+
+    @classmethod
+    def of(cls, entity: SoftwareSystem) -> "UpdateSoftwareSystemResponse":
+        """The response for the software_system as it now is."""
+        return cls(software_system=SoftwareSystemMessage.of(entity))
 
 
 class DeleteSoftwareSystemRequest(BaseModel):
