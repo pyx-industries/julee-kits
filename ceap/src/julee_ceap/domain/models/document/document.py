@@ -9,13 +9,12 @@ and type safety, following the patterns established in the sample project.
 """
 
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import NonEmptyText
-from pydantic import Field
 
 from julee_ceap.domain.models.document.multihash import ContentMultihash
 
@@ -34,7 +33,8 @@ class DocumentStatus(StrEnum):
     FAILED = "failed"
 
 
-class Document(Entity):
+@dataclass(frozen=True, kw_only=True)
+class Document:
     """A document's metadata, and the name of its content.
 
     The content is not here. It is stored under its own hash and read
@@ -64,10 +64,10 @@ class Document(Entity):
     document_id: NonEmptyText
     original_filename: NonEmptyText
     content_type: NonEmptyText
-    size_bytes: int = Field(gt=0, description="Size must be positive")
-    content_multihash: ContentMultihash = Field(
-        description="Multihash of document content for integrity verification"
-    )
+    size_bytes: int
+    """Size must be positive."""
+    content_multihash: ContentMultihash
+    """Multihash of document content for integrity verification."""
     """The name the content is stored under.
 
     The rule that this is a well-formed multihash was a validator here
@@ -84,10 +84,26 @@ class Document(Entity):
     # Document processing state
     status: DocumentStatus = DocumentStatus.CAPTURED
     knowledge_service_id: str | None = None
-    assembly_types: tuple[str, ...] = Field(default_factory=tuple)
+    assembly_types: tuple[str, ...] = ()
 
     # Timestamps
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
-    updated_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
 
-    additional_metadata: Mapping[str, Any] = Field(default_factory=dict)
+    additional_metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Refuse a document with no content.
+
+        This was ``Field(gt=0)``, which pydantic enforced and a
+        dataclass does not. A zero-byte document has nothing to
+        extract, assemble or validate, and would otherwise be stored as
+        though it had.
+
+        Raises:
+            ValueError: If size_bytes is not positive
+        """
+        if self.size_bytes <= 0:
+            raise ValueError(
+                f"size_bytes must be greater than 0, got {self.size_bytes}"
+            )

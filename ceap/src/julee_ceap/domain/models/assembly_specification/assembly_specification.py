@@ -14,15 +14,14 @@ and type safety, following the patterns established in the sample project.
 """
 
 from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
 import jsonpointer
 import jsonschema
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Name, NonEmptyText
-from pydantic import Field, field_validator
 
 
 class AssemblySpecificationStatus(StrEnum):
@@ -34,7 +33,8 @@ class AssemblySpecificationStatus(StrEnum):
     DEPRECATED = "deprecated"
 
 
-class AssemblySpecification(Entity):
+@dataclass(frozen=True, kw_only=True)
+class AssemblySpecification:
     """Assembly specification configuration that defines how to assemble
     documents of a specific type.
 
@@ -49,114 +49,116 @@ class AssemblySpecification(Entity):
     """
 
     # Core assembly identification
-    assembly_specification_id: NonEmptyText = Field(
-        description="Unique identifier for this assembly specification"
-    )
-    name: Name = Field(description="Human-readable name like 'meeting minutes'")
-    applicability: NonEmptyText = Field(
-        description="Text description identifying to what type of "
-        "information this assembly applies, such as an online transcript "
-        "of a video meeting. This information may be used by knowledge "
-        "service for document-assembly matching"
-    )
+    assembly_specification_id: NonEmptyText
+    """Unique identifier for this assembly specification."""
+    name: Name
+    """Human-readable name like 'meeting minutes'."""
+    applicability: NonEmptyText
+    """Text description identifying to what type of information this assembly applies, such as an online transcript of a video meeting. This information may be used by knowledge service for document-assembly matching."""
 
-    jsonschema: Mapping[str, Any] = Field(
-        description="JSON Schema defining the structure of data to be "
-        "extracted for this assembly"
-    )
+    jsonschema: Mapping[str, Any]
+    """JSON Schema defining the structure of data to be extracted for this assembly."""
 
     # AssemblySpecification configuration
     status: AssemblySpecificationStatus = AssemblySpecificationStatus.ACTIVE
-    knowledge_service_queries: Mapping[str, NonEmptyText] = Field(
-        default_factory=dict,
-        description="Mapping from JSON Pointer paths to "
-        "KnowledgeServiceQuery IDs. Keys are JSON Pointer strings "
-        "(e.g., '/properties/attendees', '') and values are query IDs "
-        "for extracting data for that schema section",
-    )
+    knowledge_service_queries: Mapping[str, NonEmptyText] = field(default_factory=dict)
+    """Mapping from JSON Pointer paths to KnowledgeServiceQuery IDs. Keys are JSON Pointer strings (e.g., '/properties/attendees', '') and values are query IDs for extracting data for that schema section."""
 
     # AssemblySpecification metadata
-    version: NonEmptyText = Field(
-        default=NonEmptyText("0.1.0"), description="Assembly definition version"
-    )
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
-    updated_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
+    version: NonEmptyText = NonEmptyText("0.1.0")
+    """Assembly definition version."""
+    created_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
     # May later add a detailed description, change log, additional metadata
     # Timestamps
 
-    @field_validator("jsonschema")
-    @classmethod
-    def jsonschema_must_be_valid(cls, v: dict[str, Any]) -> dict[str, Any]:
-        if not isinstance(v, dict):
-            raise ValueError("JSON Schema must be a dictionary")
+    def __post_init__(self) -> None:
+        """Check the schema, then the pointers into it.
 
-        if len(v) == 1 and "$ref" in v:
-            # Bare $ref — accept as-is. Resolution and schema validation
-            # happen at assembly time via SchemaOracle, not here.
-            if not isinstance(v["$ref"], str) or not v["$ref"].strip():
-                raise ValueError("$ref value must be a non-empty string")
-            return v
+        These were two field_validator methods. Order matters and used
+        to be implicit in the field order: the pointer check reads the
+        schema beside it, which pydantic supplied through info.data. It
+        says so directly now.
 
-        if "type" not in v:
-            raise ValueError("JSON Schema must have a 'type' field")
-
-        try:
-            jsonschema.Draft7Validator.check_schema(v)
-        except jsonschema.SchemaError as e:
-            raise ValueError(f"Invalid JSON Schema: {e.message}")
-
-        return v
-
-    @field_validator("knowledge_service_queries")
-    @classmethod
-    def knowledge_service_queries_must_be_valid(
-        cls, v: Mapping[str, NonEmptyText], info: Any
-    ) -> Mapping[str, NonEmptyText]:
-        """Every key must be a JSON Pointer into this spec's schema.
-
-        A rule, and one no type can carry: whether a pointer resolves
-        depends on the jsonschema field beside it. The part that was a
-        normalisation — stripping each query id, and rebuilding the
-        mapping to hold the stripped ones — is NonEmptyText's now
-        (#306).
-
-        The keys stay plain str. An empty pointer is the root of the
-        schema and legitimate, so NonEmptyText would refuse a valid one.
+        Raises:
+            ValueError: If the schema or any pointer into it is bad
         """
-        if not isinstance(v, dict):
-            raise ValueError("Knowledge service queries must be a dictionary")
+        refuse_a_bad_schema(self.jsonschema)
+        refuse_a_bad_pointer(self.knowledge_service_queries, self.jsonschema)
 
-        # Get the jsonschema field value to validate pointers against it
-        jsonschema_value = info.data.get("jsonschema")
-        if not jsonschema_value:
-            raise ValueError("Cannot validate schema pointers without jsonschema field")
 
-        is_ref_schema = (
-            isinstance(jsonschema_value, dict)
-            and len(jsonschema_value) == 1
-            and "$ref" in jsonschema_value
-        )
+def refuse_a_bad_schema(v: Mapping[str, Any]) -> None:
+    """The schema is a JSON Schema, or a bare $ref to one.
 
-        for schema_pointer in v:
-            # Validate JSON Pointer format; existence against the resolved
-            # schema is only possible for inline schemas (not bare $refs —
-            # those are resolved at assembly time via SchemaOracle).
-            try:
-                if schema_pointer == "":
-                    # Empty string is valid - refers to root of schema
-                    pass
-                elif is_ref_schema:
-                    # Format validation only — can't check existence without
-                    # fetching the remote schema
-                    jsonpointer.JsonPointer(schema_pointer)
-                else:
-                    ptr = jsonpointer.JsonPointer(schema_pointer)
-                    ptr.resolve(jsonschema_value)
-            except jsonpointer.JsonPointerException as e:
-                raise ValueError(f"Invalid JSON Pointer '{schema_pointer}': {e}")
-            except (KeyError, IndexError, TypeError):
-                raise ValueError(
-                    f"JSON Pointer '{schema_pointer}' does not exist in schema"
-                )
+    Args:
+        v: The schema as given
 
-        return v
+    Raises:
+        ValueError: If it is neither
+    """
+    if not isinstance(v, dict):
+        raise ValueError("JSON Schema must be a dictionary")
+
+    if len(v) == 1 and "$ref" in v:
+        # Bare $ref — accept as-is. Resolution and schema validation
+        # happen at assembly time via SchemaOracle, not here.
+        if not isinstance(v["$ref"], str) or not v["$ref"].strip():
+            raise ValueError("$ref value must be a non-empty string")
+        return
+
+    if "type" not in v:
+        raise ValueError("JSON Schema must have a 'type' field")
+
+    try:
+        jsonschema.Draft7Validator.check_schema(v)
+    except jsonschema.SchemaError as e:
+        raise ValueError(f"Invalid JSON Schema: {e.message}")
+
+
+def refuse_a_bad_pointer(
+    v: Mapping[str, NonEmptyText], jsonschema_value: Mapping[str, Any]
+) -> None:
+    """Every key must be a JSON Pointer into this spec's schema.
+
+    A rule, and one no type can carry: whether a pointer resolves
+    depends on the jsonschema field beside it. The part that was a
+    normalisation — stripping each query id, and rebuilding the
+    mapping to hold the stripped ones — is NonEmptyText's now
+    (#306).
+
+    The keys stay plain str. An empty pointer is the root of the
+    schema and legitimate, so NonEmptyText would refuse a valid one.
+    """
+    if not isinstance(v, dict):
+        raise ValueError("Knowledge service queries must be a dictionary")
+
+    if not jsonschema_value:
+        raise ValueError("Cannot validate schema pointers without jsonschema field")
+
+    is_ref_schema = (
+        isinstance(jsonschema_value, dict)
+        and len(jsonschema_value) == 1
+        and "$ref" in jsonschema_value
+    )
+
+    for schema_pointer in v:
+        # Validate JSON Pointer format; existence against the resolved
+        # schema is only possible for inline schemas (not bare $refs —
+        # those are resolved at assembly time via SchemaOracle).
+        try:
+            if schema_pointer == "":
+                # Empty string is valid - refers to root of schema
+                pass
+            elif is_ref_schema:
+                # Format validation only — can't check existence without
+                # fetching the remote schema
+                jsonpointer.JsonPointer(schema_pointer)
+            else:
+                ptr = jsonpointer.JsonPointer(schema_pointer)
+                ptr.resolve(jsonschema_value)
+        except jsonpointer.JsonPointerException as e:
+            raise ValueError(f"Invalid JSON Pointer '{schema_pointer}': {e}")
+        except (KeyError, IndexError, TypeError):
+            raise ValueError(
+                f"JSON Pointer '{schema_pointer}' does not exist in schema"
+            )

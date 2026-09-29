@@ -8,6 +8,7 @@ testing patterns and verify idempotency, error handling, and content.
 
 import io
 import json
+from dataclasses import replace
 from typing import Any
 from unittest.mock import Mock
 
@@ -387,9 +388,7 @@ class TestMinioDocumentRepositoryUpdate:
         original_updated_at = sample_document.updated_at
 
         # Modify document
-        sample_document = sample_document.model_copy(
-            update={"status": DocumentStatus.EXTRACTED}
-        )
+        sample_document = replace(sample_document, status=DocumentStatus.EXTRACTED)
 
         # Act
         await repository.save(sample_document)

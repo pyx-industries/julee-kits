@@ -6,6 +6,7 @@ configuration repository implementation, using the fake client to avoid
 external dependencies during testing.
 """
 
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -121,11 +122,10 @@ class TestMinioKnowledgeServiceConfigRepositoryUpdates:
         await knowledge_service_config_repo.save(sample_knowledge_service_config)
 
         # Update the config
-        sample_knowledge_service_config = sample_knowledge_service_config.model_copy(
-            update={
-                "name": "Updated Test Service",
-                "description": "Updated description for the test service",
-            }
+        sample_knowledge_service_config = replace(
+            sample_knowledge_service_config,
+            name=Name("Updated Test Service"),
+            description=NonEmptyText("Updated description for the test service"),
         )
         await knowledge_service_config_repo.save(sample_knowledge_service_config)
 
@@ -278,11 +278,10 @@ class TestMinioKnowledgeServiceConfigRepositoryRoundtrip:
         assert retrieved.service_api == ServiceApi.ANTHROPIC
 
         # Update the configuration
-        config = config.model_copy(
-            update={
-                "name": "Updated Lifecycle Service",
-                "description": "Updated description after lifecycle test",
-            }
+        config = replace(
+            config,
+            name=Name("Updated Lifecycle Service"),
+            description=NonEmptyText("Updated description after lifecycle test"),
         )
         await knowledge_service_config_repo.save(config)
 
@@ -335,7 +334,7 @@ class TestMinioKnowledgeServiceConfigRepositoryRoundtrip:
         assert retrieved2.description == "Second test service"
 
         # Update one config and verify the other is unchanged
-        config1 = config1.model_copy(update={"name": "Updated Service One"})
+        config1 = replace(config1, name=Name("Updated Service One"))
         await knowledge_service_config_repo.save(config1)
 
         retrieved1_updated = await knowledge_service_config_repo.get("ks-test-1")

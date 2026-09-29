@@ -11,6 +11,7 @@ import io
 import json
 import logging
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 
 import jsonschema
@@ -268,8 +269,9 @@ class ExtractAssembleDataUseCase:
             )
 
             # Step 8: Set the assembled document and return
-            assembly = assembly.evolve(
-                assembled_document_id=assembled_document_id,
+            assembly = replace(
+                assembly,
+                assembled_document_id=NonEmptyText(assembled_document_id),
                 status=AssemblyStatus.COMPLETED,
             )
             await self.assembly_repo.save(assembly)
@@ -286,7 +288,7 @@ class ExtractAssembleDataUseCase:
 
         except Exception as e:
             # Mark assembly as failed
-            assembly = assembly.evolve(status=AssemblyStatus.FAILED)
+            assembly = replace(assembly, status=AssemblyStatus.FAILED)
             await self.assembly_repo.save(assembly)
 
             logger.error(

@@ -12,12 +12,11 @@ All domain models use Pydantic BaseModel for validation, serialization,
 and type safety, following the patterns established in the sample project.
 """
 
+from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import NonEmptyText
-from pydantic import Field
 
 
 class AssemblyStatus(StrEnum):
@@ -30,7 +29,8 @@ class AssemblyStatus(StrEnum):
     CANCELLED = "cancelled"
 
 
-class Assembly(Entity):
+@dataclass(frozen=True, kw_only=True)
+class Assembly:
     """Assembly process that links a specification with input document and
     produces an assembled document.
 
@@ -41,25 +41,19 @@ class Assembly(Entity):
     """
 
     # Core assembly identification
-    assembly_id: NonEmptyText = Field(
-        description="Unique identifier for this assembly instance"
-    )
-    assembly_specification_id: NonEmptyText = Field(
-        description="ID of the AssemblySpecification defining how to assemble"
-    )
-    input_document_id: NonEmptyText = Field(
-        description="ID of the input document to assemble from"
-    )
-    execution_id: NonEmptyText = Field(
-        description="Execution ID that created this assembly"
-    )
+    assembly_id: NonEmptyText
+    """Unique identifier for this assembly instance."""
+    assembly_specification_id: NonEmptyText
+    """ID of the AssemblySpecification defining how to assemble."""
+    input_document_id: NonEmptyText
+    """ID of the input document to assemble from."""
+    execution_id: NonEmptyText
+    """Execution ID that created this assembly."""
 
     # Assembly process tracking
     status: AssemblyStatus = AssemblyStatus.PENDING
-    assembled_document_id: NonEmptyText | None = Field(
-        default=None,
-        description="ID of the assembled document produced by this assembly",
-    )
+    assembled_document_id: NonEmptyText | None = None
+    """ID of the assembled document produced by this assembly."""
 
     # Assembly metadata — provided by use case via ClockWitness (ADR 004)
     created_at: datetime | None = None

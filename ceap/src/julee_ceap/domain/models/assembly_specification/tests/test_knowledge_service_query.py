@@ -20,7 +20,7 @@ Design decisions documented:
 
 import pytest
 from julee.core.entities.text import Name, NonEmptyText
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from julee_ceap.domain.models.assembly_specification import (
     KnowledgeServiceQuery,
@@ -163,7 +163,7 @@ class TestKnowledgeServiceQuerySerialization:
             prompt="Extract meeting attendees with names, roles",
         )
 
-        json_str = query.model_dump_json()
+        json_str = TypeAdapter(KnowledgeServiceQuery).dump_json(query).decode("utf-8")
         import json
 
         json_data = json.loads(json_str)
@@ -180,7 +180,9 @@ class TestKnowledgeServiceQuerySerialization:
         original_query = KnowledgeServiceQueryFactory.build()
 
         # Serialize to JSON
-        json_str = original_query.model_dump_json()
+        json_str = (
+            TypeAdapter(KnowledgeServiceQuery).dump_json(original_query).decode("utf-8")
+        )
         import json
 
         json_data = json.loads(json_str)
@@ -278,7 +280,7 @@ class TestKnowledgeServiceQueryMetadata:
             query_metadata=metadata,
         )
 
-        json_str = query.model_dump_json()
+        json_str = TypeAdapter(KnowledgeServiceQuery).dump_json(query).decode("utf-8")
         import json
 
         json_data = json.loads(json_str)
@@ -305,7 +307,9 @@ class TestKnowledgeServiceQueryMetadata:
         )
 
         # Serialize and deserialize
-        json_str = original.model_dump_json()
+        json_str = (
+            TypeAdapter(KnowledgeServiceQuery).dump_json(original).decode("utf-8")
+        )
         import json
 
         json_data = json.loads(json_str)

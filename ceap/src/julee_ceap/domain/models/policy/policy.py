@@ -13,12 +13,11 @@ All domain models use Pydantic BaseModel for validation, serialization,
 and type safety, following the patterns established in the sample project.
 """
 
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from julee.core.entities.entity import Entity
 from julee.core.entities.text import Name, NonEmptyText
-from pydantic import Field, field_validator
 
 
 class PolicyStatus(StrEnum):
@@ -30,7 +29,8 @@ class PolicyStatus(StrEnum):
     DEPRECATED = "deprecated"
 
 
-class Policy(Entity):
+@dataclass(frozen=True, kw_only=True)
+class Policy:
     """Policy configuration that defines validation and
     transformation criteria for documents.
 
@@ -48,39 +48,41 @@ class Policy(Entity):
     """
 
     # Core policy identification
-    policy_id: NonEmptyText = Field(description="Unique identifier for this policy")
-    title: Name = Field(description="Human-readable title for the policy")
-    description: NonEmptyText = Field(
-        description="Detailed description of what this policy validates "
-        "and optionally transforms"
-    )
+    policy_id: NonEmptyText
+    """Unique identifier for this policy."""
+    title: Name
+    """Human-readable title for the policy."""
+    description: NonEmptyText
+    """Detailed description of what this policy validates and optionally transforms."""
 
     # Policy configuration
     status: PolicyStatus = PolicyStatus.ACTIVE
-    validation_scores: tuple[tuple[NonEmptyText, int], ...] = Field(
-        description="List of (knowledge_service_query_id, required_score) "
-        "tuples where required_score is between 0 and 100. All scores "
-        "must be met or exceeded for the policy to pass"
-    )
-    transformation_queries: tuple[NonEmptyText, ...] | None = Field(
-        default=None,
-        description="Optional list of knowledge service query IDs for "
-        "transformations to apply before re-validation. If not provided "
-        "or empty, policy operates in validation-only mode",
-    )
+    validation_scores: tuple[tuple[NonEmptyText, int], ...]
+    """List of (knowledge_service_query_id, required_score) tuples where required_score is between 0 and 100. All scores must be met or exceeded for the policy to pass."""
+    transformation_queries: tuple[NonEmptyText, ...] | None = None
+    """Optional list of knowledge service query IDs for transformations to apply before re-validation. If not provided or empty, policy operates in validation-only mode."""
 
     # Policy metadata
-    version: NonEmptyText = Field(
-        default=NonEmptyText("0.1.0"), description="Policy version"
-    )
-    created_at: datetime | None = Field(default_factory=lambda: datetime.now(UTC))
-    updated_at: datetime | None = Field(default=None)
+    version: NonEmptyText = NonEmptyText("0.1.0")
+    """Policy version."""
+    created_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime | None = None
 
-    @field_validator("validation_scores")
-    @classmethod
-    def validation_scores_must_be_valid(
-        cls, v: tuple[tuple[NonEmptyText, int], ...]
-    ) -> tuple[tuple[NonEmptyText, int], ...]:
+    def __post_init__(self) -> None:
+        """Check the scores and the transformation queries.
+
+        These were two field_validator methods, both pure checks.
+
+        Raises:
+            ValueError: If either is malformed
+        """
+        self._refuse_bad_scores(self.validation_scores)
+        self._refuse_duplicate_queries(self.transformation_queries)
+
+    @staticmethod
+    def _refuse_bad_scores(
+        v: tuple[tuple[NonEmptyText, int], ...],
+    ) -> None:
         """What a score list must be, beyond being a list of scores.
 
         A rule, not a normalisation: the list cannot be empty, no query
@@ -120,16 +122,11 @@ class Policy(Entity):
                     f"Required score {required_score} must be between 0 and 100"
                 )
 
-        return v
-
-    @field_validator("transformation_queries")
-    @classmethod
-    def transformation_queries_must_be_valid(
-        cls, v: tuple[NonEmptyText, ...] | None
-    ) -> tuple[NonEmptyText, ...] | None:
+    @staticmethod
+    def _refuse_duplicate_queries(v: tuple[NonEmptyText, ...] | None) -> None:
         """No query may be named twice. The rest is the element type."""
         if v is None:
-            return v
+            return
 
         if not isinstance(v, (list, tuple)):
             raise ValueError("Transformation queries must be a list or None")
@@ -141,8 +138,6 @@ class Policy(Entity):
                     f"Duplicate query ID '{query_id}' in transformation queries"
                 )
             query_ids_seen.add(query_id)
-
-        return v
 
     @property
     def is_validation_only(self) -> bool:

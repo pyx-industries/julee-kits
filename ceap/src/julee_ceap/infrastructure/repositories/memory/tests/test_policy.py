@@ -6,6 +6,7 @@ repository implementation, following the testing patterns established in the
 project.
 """
 
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -187,9 +188,7 @@ class TestMemoryPolicyRepositoryUpdates:
         await policy_repo.save(sample_policy)
 
         # Update status
-        sample_policy = sample_policy.model_copy(
-            update={"status": PolicyStatus.INACTIVE}
-        )
+        sample_policy = replace(sample_policy, status=PolicyStatus.INACTIVE)
         await policy_repo.save(sample_policy)
 
         # Verify update
@@ -208,13 +207,12 @@ class TestMemoryPolicyRepositoryUpdates:
         await policy_repo.save(sample_policy)
 
         # Update validation scores
-        sample_policy = sample_policy.model_copy(
-            update={
-                "validation_scores": [
-                    ("new-quality-check", 85),
-                    ("advanced-validation", 95),
-                ]
-            }
+        sample_policy = replace(
+            sample_policy,
+            validation_scores=(
+                (NonEmptyText("new-quality-check"), 85),
+                (NonEmptyText("advanced-validation"), 95),
+            ),
         )
         await policy_repo.save(sample_policy)
 
@@ -222,8 +220,8 @@ class TestMemoryPolicyRepositoryUpdates:
         retrieved = await policy_repo.get(sample_policy.policy_id)
         assert retrieved is not None
         assert len(retrieved.validation_scores) == 2
-        assert ("new-quality-check", 85) in retrieved.validation_scores
-        assert ("advanced-validation", 95) in retrieved.validation_scores
+        assert (NonEmptyText("new-quality-check"), 85) in retrieved.validation_scores
+        assert (NonEmptyText("advanced-validation"), 95) in retrieved.validation_scores
 
     @pytest.mark.asyncio
     async def test_update_transformation_queries(
@@ -236,8 +234,8 @@ class TestMemoryPolicyRepositoryUpdates:
         await policy_repo.save(sample_policy)
 
         # Update transformation queries
-        sample_policy = sample_policy.model_copy(
-            update={"transformation_queries": ("new-transform",)}
+        sample_policy = replace(
+            sample_policy, transformation_queries=(NonEmptyText("new-transform"),)
         )
         await policy_repo.save(sample_policy)
 
@@ -320,8 +318,8 @@ class TestMemoryPolicyRepositoryEdgeCases:
         assert retrieved.status == PolicyStatus.DRAFT
 
         # Activate policy
-        policy = policy.model_copy(
-            update={"status": PolicyStatus.ACTIVE, "version": "1.0.0"}
+        policy = replace(
+            policy, status=PolicyStatus.ACTIVE, version=NonEmptyText("1.0.0")
         )
         await policy_repo.save(policy)
 
@@ -331,7 +329,7 @@ class TestMemoryPolicyRepositoryEdgeCases:
         assert retrieved.version == "1.0.0"
 
         # Deprecate policy
-        policy = policy.model_copy(update={"status": PolicyStatus.DEPRECATED})
+        policy = replace(policy, status=PolicyStatus.DEPRECATED)
         await policy_repo.save(policy)
 
         retrieved = await policy_repo.get("lifecycle-policy")
@@ -375,7 +373,7 @@ class TestMemoryPolicyRepositoryEdgeCases:
         assert retrieved2.has_transformations is True
 
         # Update one policy and verify the other is unchanged
-        policy1 = policy1.model_copy(update={"title": "Updated First Policy"})
+        policy1 = replace(policy1, title=Name("Updated First Policy"))
         await policy_repo.save(policy1)
 
         retrieved1_updated = await policy_repo.get("policy-1")
@@ -445,8 +443,8 @@ class TestMemoryPolicyRepositoryRoundtrip:
         await policy_repo.save(policy)
 
         # Activate policy
-        policy = policy.model_copy(
-            update={"status": PolicyStatus.ACTIVE, "version": "1.0.0"}
+        policy = replace(
+            policy, status=PolicyStatus.ACTIVE, version=NonEmptyText("1.0.0")
         )
         await policy_repo.save(policy)
 
@@ -457,4 +455,4 @@ class TestMemoryPolicyRepositoryRoundtrip:
         assert retrieved.version == "1.0.0"
         assert retrieved.has_transformations is True
         assert len(retrieved.validation_scores) == 1
-        assert retrieved.validation_scores[0] == ("round-trip-check", 85)
+        assert retrieved.validation_scores[0] == (NonEmptyText("round-trip-check"), 85)
