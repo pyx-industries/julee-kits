@@ -5,12 +5,14 @@ them. Code structure is described by julee.core's own entities, which this
 kit reads rather than redefines.
 """
 
+from ..values.external_dependency import ExternalDependency
+from ..values.journey_step import JourneyStep, StepType
 from .app import App, AppInterface, AppType
 from .base import Authored
 from .contrib import ContribModule
 from .epic import Epic
-from .integration import Direction, ExternalDependency, Integration
-from .journey import Journey, JourneyStep, StepType
+from .integration import Direction, Integration
+from .journey import Journey
 from .persona import Persona
 from .story import Story
 

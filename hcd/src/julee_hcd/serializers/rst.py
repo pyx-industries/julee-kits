@@ -6,7 +6,8 @@ Serializes Epic, Journey, and Accelerator domain objects to RST directive format
 from julee.core.entities.accelerator import Accelerator
 
 from ..domain.models.epic import Epic
-from ..domain.models.journey import Journey, StepType
+from ..domain.models.journey import Journey
+from ..domain.values.journey_step import StepType
 
 
 def serialize_epic(epic: Epic) -> str:

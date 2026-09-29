@@ -6,100 +6,12 @@ through the system to achieve a goal.
 """
 
 from dataclasses import dataclass, replace
-from enum import StrEnum
 
-from julee.core.entities.text import NonEmptyText, Slug
+from julee.core.entities.text import Slug
 from julee.core.utils import normalize_name
 
+from ..values.journey_step import JourneyStep
 from .base import Authored
-
-
-class StepType(StrEnum):
-    """Type of journey step."""
-
-    STORY = "story"
-    EPIC = "epic"
-    PHASE = "phase"
-
-    @classmethod
-    def from_string(cls, value: str) -> "StepType":
-        """Convert string to StepType."""
-        try:
-            return cls(value.lower())
-        except ValueError:
-            raise ValueError(f"Invalid step type: {value}")
-
-
-@dataclass(frozen=True, kw_only=True)
-class JourneyStep:
-    """A step within a journey.
-
-    Steps can be stories (feature references), epics (epic references),
-    or phases (grouping labels for subsequent steps).
-    """
-
-    step_type: StepType
-    """The type of step (story, epic, phase)."""
-
-    ref: NonEmptyText
-    """Reference identifier (story title, epic slug, or phase title)."""
-
-    description: str = ""
-    """Optional description (primarily for phases)."""
-
-    @classmethod
-    def story(cls, title: str) -> "JourneyStep":
-        """Create a story step.
-
-        Args:
-            title: Story feature title
-
-        Returns:
-            JourneyStep with type STORY
-        """
-        return cls(step_type=StepType.STORY, ref=NonEmptyText(title))
-
-    @classmethod
-    def epic(cls, slug: str) -> "JourneyStep":
-        """Create an epic step.
-
-        Args:
-            slug: Epic slug
-
-        Returns:
-            JourneyStep with type EPIC
-        """
-        return cls(step_type=StepType.EPIC, ref=NonEmptyText(slug))
-
-    @classmethod
-    def phase(cls, title: str, description: str = "") -> "JourneyStep":
-        """Create a phase step.
-
-        Args:
-            title: Phase title
-            description: Optional phase description
-
-        Returns:
-            JourneyStep with type PHASE
-        """
-        return cls(
-            step_type=StepType.PHASE, ref=NonEmptyText(title), description=description
-        )
-
-    @property
-    def is_story(self) -> bool:
-        """Check if this is a story step."""
-        return self.step_type == StepType.STORY
-
-    @property
-    def is_epic(self) -> bool:
-        """Check if this is an epic step."""
-        return self.step_type == StepType.EPIC
-
-    @property
-    def is_phase(self) -> bool:
-        """Check if this is a phase step."""
-        return self.step_type == StepType.PHASE
 
 
 @dataclass(frozen=True, kw_only=True)

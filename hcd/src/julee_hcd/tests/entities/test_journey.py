@@ -3,8 +3,8 @@
 import pytest
 from julee.core.entities.text import NonEmptyText, Slug
 
-from julee_hcd.domain.models.journey import (
-    Journey,
+from julee_hcd.domain.models.journey import Journey
+from julee_hcd.domain.values.journey_step import (
     JourneyStep,
     StepType,
 )
