@@ -10,7 +10,7 @@ import logging
 from abc import abstractmethod
 from typing import Any
 
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from temporalio import workflow
 
 from julee_polling.domain.calculators.new_data import NewDataCalculator
@@ -25,6 +25,8 @@ from julee_polling.infrastructure.temporal.proxies import (
 )
 from julee_polling.usecases.poll_data import PollDataUseCase
 
+from .completion import DetectionRecord, PipelineCompletion, PollingRecord
+
 logger = logging.getLogger(__name__)
 
 _CONFIG = TypeAdapter(PollingConfig)
@@ -32,6 +34,8 @@ _CONFIG = TypeAdapter(PollingConfig)
 
 A composition root is allowed to know pydantic; the entity is not.
 """
+_COMPLETION = TypeAdapter(PipelineCompletion)
+"""Reads back what a previous run of this pipeline left."""
 
 
 def _what_was_seen_last_time(
@@ -39,8 +43,11 @@ def _what_was_seen_last_time(
 ) -> tuple[str | None, bytes | None]:
     """Read the last run's baseline out of Temporal's completion result.
 
-    The shape of that dict is this pipeline's own business — it wrote
-    it — so reading it happens here rather than in the use case.
+    This pipeline wrote that completion (see completion.py), so reading
+    it happens here rather than in the use case. Validated rather than
+    indexed: a completion that does not fit is treated as no baseline,
+    which is the same answer a first run gets, and it is stated here
+    rather than arrived at by three .get() calls returning None.
 
     Args:
         previous_completion: What the last run returned, if there was one
@@ -48,12 +55,22 @@ def _what_was_seen_last_time(
     Returns:
         The hash and the content last seen, either of which may be None
     """
-    if not previous_completion or "polling_result" not in previous_completion:
+    if not previous_completion:
         return None, None
 
-    polling_result = previous_completion["polling_result"]
-    content = polling_result.get("content")
-    return polling_result.get("content_hash"), (
+    try:
+        completion = _COMPLETION.validate_python(previous_completion)
+    except ValidationError:
+        # A completion written by a version that shaped it differently.
+        # Starting from no baseline costs one duplicate notification;
+        # guessing at the shape costs silence.
+        workflow.logger.warning(
+            "The last completion does not fit; starting from no baseline"
+        )
+        return None, None
+
+    content = completion.polling_result.content
+    return completion.polling_result.content_hash, (
         content.encode("utf-8") if content else None
     )
 
@@ -111,7 +128,7 @@ class NewDataDetectionPipeline:
     async def run(
         self,
         config: PollingConfig | dict[str, Any],
-    ) -> dict[str, Any]:
+    ) -> PipelineCompletion:
         """
         Execute the new data detection workflow.
 
@@ -120,7 +137,8 @@ class NewDataDetectionPipeline:
                     from Temporal schedule serialisation)
 
         Returns:
-            Completion result containing polling result and detection metadata
+            What this run leaves for the next one: the baseline it
+            recorded, and what it made of the poll. See completion.py.
 
         Raises:
             RuntimeError: If polling fails after retries
@@ -210,21 +228,21 @@ class NewDataDetectionPipeline:
                 else response.content
             )
 
-            return {
-                "polling_result": {
-                    "content_hash": recorded_hash,
-                    "content": recorded_content,
-                    "polled_at": response.polled_at,
-                },
-                "detection_result": {
-                    "has_new_data": response.new_items_found,
-                    "current_hash": recorded_hash,
-                    "handoff": response.handoff.value,
-                    "handoff_info": list(response.handoff_info),
-                },
-                "endpoint_id": response.endpoint_id,
-                "completed_at": workflow.now().isoformat(),
-            }
+            return PipelineCompletion(
+                polling_result=PollingRecord(
+                    content_hash=recorded_hash,
+                    content=recorded_content,
+                    polled_at=response.polled_at,
+                ),
+                detection_result=DetectionRecord(
+                    has_new_data=response.new_items_found,
+                    current_hash=recorded_hash,
+                    handoff=response.handoff.value,
+                    handoff_info=response.handoff_info,
+                ),
+                endpoint_id=response.endpoint_id,
+                completed_at=workflow.now().isoformat(),
+            )
 
         except Exception as e:
             self.current_step = "failed"
