@@ -7,14 +7,12 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
-import io
 import json
 import logging
 from collections.abc import Callable, Sequence
 from dataclasses import replace
 from datetime import datetime
 
-from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation import ensure_repository_protocol
@@ -26,7 +24,6 @@ from julee_ceap.domain.models import (
     KnowledgeServiceQuery,
     Policy,
 )
-from julee_ceap.domain.models.document.multihash import ContentMultihash
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidationStatus,
 )
@@ -661,8 +658,9 @@ class ValidateDocumentUseCase:
         # its start, so there is nothing to rewind. This used to seek(0)
         # either side of the read, which works on a BytesIO and raises
         # on a response streamed off a socket (julee#90).
-        current_content = await self.document_repo.content_of(document)
-        transformed_content = current_content.read().decode("utf-8")
+        transformed_content = (await self.document_repo.content_of(document)).decode(
+            "utf-8"
+        )
 
         for query_id in policy.transformation_queries:
             query = all_queries[query_id]
@@ -715,16 +713,14 @@ class ValidateDocumentUseCase:
         # content is addressed by what it is, so it has to be read
         # before anything can name it.
         transformed_bytes = transformed_content.encode("utf-8")
-        stored = await self.document_repo.store_content(
-            ContentStream(io.BytesIO(transformed_bytes))
-        )
+        stored = await self.document_repo.store_content(transformed_bytes)
 
         transformed_document = Document(
             document_id=NonEmptyText(transformed_document_id),
             original_filename=NonEmptyText(f"transformed_{document.original_filename}"),
             content_type=document.content_type,
             size_bytes=len(transformed_bytes),
-            content_multihash=ContentMultihash(stored),
+            content_multihash=stored,
             status=DocumentStatus.CAPTURED,
             created_at=self.now_fn(),
             updated_at=self.now_fn(),

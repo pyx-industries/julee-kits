@@ -20,7 +20,6 @@ from datetime import UTC, datetime
 from typing import Any
 
 from anthropic import AsyncAnthropic
-from julee.core.entities.content_stream import ContentStream
 
 from julee_ceap.domain.models.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
@@ -86,7 +85,7 @@ class AnthropicKnowledgeService(KnowledgeService):
         self,
         config: KnowledgeServiceConfig,
         document: Document,
-        content: ContentStream,
+        content: bytes,
     ) -> FileRegistrationResult:
         """Register a document file with Anthropic.
 
@@ -125,7 +124,7 @@ class AnthropicKnowledgeService(KnowledgeService):
             file_response = await client.beta.files.upload(
                 file=(
                     document.original_filename,
-                    content.stream,  # type: ignore[arg-type]
+                    content,
                     content_type,
                 )
             )

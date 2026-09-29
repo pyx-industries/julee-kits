@@ -23,7 +23,7 @@ repositories:
 
 - **Content Streaming**: Repository implementations should support both
   small content (via BytesIO) and large content (via file streams) through
-  the unified ContentStream interface wrapping io.IOBase.
+  bytes, read in full by the adapter.
 
 In Temporal workflow contexts, these protocols are implemented by workflow
 stubs that delegate to activities for durability and proper error handling.
@@ -31,10 +31,10 @@ stubs that delegate to activities for durability and proper error handling.
 
 from typing import Protocol, runtime_checkable
 
-from julee.core.entities.content_stream import ContentStream
 from julee.core.repositories.base import BaseRepository
 
 from julee_ceap.domain.models import Document
+from julee_ceap.domain.models.document.multihash import ContentMultihash
 
 
 @runtime_checkable
@@ -49,7 +49,7 @@ class DocumentRepository(BaseRepository[Document], Protocol):
     storage atomically.
     """
 
-    async def store_content(self, content: ContentStream) -> str:
+    async def store_content(self, content: bytes) -> ContentMultihash:
         """Put content in the store, and say what it turned out to be.
 
         Content is stored under its own hash, so it has to be read
@@ -61,45 +61,46 @@ class DocumentRepository(BaseRepository[Document], Protocol):
         copy: the name is the content, so the second call finds the
         first one's object already there.
 
+        Bytes rather than a stream. This took a ContentStream, which is
+        a class with no domain meaning: not an entity, not a value
+        object, and not something that survives a Temporal activity
+        boundary. Every caller already had the bytes in hand and wrapped
+        them only to satisfy this signature (julee-kits#89).
+
         Args:
-            content: The content to store, read once from where it is.
-                A stream from content_of goes straight back in, which
-                is what transferring a document between repositories is
+            content: The content to store
 
         Returns:
             The multihash the content is stored under, which is the
             name a document uses for it
-
-        Note:
-            This returns the name rather than a value object describing
-            what was stored, which would carry the size as well.
-            Doctrine reads everything under domain/models/ as an entity,
-            and a repository bound to two entities is an error — so a
-            value object there is indistinguishable from a second
-            aggregate. Tracked with the value-object work on #70.
         """
         ...
 
-    async def content_of(self, document: Document) -> ContentStream:
-        """The content this document names, as a stream to read once.
+    async def content_of(self, document: Document) -> bytes:
+        """The content this document names.
 
-        A fresh stream each call. Content is stored apart from metadata
-        and keyed by ``content_multihash``, so this reads an object the
-        document points at rather than something it carries — which is
-        why every caller gets its own stream and none of them has
-        anything to rewind.
+        Content is stored apart from metadata and keyed by
+        ``content_multihash``, so this reads an object the document
+        points at rather than something it carries.
 
-        That matters twice over. julee#124 was one ContentStream handed
-        to two readers, the second of which got nothing; julee#90 was a
-        caller rewinding a stream that is a socket and cannot be
-        rewound. Asking again answers both, and asking is only possible
-        because the content has a name of its own.
+        Bytes rather than a stream, which is what two earlier bugs were
+        about. julee#124 was one ContentStream handed to two readers,
+        the second of which got nothing; julee#90 was a caller
+        rewinding a stream that is a socket and cannot be rewound.
+        Bytes can be read twice and handed to two readers, so neither
+        is expressible.
+
+        Every caller read the stream in full immediately. Whether the
+        adapter buffers is the adapter's business, which the Temporal
+        activity boundary settles anyway: a stream cannot cross it, and
+        ``services/temporal/activities.py`` already re-reads the content
+        rather than passing one (julee-kits#89).
 
         Args:
             document: The document whose content to read
 
         Returns:
-            A stream over the content, at its start
+            The content
 
         Raises:
             ValueError: If the document names content that is not there

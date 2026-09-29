@@ -140,7 +140,7 @@ async def get_document_content(
             # content rather than carrying it, so this asks the
             # repository for it instead of checking whether it happens
             # to be attached to what came back.
-            content_bytes = (await repository.content_of(document)).read()
+            content_bytes = await repository.content_of(document)
 
             logger.info(
                 "Retrieved document content: %s (%d bytes)",

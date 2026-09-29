@@ -6,12 +6,10 @@ ensuring proper business logic execution and repository interaction patterns
 following the Clean Architecture principles.
 """
 
-import io
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 
 import pytest
-from julee.core.entities.content_stream import ContentStream
 from julee.core.entities.text import Name, NonEmptyText
 
 from julee_ceap.domain.models import (
@@ -52,7 +50,7 @@ async def stored_name(repository: DocumentRepository, content: bytes) -> str:
     let save() quietly correct it. Nothing corrects it now: content is
     addressed by what it is, so a document names what was stored.
     """
-    return await repository.store_content(ContentStream(io.BytesIO(content)))
+    return await repository.store_content(content)
 
 
 class TestValidateDocumentUseCase:
