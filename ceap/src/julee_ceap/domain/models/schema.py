@@ -11,6 +11,7 @@ has modelled" — which describes the gap rather than closing it. This
 closes it.
 """
 
+import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -75,3 +76,49 @@ class AssembledData:
 
     document: Mapping[str, Any]
     """The assembled data, as the queries filled it in."""
+
+    @classmethod
+    def of_json_text(cls, text: str) -> "AssembledData":
+        """The data some JSON text describes.
+
+        A knowledge service answers with text, and the answer has to be
+        JSON or there is nothing to assemble. Parsing is how that is
+        found out, which is why it happens here rather than being
+        checked some other way.
+
+        Args:
+            text: What the service answered
+
+        Returns:
+            The data it describes
+
+        Raises:
+            ValueError: If the text is empty or is not JSON
+        """
+        if not text.strip():
+            raise ValueError("Empty response from transformation query")
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError as not_json:
+            raise ValueError(
+                f"Transformation result must be valid JSON, got: "
+                f"{text[:100]}... Parse error: {not_json}"
+            ) from not_json
+        if not isinstance(parsed, dict):
+            raise ValueError(
+                f"Transformation result must be a JSON object, got "
+                f"{type(parsed).__name__}"
+            )
+        return cls(parsed)
+
+    def as_json_bytes(self) -> bytes:
+        """This data, written as the JSON it is.
+
+        Assembled data is stored as a document, and a document is bytes.
+        Writing itself is the value's own business: it is JSON, so it
+        knows how, and a use case does not have to import json to ask.
+
+        Returns:
+            The data as indented JSON, UTF-8 encoded
+        """
+        return json.dumps(dict(self.document), indent=2).encode("utf-8")

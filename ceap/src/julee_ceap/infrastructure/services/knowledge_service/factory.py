@@ -15,13 +15,13 @@ from julee_ceap.domain.models.knowledge_service_config import (
     ServiceApi,
 )
 from julee_ceap.domain.models.schema import JsonSchema
+from julee_ceap.domain.services.knowledge_service import KnowledgeService
 from julee_ceap.infrastructure.services.knowledge_service import (
     FileRegistrationResult,
     QueryResult,
 )
 
 from .anthropic import AnthropicKnowledgeService
-from .knowledge_service import KnowledgeService
 
 logger = logging.getLogger(__name__)
 
