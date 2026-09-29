@@ -8,8 +8,8 @@ that imports pydantic (ADR 001).
 
 from pydantic import BaseModel, ConfigDict
 
-from julee_polling.domain.models.handoff import Handoff
-from julee_polling.domain.models.polling_config import PollingConfig
+from julee_polling.domain.values.handoff import Handoff
+from julee_polling.domain.values.polling_config import PollingConfig
 
 
 class PollDataRequest(BaseModel):

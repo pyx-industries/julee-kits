@@ -12,9 +12,9 @@ from julee_polling.domain.calculators.new_data import NewDataCalculator
 from julee_polling.domain.handlers.polling_result_handler import (
     PollingResultHandler,
 )
-from julee_polling.domain.models.handoff import Handoff
-from julee_polling.domain.models.polling_config import PollingResult
-from julee_polling.domain.services.poller import PollerService
+from julee_polling.domain.oracles.poller import PollerOracle
+from julee_polling.domain.values.handoff import Handoff
+from julee_polling.domain.values.polling_config import PollingResult
 from julee_polling.dtos.poll_data import PollDataRequest, PollDataResponse
 
 
@@ -28,7 +28,7 @@ class PollDataUseCase:
 
     def __init__(
         self,
-        poller: PollerService,
+        poller: PollerOracle,
         handler: PollingResultHandler,
         calculator: NewDataCalculator,
     ) -> None:

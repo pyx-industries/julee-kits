@@ -32,8 +32,8 @@ from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
 
 from julee_polling.apps.worker.pipelines import NewDataDetectionPipeline
-from julee_polling.domain.models.handoff import Handoff
-from julee_polling.domain.models.polling_config import (
+from julee_polling.domain.values.handoff import Handoff
+from julee_polling.domain.values.polling_config import (
     PollingConfig,
     PollingProtocol,
     PollingResult,

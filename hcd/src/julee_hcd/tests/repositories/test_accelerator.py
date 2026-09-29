@@ -2,10 +2,8 @@
 
 import pytest
 import pytest_asyncio
-from julee.core.entities.accelerator import (
-    Accelerator,
-    IntegrationReference,
-)
+from julee.core.entities.accelerator import Accelerator
+from julee.core.values.accelerator import IntegrationReference
 
 from julee_hcd.infrastructure.repositories.memory.accelerator import (
     MemoryAcceleratorRepository,

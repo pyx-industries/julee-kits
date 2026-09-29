@@ -8,7 +8,7 @@ with discovered bounded contexts (from src/ directory scanning) to identify:
 - Documented accelerators that have no corresponding code
 """
 
-from julee.core.entities.accelerator import AcceleratorValidationIssue
+from julee.core.values.accelerator import AcceleratorValidationIssue
 
 from julee_hcd.domain.repositories.accelerator import AcceleratorRepository
 from julee_hcd.domain.repositories.code_info import CodeInfoRepository

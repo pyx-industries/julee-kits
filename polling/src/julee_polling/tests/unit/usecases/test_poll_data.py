@@ -11,8 +11,8 @@ from datetime import UTC, datetime
 import pytest
 from julee.core.entities.acknowledgement import Acknowledgement
 
-from julee_polling.domain.models.handoff import Handoff
-from julee_polling.domain.models.polling_config import (
+from julee_polling.domain.values.handoff import Handoff
+from julee_polling.domain.values.polling_config import (
     PollingConfig,
     PollingProtocol,
     PollingResult,
@@ -50,7 +50,7 @@ def a_result(
 
 
 class FakePoller:
-    """A PollerService returning whatever it was built with."""
+    """A PollerOracle returning whatever it was built with."""
 
     def __init__(self, result: PollingResult) -> None:
         self._result = result

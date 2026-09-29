@@ -56,7 +56,7 @@ def decorated_in(module: object) -> set[str]:
 
 
 def test_the_poller_service_is_offered() -> None:
-    assert contributed_activities() == (activities.TemporalPollerService,)
+    assert contributed_activities() == (activities.TemporalPollerOracle,)
 
 
 def test_every_contributed_activity_is_a_class() -> None:
@@ -71,4 +71,4 @@ def test_no_decorated_class_is_left_out_of_the_tuple() -> None:
 
 def test_the_decorated_class_is_found_at_all() -> None:
     """Guards the rule above against passing because it found nothing."""
-    assert decorated_in(activities) == {"TemporalPollerService"}
+    assert decorated_in(activities) == {"TemporalPollerOracle"}

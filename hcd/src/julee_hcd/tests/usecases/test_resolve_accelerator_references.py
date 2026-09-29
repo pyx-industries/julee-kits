@@ -1,15 +1,13 @@
 """Tests for resolve_accelerator_references use case."""
 
 import pytest
-from julee.core.entities.accelerator import (
-    Accelerator,
-    IntegrationReference,
-)
+from julee.core.entities.accelerator import Accelerator
 from julee.core.entities.bounded_context_info import (
     BoundedContextInfo,
     ClassInfo,
 )
 from julee.core.entities.text import Name, NonEmptyText, Slug
+from julee.core.values.accelerator import IntegrationReference
 
 from julee_hcd.domain.models.app import App, AppType
 from julee_hcd.domain.models.integration import Direction, Integration

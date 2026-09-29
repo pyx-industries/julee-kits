@@ -7,7 +7,7 @@ for different protocols and mechanisms.
 No re-exports to avoid import chains that pull non-deterministic code
 into Temporal workflows. Import directly from specific modules:
 
-- from julee_polling.infrastructure.services.polling.http import HttpPollerService
+- from julee_polling.infrastructure.services.polling.http import HttpPollerOracle
 """
 
 __all__ = []

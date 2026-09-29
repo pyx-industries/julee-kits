@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from temporalio.client import Client, ScheduleAlreadyRunningError
 
-from julee_polling.domain.models.polling_config import (
+from julee_polling.domain.values.polling_config import (
     PollingConfig,
     PollingProtocol,
 )

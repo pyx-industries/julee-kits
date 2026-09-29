@@ -13,7 +13,8 @@ import os
 
 from docutils import nodes
 from docutils.parsers.rst import directives
-from julee.core.entities.accelerator import Accelerator, IntegrationReference
+from julee.core.entities.accelerator import Accelerator
+from julee.core.values.accelerator import IntegrationReference
 
 from julee_hcd.domain.repositories import AcceleratorRepository
 from julee_hcd.usecases import (
