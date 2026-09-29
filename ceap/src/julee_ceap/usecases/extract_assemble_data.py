@@ -7,8 +7,6 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
-import json
-import logging
 from dataclasses import replace
 from typing import Any
 
@@ -39,7 +37,7 @@ from julee_ceap.domain.repositories import (
     KnowledgeServiceConfigRepository,
     KnowledgeServiceQueryRepository,
 )
-from julee_ceap.infrastructure.services.knowledge_service import (
+from julee_ceap.domain.services.knowledge_service import (
     KnowledgeService,
 )
 
@@ -47,8 +45,6 @@ from ..dtos.extract_assemble_data import (
     ExtractAssembleDataRequest,
     ExtractAssembleDataResponse,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class ExtractAssembleDataUseCase:
@@ -203,15 +199,6 @@ class ExtractAssembleDataUseCase:
 
         """
         execution_id = self._execution_witness.get_execution_id()
-        logger.debug(
-            "Starting data assembly use case",
-            extra={
-                "document_id": document_id,
-                "assembly_specification_id": assembly_specification_id,
-                "execution_id": execution_id,
-            },
-        )
-
         # Step 1: Generate unique assembly ID
         assembly_id = await self._generate_assembly_id(
             document_id, assembly_specification_id
@@ -235,14 +222,6 @@ class ExtractAssembleDataUseCase:
             updated_at=now,
         )
         await self.assembly_repo.save(assembly)
-
-        logger.debug(
-            "Initial assembly stored",
-            extra={
-                "assembly_id": assembly_id,
-                "status": assembly.status.value,
-            },
-        )
 
         # Step 4: Retrieve all knowledge service queries once
         queries = await self._retrieve_all_queries(assembly_specification)
@@ -270,29 +249,13 @@ class ExtractAssembleDataUseCase:
             )
             await self.assembly_repo.save(assembly)
 
-            logger.info(
-                "Assembly completed successfully",
-                extra={
-                    "assembly_id": assembly_id,
-                    "assembled_document_id": assembled_document_id,
-                },
-            )
-
             return assembly
 
-        except Exception as e:
+        except Exception:
             # Mark assembly as failed
             assembly = replace(assembly, status=AssemblyStatus.FAILED)
             await self.assembly_repo.save(assembly)
 
-            logger.error(
-                "Assembly failed",
-                extra={
-                    "assembly_id": assembly_id,
-                    "error": str(e),
-                },
-                exc_info=True,
-            )
             raise
 
     @try_use_case_step("document_registration")
@@ -601,12 +564,11 @@ class ExtractAssembleDataUseCase:
         # Generate document ID
         document_id = await self.document_repo.generate_id()
 
-        # Convert assembled data to JSON string
-        assembled_content = json.dumps(assembled_data, indent=2)
-
         # Store the content, then name it: the multihash comes back
-        # from the store rather than being computed here.
-        content_bytes = assembled_content.encode("utf-8")
+        # from the store rather than being computed here. Writing the
+        # data as JSON is the value's own business, so this does not
+        # import json to ask.
+        content_bytes = AssembledData(assembled_data).as_json_bytes()
         stored = await self.document_repo.store_content(content_bytes)
 
         now = self._clock_witness.now()

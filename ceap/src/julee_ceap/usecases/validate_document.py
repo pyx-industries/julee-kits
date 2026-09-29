@@ -7,11 +7,10 @@ remaining framework-agnostic. Dependencies are injected via repository
 instances following the Clean Architecture principles.
 """
 
-import json
-import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
 from datetime import datetime
+from typing import Any
 
 from julee.core.entities.text import NonEmptyText
 from julee.core.usecases.decorators import try_use_case_step
@@ -27,6 +26,7 @@ from julee_ceap.domain.models import (
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidationStatus,
 )
+from julee_ceap.domain.models.schema import AssembledData
 from julee_ceap.domain.repositories import (
     DocumentPolicyValidationRepository,
     DocumentRepository,
@@ -34,7 +34,7 @@ from julee_ceap.domain.repositories import (
     KnowledgeServiceQueryRepository,
     PolicyRepository,
 )
-from julee_ceap.infrastructure.services.knowledge_service import (
+from julee_ceap.domain.services.knowledge_service import (
     KnowledgeService,
 )
 
@@ -42,8 +42,6 @@ from ..dtos.validate_document import (
     ValidateDocumentRequest,
     ValidateDocumentResponse,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class ValidateDocumentUseCase:
@@ -171,14 +169,6 @@ class ValidateDocumentUseCase:
             RuntimeError: If validation processing fails
 
         """
-        logger.debug(
-            "Starting document validation use case",
-            extra={
-                "document_id": document_id,
-                "policy_id": policy_id,
-            },
-        )
-
         # Step 1: Generate unique validation ID
         validation_id = await self.document_policy_validation_repo.generate_id()
 
@@ -197,16 +187,6 @@ class ValidateDocumentUseCase:
         )
 
         await self.document_policy_validation_repo.save(validation)
-
-        logger.debug(
-            "Initial validation record created",
-            extra={
-                "validation_id": validation_id,
-                "document_id": document_id,
-                "policy_id": policy_id,
-                "status": validation.status.value,
-            },
-        )
 
         try:
             # Step 4: Update status to in progress
@@ -269,17 +249,6 @@ class ValidateDocumentUseCase:
 
                 await self.document_policy_validation_repo.save(validation)
 
-                logger.info(
-                    "Document validation completed without transformations",
-                    extra={
-                        "validation_id": validation_id,
-                        "document_id": document_id,
-                        "policy_id": policy_id,
-                        "passed": initial_passed,
-                        "validation_scores": validation_scores,
-                    },
-                )
-
                 return validation
 
             # Step 11: Initial validation failed and transformations are
@@ -289,16 +258,6 @@ class ValidateDocumentUseCase:
                 status=DocumentPolicyValidationStatus.TRANSFORMATION_REQUIRED,
             )
             await self.document_policy_validation_repo.save(validation)
-
-            logger.info(
-                "Initial validation failed, applying transformations",
-                extra={
-                    "validation_id": validation_id,
-                    "document_id": document_id,
-                    "policy_id": policy_id,
-                    "initial_scores": validation_scores,
-                },
-            )
 
             # Step 12: Apply transformations
             validation = replace(
@@ -369,19 +328,6 @@ class ValidateDocumentUseCase:
 
             await self.document_policy_validation_repo.save(validation)
 
-            logger.info(
-                "Document validation completed with transformations",
-                extra={
-                    "validation_id": validation_id,
-                    "document_id": document_id,
-                    "policy_id": policy_id,
-                    "passed": final_passed,
-                    "initial_scores": validation_scores,
-                    "final_scores": post_transform_validation_scores,
-                    "transformed_document_id": (transformed_document.document_id),
-                },
-            )
-
             return validation
 
         except Exception as e:
@@ -395,16 +341,6 @@ class ValidateDocumentUseCase:
             )
             await self.document_policy_validation_repo.save(validation)
 
-            logger.error(
-                "Document validation failed",
-                extra={
-                    "validation_id": validation_id,
-                    "document_id": document_id,
-                    "policy_id": policy_id,
-                    "error": str(e),
-                },
-                exc_info=True,
-            )
             raise
 
     @try_use_case_step("document_retrieval")
@@ -511,8 +447,11 @@ class ValidateDocumentUseCase:
         """
         validation_scores: list[tuple[NonEmptyText, int]] = []
 
-        # Execute each validation query defined in the policy
-        for query_id, required_score in policy.validation_scores:
+        # Execute each validation query defined in the policy. The
+        # required score is not read here: this loop records what each
+        # query actually scored, and comparing the two is the policy's
+        # own business further down. It was unpacked only to be logged.
+        for query_id, _required_score in policy.validation_scores:
             # Get the query configuration
             query = queries[query_id]
 
@@ -546,19 +485,9 @@ class ValidateDocumentUseCase:
             actual_score = self._extract_score_from_result(query_result.result_data)
             validation_scores.append((query_id, actual_score))
 
-            logger.debug(
-                "Validation query executed",
-                extra={
-                    "query_id": query_id,
-                    "required_score": required_score,
-                    "actual_score": actual_score,
-                    "passed": actual_score >= required_score,
-                },
-            )
-
         return tuple(validation_scores)
 
-    def _extract_score_from_result(self, result_data: dict) -> int:
+    def _extract_score_from_result(self, result_data: Mapping[str, Any]) -> int:
         """
         Extract a numeric score from the knowledge service query result.
 
@@ -604,14 +533,6 @@ class ValidateDocumentUseCase:
         for query_id, required_score in required_scores_dict.items():
             actual_score = actual_scores_dict.get(query_id, 0)
             if actual_score < required_score:
-                logger.debug(
-                    "Validation failed for query",
-                    extra={
-                        "query_id": query_id,
-                        "required_score": required_score,
-                        "actual_score": actual_score,
-                    },
-                )
                 return False
 
         return True
@@ -644,14 +565,6 @@ class ValidateDocumentUseCase:
         """
         if not policy.transformation_queries:
             raise ValueError("No transformation queries provided")
-
-        logger.debug(
-            "Applying transformations to document",
-            extra={
-                "document_id": document.document_id,
-                "transformation_query_ids": policy.transformation_queries,
-            },
-        )
 
         # Apply transformations sequentially. Content is read through
         # the repository rather than off the document: a fresh stream at
@@ -696,15 +609,6 @@ class ValidateDocumentUseCase:
                 transformation_result.result_data
             )
 
-            logger.debug(
-                "Transformation query applied",
-                extra={
-                    "query_id": query_id,
-                    "original_length": document.size_bytes,
-                    "transformed_length": len(transformed_content),
-                },
-            )
-
         # Create new document with transformed content
         transformed_document_id = await self.document_repo.generate_id()
 
@@ -729,19 +633,9 @@ class ValidateDocumentUseCase:
         # Save the transformed document
         await self.document_repo.save(transformed_document)
 
-        logger.info(
-            "Document transformation completed",
-            extra={
-                "original_document_id": document.document_id,
-                "transformed_document_id": transformed_document.document_id,
-                "original_size": document.size_bytes,
-                "transformed_size": transformed_document.size_bytes,
-            },
-        )
-
         return transformed_document
 
-    def _extract_transformed_content(self, result_data: dict) -> str:
+    def _extract_transformed_content(self, result_data: Mapping[str, Any]) -> str:
         """
         Extract transformed document content from knowledge service result.
 
@@ -756,19 +650,11 @@ class ValidateDocumentUseCase:
             ValueError: If no valid JSON content can be extracted from result
 
         """
-        response_text = result_data.get("response", "")
-        if not response_text:
-            raise ValueError("Empty response from transformation query")
+        response_text: str = result_data.get("response", "")
 
-        # The response must be valid JSON
-        stripped_response: str = response_text.strip()
-        try:
-            # Parse to validate JSON structure
-            json.loads(stripped_response)
-            # Return the original response text (preserving formatting)
-            return stripped_response
-        except json.JSONDecodeError as e:
-            raise ValueError(
-                f"Transformation result must be valid JSON, got: "
-                f"{response_text[:100]}... Parse error: {e}"
-            )
+        # Asked of AssembledData, which is what the text has to describe.
+        # The original text is returned rather than what was parsed,
+        # because the caller stores it and re-writing it would change the
+        # bytes and so the multihash.
+        AssembledData.of_json_text(response_text)
+        return response_text.strip()
