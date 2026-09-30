@@ -1,6 +1,11 @@
-"""Use case for resolving accelerator references.
+"""What an accelerator is connected to, worked out from the rest.
 
-Finds apps, stories, journeys, and integrations related to an accelerator.
+The entity is the kernel's, :class:`julee.core.entities.accelerator.Accelerator`;
+hcd does not declare one of its own, so these functions have a module
+rather than a seat on an entity file. They are pure: entities in,
+entities out, no port reached. They lived beside a use case that did
+nothing but call them, and an adapter imported a use case package to
+reach them.
 """
 
 from julee.core.entities.accelerator import Accelerator
@@ -8,15 +13,10 @@ from julee.core.entities.bounded_context_info import BoundedContextInfo
 from julee.core.utils import normalize_name
 from julee.core.values.text import Slug
 
-from julee_hcd.domain.models.app import App
-from julee_hcd.domain.models.integration import Integration
-from julee_hcd.domain.models.journey import Journey
-from julee_hcd.domain.models.story import Story
-
-from ..dtos.resolve_accelerator_references import (
-    ResolveAcceleratorReferencesRequest,
-    ResolveAcceleratorReferencesResponse,
-)
+from .app import App
+from .integration import Integration
+from .journey import Journey
+from .story import Story
 
 
 def get_apps_for_accelerator(
@@ -215,53 +215,3 @@ def get_code_info_for_accelerator(
             return info
 
     return None
-
-
-class ResolveAcceleratorReferencesUseCase:
-    """Resolve everything an accelerator is connected to at once.
-
-    An accelerator's page draws on eight relationships: the apps that use
-    it, the stories and journeys those apps carry, the integrations it
-    sources from and publishes to, the accelerators on either side of it,
-    and the code its bounded context contains.
-    """
-
-    async def execute(
-        self, request: ResolveAcceleratorReferencesRequest
-    ) -> ResolveAcceleratorReferencesResponse:
-        """Resolve an accelerator's references.
-
-        Args:
-            request: The accelerator, and the entities to search
-
-        Returns:
-            The apps, stories, journeys, integrations, neighbouring
-            accelerators and code information connected to it
-        """
-        accelerator = request.accelerator
-        apps = list(request.apps)
-        stories = list(request.stories)
-        return ResolveAcceleratorReferencesResponse(
-            apps=tuple(get_apps_for_accelerator(accelerator, apps)),
-            stories=tuple(get_stories_for_accelerator(accelerator, apps, stories)),
-            journeys=tuple(
-                get_journeys_for_accelerator(
-                    accelerator, apps, stories, list(request.journeys)
-                )
-            ),
-            source_integrations=tuple(
-                get_source_integrations(accelerator, list(request.integrations))
-            ),
-            publish_integrations=tuple(
-                get_publish_integrations(accelerator, list(request.integrations))
-            ),
-            dependents=tuple(
-                get_dependent_accelerators(accelerator, list(request.accelerators))
-            ),
-            fed_by=tuple(
-                get_fed_by_accelerators(accelerator, list(request.accelerators))
-            ),
-            code_info=get_code_info_for_accelerator(
-                accelerator, list(request.code_infos)
-            ),
-        )

@@ -14,8 +14,8 @@ from collections import defaultdict
 from docutils import nodes
 from julee.core.utils import normalize_name, slugify
 
-from julee_hcd.domain.models.story import Story
-from julee_hcd.usecases import (
+from julee_hcd.domain.models.story import (
+    Story,
     get_epics_for_story,
     get_journeys_for_story,
 )
