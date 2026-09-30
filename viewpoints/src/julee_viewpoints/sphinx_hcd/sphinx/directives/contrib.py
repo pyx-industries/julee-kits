@@ -11,7 +11,7 @@ from docutils.parsers.rst import directives
 from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.contrib import ContribModule
-from julee_hcd.domain.repositories import ContribRepository
+from julee_hcd.domain.repositories.contrib import ContribRepository
 
 from ...utils import path_to_root
 from .base import HCDDirective

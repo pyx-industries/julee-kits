@@ -507,7 +507,7 @@ def build_persona_index(docname: str, hcd_context) -> list[nodes.Node]:
 
 def clear_persona_state(app, env, docname):
     """Clear persona state when a document is re-read."""
-    from julee_hcd.domain.repositories import PersonaRepository
+    from julee_hcd.domain.repositories.persona import PersonaRepository
 
     from ..context import get_hcd_context
 

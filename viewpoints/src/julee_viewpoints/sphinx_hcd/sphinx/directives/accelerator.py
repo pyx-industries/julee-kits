@@ -23,7 +23,7 @@ from julee_hcd.domain.models.accelerator import (
     get_publish_integrations,
     get_source_integrations,
 )
-from julee_hcd.domain.repositories import AcceleratorRepository
+from julee_hcd.domain.repositories.accelerator import AcceleratorRepository
 
 from ...utils import (
     parse_integration_options,
