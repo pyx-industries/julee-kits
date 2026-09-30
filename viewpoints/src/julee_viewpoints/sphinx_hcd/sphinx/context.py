@@ -13,17 +13,21 @@ from julee_hcd.domain.repositories.contrib import ContribRepository
 from julee_hcd.domain.repositories.epic import EpicRepository
 from julee_hcd.domain.repositories.journey import JourneyRepository
 from julee_hcd.domain.repositories.persona import PersonaRepository
-from julee_hcd.infrastructure.repositories.memory import (
+from julee_hcd.infrastructure.repositories.memory.accelerator import (
     MemoryAcceleratorRepository,
-    MemoryAppRepository,
-    MemoryCodeInfoRepository,
-    MemoryContribRepository,
-    MemoryEpicRepository,
-    MemoryIntegrationRepository,
-    MemoryJourneyRepository,
-    MemoryPersonaRepository,
-    MemoryStoryRepository,
 )
+from julee_hcd.infrastructure.repositories.memory.app import MemoryAppRepository
+from julee_hcd.infrastructure.repositories.memory.code_info import (
+    MemoryCodeInfoRepository,
+)
+from julee_hcd.infrastructure.repositories.memory.contrib import MemoryContribRepository
+from julee_hcd.infrastructure.repositories.memory.epic import MemoryEpicRepository
+from julee_hcd.infrastructure.repositories.memory.integration import (
+    MemoryIntegrationRepository,
+)
+from julee_hcd.infrastructure.repositories.memory.journey import MemoryJourneyRepository
+from julee_hcd.infrastructure.repositories.memory.persona import MemoryPersonaRepository
+from julee_hcd.infrastructure.repositories.memory.story import MemoryStoryRepository
 
 from .adapters import SyncRepositoryAdapter
 
