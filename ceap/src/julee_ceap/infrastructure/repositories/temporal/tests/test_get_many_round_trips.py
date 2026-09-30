@@ -20,10 +20,10 @@ from dataclasses import dataclass
 import pytest
 from julee.core.values.text import Name, NonEmptyText
 from julee.integrations.temporal.activities import collect_activities_from_instances
-from julee.integrations.temporal.data_converter import temporal_data_converter
 from julee.integrations.temporal.decorators import temporal_activity_registration
 from temporalio import workflow
 from temporalio.client import Client
+from temporalio.contrib.pydantic import pydantic_data_converter
 from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
 
@@ -90,7 +90,7 @@ class AskForQueries:
 async def env() -> AsyncIterator[WorkflowEnvironment]:
     """A time-skipping Temporal with the converter ceap's worker uses."""
     async with await WorkflowEnvironment.start_time_skipping(
-        data_converter=temporal_data_converter
+        data_converter=pydantic_data_converter
     ) as started:
         yield started
 
