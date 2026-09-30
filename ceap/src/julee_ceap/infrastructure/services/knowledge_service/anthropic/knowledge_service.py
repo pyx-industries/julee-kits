@@ -21,7 +21,7 @@ from typing import Any
 from anthropic import AsyncAnthropic
 from julee.core.observability import log_extra
 
-from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
 )

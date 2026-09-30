@@ -20,7 +20,7 @@ from julee.integrations.minio.client import MinioClient, MinioRepositoryMixin
 from minio.error import S3Error
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 
-from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.document import Document
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import (
     ContentMultihash,
