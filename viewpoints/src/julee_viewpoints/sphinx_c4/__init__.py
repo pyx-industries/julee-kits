@@ -42,39 +42,54 @@ Usage in conf.py::
 
 from sphinx.util import logging
 
-from .sphinx.context import ensure_c4_context
-from .sphinx.directives import (
+from julee_viewpoints.sphinx_c4.sphinx.directives.component import (
+    DefineComponentDirective,
+)
+from julee_viewpoints.sphinx_c4.sphinx.directives.container import (
+    DefineContainerDirective,
+)
+from julee_viewpoints.sphinx_c4.sphinx.directives.deployment_node import (
+    DefineDeploymentNodeDirective,
+)
+from julee_viewpoints.sphinx_c4.sphinx.directives.diagrams import (
     ComponentDiagramDirective,
     ComponentDiagramPlaceholder,
-    ComponentIndexDirective,
-    ComponentIndexPlaceholder,
     ContainerDiagramDirective,
     ContainerDiagramPlaceholder,
-    ContainerIndexDirective,
-    ContainerIndexPlaceholder,
-    DefineComponentDirective,
-    DefineContainerDirective,
-    DefineDeploymentNodeDirective,
-    DefineDynamicStepDirective,
-    DefineRelationshipDirective,
-    DefineSoftwareSystemDirective,
     DeploymentDiagramDirective,
     DeploymentDiagramPlaceholder,
-    DeploymentNodeIndexDirective,
-    DeploymentNodeIndexPlaceholder,
     DynamicDiagramDirective,
     DynamicDiagramPlaceholder,
-    RelationshipIndexDirective,
-    RelationshipIndexPlaceholder,
-    SoftwareSystemIndexDirective,
-    SoftwareSystemIndexPlaceholder,
     SystemContextDiagramDirective,
     SystemContextDiagramPlaceholder,
     SystemLandscapeDiagramDirective,
     SystemLandscapeDiagramPlaceholder,
     process_c4_diagram_placeholders,
+)
+from julee_viewpoints.sphinx_c4.sphinx.directives.dynamic_step import (
+    DefineDynamicStepDirective,
+)
+from julee_viewpoints.sphinx_c4.sphinx.directives.indexes import (
+    ComponentIndexDirective,
+    ComponentIndexPlaceholder,
+    ContainerIndexDirective,
+    ContainerIndexPlaceholder,
+    DeploymentNodeIndexDirective,
+    DeploymentNodeIndexPlaceholder,
+    RelationshipIndexDirective,
+    RelationshipIndexPlaceholder,
+    SoftwareSystemIndexDirective,
+    SoftwareSystemIndexPlaceholder,
     process_c4_index_placeholders,
 )
+from julee_viewpoints.sphinx_c4.sphinx.directives.relationship import (
+    DefineRelationshipDirective,
+)
+from julee_viewpoints.sphinx_c4.sphinx.directives.software_system import (
+    DefineSoftwareSystemDirective,
+)
+
+from .sphinx.context import ensure_c4_context
 
 logger = logging.getLogger(__name__)
 
