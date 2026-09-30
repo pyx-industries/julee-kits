@@ -8,19 +8,21 @@ from julee_c4.domain.models.relationship import (
     ElementType,
     Relationship,
 )
+from julee_c4.dtos.crud_relationship import (
+    CreateRelationshipRequest,
+    DeleteRelationshipRequest,
+    GetRelationshipRequest,
+    ListRelationshipsRequest,
+    UpdateRelationshipRequest,
+)
 from julee_c4.infrastructure.repositories.memory.relationship import (
     MemoryRelationshipRepository,
 )
-from julee_c4.usecases.crud import (
-    CreateRelationshipRequest,
+from julee_c4.usecases.crud_relationship import (
     CreateRelationshipUseCase,
-    DeleteRelationshipRequest,
     DeleteRelationshipUseCase,
-    GetRelationshipRequest,
     GetRelationshipUseCase,
-    ListRelationshipsRequest,
     ListRelationshipsUseCase,
-    UpdateRelationshipRequest,
     UpdateRelationshipUseCase,
 )
 

@@ -5,19 +5,21 @@ from julee.core.usecases.generic_crud import EntityNotFoundError
 from julee.core.values.text import Name, Slug
 
 from julee_c4.domain.models.component import Component
+from julee_c4.dtos.crud_component import (
+    CreateComponentRequest,
+    DeleteComponentRequest,
+    GetComponentRequest,
+    ListComponentsRequest,
+    UpdateComponentRequest,
+)
 from julee_c4.infrastructure.repositories.memory.component import (
     MemoryComponentRepository,
 )
-from julee_c4.usecases.crud import (
-    CreateComponentRequest,
+from julee_c4.usecases.crud_component import (
     CreateComponentUseCase,
-    DeleteComponentRequest,
     DeleteComponentUseCase,
-    GetComponentRequest,
     GetComponentUseCase,
-    ListComponentsRequest,
     ListComponentsUseCase,
-    UpdateComponentRequest,
     UpdateComponentUseCase,
 )
 
