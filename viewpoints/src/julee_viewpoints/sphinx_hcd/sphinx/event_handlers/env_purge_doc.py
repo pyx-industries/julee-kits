@@ -3,13 +3,13 @@
 Clears document-specific state when a document is re-read.
 """
 
-from ..directives import (
+from julee_viewpoints.sphinx_hcd.sphinx.directives.accelerator import (
     clear_accelerator_state,
-    clear_contrib_state,
-    clear_epic_state,
-    clear_journey_state,
-    clear_persona_state,
 )
+from julee_viewpoints.sphinx_hcd.sphinx.directives.contrib import clear_contrib_state
+from julee_viewpoints.sphinx_hcd.sphinx.directives.epic import clear_epic_state
+from julee_viewpoints.sphinx_hcd.sphinx.directives.journey import clear_journey_state
+from julee_viewpoints.sphinx_hcd.sphinx.directives.persona import clear_persona_state
 
 
 def on_env_purge_doc(app, env, docname):

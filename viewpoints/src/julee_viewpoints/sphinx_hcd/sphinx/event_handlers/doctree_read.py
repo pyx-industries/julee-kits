@@ -4,8 +4,8 @@ Processes placeholders that need to be replaced after all directives
 in a document have been parsed but before the doctree is pickled.
 """
 
-from ..directives import (
-    process_journey_steps,
+from julee_viewpoints.sphinx_hcd.sphinx.directives.journey import process_journey_steps
+from julee_viewpoints.sphinx_hcd.sphinx.directives.story import (
     process_story_seealso_placeholders,
 )
 

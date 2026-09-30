@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 def setup(app):
     """Set up all HCD extensions for Sphinx."""
-    from .sphinx.directives import (
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.accelerator import (
         AcceleratorDependencyDiagramDirective,
         AcceleratorDependencyDiagramPlaceholder,
         AcceleratorIndexDirective,
@@ -53,62 +53,69 @@ def setup(app):
         AcceleratorsForAppDirective,
         AcceleratorsForAppPlaceholder,
         AcceleratorStatusDirective,
+        DefineAcceleratorDirective,
+        DefineAcceleratorPlaceholder,
+        DependentAcceleratorsDirective,
+        DependentAcceleratorsPlaceholder,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.app import (
         AppIndexDirective,
         AppIndexPlaceholder,
         AppsForPersonaDirective,
         AppsForPersonaPlaceholder,
-        # Contrib directives
-        ContribIndexDirective,
-        ContribIndexPlaceholder,
-        ContribListDirective,
-        ContribListPlaceholder,
-        # Accelerator directives
-        DefineAcceleratorDirective,
-        DefineAcceleratorPlaceholder,
-        # App directives
         DefineAppDirective,
         DefineAppPlaceholder,
-        DefineContribDirective,
-        # Epic directives
-        DefineEpicDirective,
-        # Integration directives
-        DefineIntegrationDirective,
-        DefineIntegrationPlaceholder,
-        # Journey directives
-        DefineJourneyDirective,
-        # Persona directives
-        DefinePersonaDirective,
-        DependentAcceleratorsDirective,
-        DependentAcceleratorsPlaceholder,
-        EpicIndexDirective,
-        EpicIndexPlaceholder,
-        EpicsForPersonaDirective,
-        EpicsForPersonaPlaceholder,
-        EpicStoryDirective,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.base import (
         GherkinAppStoriesDirective,
         GherkinStoriesDirective,
         GherkinStoriesForAppDirective,
         GherkinStoriesForPersonaDirective,
         GherkinStoriesIndexDirective,
-        # Story deprecated aliases
         GherkinStoryDirective,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.contrib import (
+        ContribIndexDirective,
+        ContribIndexPlaceholder,
+        ContribListDirective,
+        ContribListPlaceholder,
+        DefineContribDirective,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.epic import (
+        DefineEpicDirective,
+        EpicIndexDirective,
+        EpicIndexPlaceholder,
+        EpicsForPersonaDirective,
+        EpicsForPersonaPlaceholder,
+        EpicStoryDirective,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.integration import (
+        DefineIntegrationDirective,
+        DefineIntegrationPlaceholder,
         IntegrationIndexDirective,
         IntegrationIndexPlaceholder,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.journey import (
+        DefineJourneyDirective,
         JourneyDependencyGraphDirective,
         JourneyDependencyGraphPlaceholder,
         JourneyIndexDirective,
         JourneysForPersonaDirective,
+        StepEpicDirective,
+        StepPhaseDirective,
+        StepStoryDirective,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.persona import (
+        DefinePersonaDirective,
         PersonaDiagramDirective,
         PersonaDiagramPlaceholder,
         PersonaIndexDiagramDirective,
         PersonaIndexDiagramPlaceholder,
         PersonaIndexDirective,
         PersonaIndexPlaceholder,
-        StepEpicDirective,
-        StepPhaseDirective,
-        StepStoryDirective,
+    )
+    from julee_viewpoints.sphinx_hcd.sphinx.directives.story import (
         StoriesDirective,
-        # Story directives
         StoryAppDirective,
         StoryIndexDirective,
         StoryListForAppDirective,
@@ -116,6 +123,7 @@ def setup(app):
         StoryRefDirective,
         StorySeeAlsoPlaceholder,
     )
+
     from .sphinx.event_handlers import (
         on_builder_inited,
         on_doctree_read,
