@@ -90,6 +90,13 @@ class Document:
     created_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime | None = field(default_factory=lambda: datetime.now(UTC))
 
+    # FIXME: probably cruft. Nothing in the estate has ever written a key
+    # into this: every Document construction leaves it at {}, no request
+    # accepts it, and the API response passes the empty object through.
+    # It is persisted into every stored document and sent to every client
+    # as {}. Removing it changes the API contract by one always-empty
+    # field, which is why it waits until a third-party solution is being
+    # refactored and can be checked for a reader.
     additional_metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
