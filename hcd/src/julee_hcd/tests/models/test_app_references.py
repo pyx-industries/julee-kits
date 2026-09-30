@@ -1,6 +1,7 @@
 """What of a solution belongs to one app.
 
-These tested four functions that lived in usecases/resolve_app_references.py.
+These tested four functions that lived beside a use case, since removed:
+it reached no port, did no I/O, and nothing but its own test called it.
 They are in the domain now, with the entities they are about — three with
 App, and get_personas_for_app with Persona, because persona.py already
 imports app.py and the reverse would be a cycle.
