@@ -17,10 +17,8 @@ from temporalio.client import Client
 from temporalio.service import RPCError
 from temporalio.worker import Worker
 
-from julee_ceap.apps.worker import (
-    ExtractAssembleWorkflow,
-    ValidateDocumentWorkflow,
-)
+from julee_ceap.apps.worker.extract_assemble import ExtractAssembleWorkflow
+from julee_ceap.apps.worker.validate_document import ValidateDocumentWorkflow
 from julee_ceap.infrastructure.repositories.temporal.activities import (
     TemporalMinioAssemblyRepository,
     TemporalMinioAssemblySpecificationRepository,
