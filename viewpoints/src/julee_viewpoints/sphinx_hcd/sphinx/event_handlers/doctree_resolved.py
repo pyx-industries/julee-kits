@@ -3,13 +3,21 @@
 Processes placeholders that need cross-document data (all documents read).
 """
 
-from ..directives import (
+from julee_viewpoints.sphinx_hcd.sphinx.directives.accelerator import (
     process_accelerator_placeholders,
-    process_app_placeholders,
+)
+from julee_viewpoints.sphinx_hcd.sphinx.directives.app import process_app_placeholders
+from julee_viewpoints.sphinx_hcd.sphinx.directives.contrib import (
     process_contrib_placeholders,
-    process_dependency_graph_placeholder,
-    process_epic_placeholders,
+)
+from julee_viewpoints.sphinx_hcd.sphinx.directives.epic import process_epic_placeholders
+from julee_viewpoints.sphinx_hcd.sphinx.directives.integration import (
     process_integration_placeholders,
+)
+from julee_viewpoints.sphinx_hcd.sphinx.directives.journey import (
+    process_dependency_graph_placeholder,
+)
+from julee_viewpoints.sphinx_hcd.sphinx.directives.persona import (
     process_persona_placeholders,
 )
 
