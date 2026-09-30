@@ -18,7 +18,7 @@ import uuid
 
 from julee.integrations.minio.client import MinioClient, MinioRepositoryMixin
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.repositories.knowledge_service_query import (

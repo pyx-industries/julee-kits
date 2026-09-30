@@ -19,8 +19,10 @@ pydantic used to paper over.
 
 from typing import Protocol, runtime_checkable
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
+)
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig

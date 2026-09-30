@@ -13,7 +13,7 @@ import pytest
 from julee.core.values.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.values.query_metadata import QueryMetadata
