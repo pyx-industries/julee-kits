@@ -33,15 +33,13 @@ if TYPE_CHECKING:
     from julee.core.entities.accelerator import Accelerator
     from julee.core.entities.bounded_context_info import BoundedContextInfo
 
-    from julee_hcd.domain.models import (
-        App,
-        ContribModule,
-        Epic,
-        Integration,
-        Journey,
-        Persona,
-        Story,
-    )
+    from julee_hcd.domain.models.app import App
+    from julee_hcd.domain.models.contrib import ContribModule
+    from julee_hcd.domain.models.epic import Epic
+    from julee_hcd.domain.models.integration import Integration
+    from julee_hcd.domain.models.journey import Journey
+    from julee_hcd.domain.models.persona import Persona
+    from julee_hcd.domain.models.story import Story
 
 
 @dataclass

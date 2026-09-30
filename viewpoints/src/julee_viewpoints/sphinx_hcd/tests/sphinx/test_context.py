@@ -4,13 +4,10 @@ import pytest
 from julee.core.entities.accelerator import Accelerator
 from julee.core.values.text import Name, NonEmptyText, Slug
 
-from julee_hcd.domain.models import (
-    App,
-    AppType,
-    Epic,
-    Journey,
-    Story,
-)
+from julee_hcd.domain.models.app import App, AppType
+from julee_hcd.domain.models.epic import Epic
+from julee_hcd.domain.models.journey import Journey
+from julee_hcd.domain.models.story import Story
 from julee_viewpoints.sphinx_hcd.sphinx.context import (
     HCDContext,
     ensure_hcd_context,
