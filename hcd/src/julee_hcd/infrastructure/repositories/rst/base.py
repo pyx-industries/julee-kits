@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Generic, TypeVar
 
 from julee_hcd.domain.models.base import Authored
-from julee_hcd.infrastructure.handlers import EntityHandler
+from julee_hcd.infrastructure.handlers.base import EntityHandler
 from julee_hcd.infrastructure.repositories.memory.base import (
     MemoryHcdRepository,
 )
