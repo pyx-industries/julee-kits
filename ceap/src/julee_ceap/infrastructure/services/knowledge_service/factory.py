@@ -14,11 +14,8 @@ from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config 
 )
 from julee_ceap.domain.services.knowledge_service import KnowledgeService
 from julee_ceap.domain.values.query_metadata import QueryMetadata
+from julee_ceap.domain.values.query_result import FileRegistrationResult, QueryResult
 from julee_ceap.domain.values.schema import JsonSchema
-from julee_ceap.infrastructure.services.knowledge_service import (
-    FileRegistrationResult,
-    QueryResult,
-)
 
 from .anthropic import AnthropicKnowledgeService
 
@@ -121,7 +118,9 @@ def knowledge_service_factory(
         )
 
     # Validate that the service satisfies the protocol
-    from . import ensure_knowledge_service
+    from julee_ceap.infrastructure.services.knowledge_service import (
+        ensure_knowledge_service,
+    )
 
     validated_service = ensure_knowledge_service(service)
 

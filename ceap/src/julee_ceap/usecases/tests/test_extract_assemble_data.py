@@ -29,7 +29,7 @@ from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config 
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.query_metadata import QueryMetadata
-from julee_ceap.domain.values.query_result import StructuredAnswer
+from julee_ceap.domain.values.query_result import QueryResult, StructuredAnswer
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.infrastructure.calculators.schema import (
     LibrarySchemaCalculator,
@@ -55,7 +55,6 @@ from julee_ceap.infrastructure.repositories.memory.knowledge_service_query impor
 from julee_ceap.infrastructure.repositories.memory.schema_oracle import (
     MemorySchemaOracle,
 )
-from julee_ceap.infrastructure.services.knowledge_service import QueryResult
 from julee_ceap.infrastructure.services.knowledge_service.memory import (
     MemoryKnowledgeService,
 )
