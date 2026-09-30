@@ -12,8 +12,8 @@ into Temporal's history.
 
 from pydantic import BaseModel
 
-from julee_ceap.domain.models import DocumentPolicyValidation
 from julee_ceap.domain.models.policy.document_policy_validation import (
+    DocumentPolicyValidation,
     DocumentPolicyValidationStatus,
 )
 

@@ -12,13 +12,14 @@ from unittest.mock import AsyncMock
 import pytest
 from julee.core.values.text import Name, NonEmptyText
 
-from julee_ceap.domain.models import (
-    Document,
-    DocumentStatus,
-    KnowledgeServiceConfig,
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.document.document import Document, DocumentStatus
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
+    KnowledgeServiceConfig,
+)
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidation,
     DocumentPolicyValidationStatus,

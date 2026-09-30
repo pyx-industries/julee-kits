@@ -13,17 +13,19 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from julee.core.values.text import Name, NonEmptyText
 
-from julee_ceap.domain.models import (
-    Assembly,
+from julee_ceap.domain.models.assembly.assembly import Assembly, AssemblyStatus
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
-    AssemblyStatus,
-    Document,
-    DocumentStatus,
-    KnowledgeServiceConfig,
+)
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.document.document import Document, DocumentStatus
 from julee_ceap.domain.models.knowledge_service_config import ServiceApi
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
+    KnowledgeServiceConfig,
+)
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.query_metadata import QueryMetadata

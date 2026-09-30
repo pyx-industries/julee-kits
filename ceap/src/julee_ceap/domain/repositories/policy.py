@@ -31,7 +31,7 @@ from typing import Protocol, runtime_checkable
 
 from julee.core.repositories.base import BaseRepository
 
-from julee_ceap.domain.models import Policy
+from julee_ceap.domain.models.policy.policy import Policy
 
 
 @runtime_checkable

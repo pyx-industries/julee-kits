@@ -18,14 +18,14 @@ from julee.core.witnesses.clock import ClockWitness, SystemClockWitness
 from julee.core.witnesses.execution import DefaultExecutionWitness, ExecutionWitness
 
 from julee_ceap.domain.calculators.schema import SchemaCalculator
-from julee_ceap.domain.models import (
-    Assembly,
+from julee_ceap.domain.models.assembly.assembly import Assembly, AssemblyStatus
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
-    AssemblyStatus,
-    Document,
-    DocumentStatus,
+)
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
+from julee_ceap.domain.models.document.document import Document, DocumentStatus
 from julee_ceap.domain.oracles import SchemaOracle
 from julee_ceap.domain.repositories import (
     AssemblyRepository,

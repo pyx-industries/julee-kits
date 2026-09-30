@@ -15,16 +15,17 @@ from julee.core.usecases.decorators import try_use_case_step
 from julee.core.validation.repository import ensure_repository_protocol
 from julee.core.values.text import NonEmptyText
 
-from julee_ceap.domain.models import (
-    Document,
-    DocumentPolicyValidation,
-    DocumentStatus,
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
-    Policy,
 )
+from julee_ceap.domain.models.document.document import Document, DocumentStatus
 from julee_ceap.domain.models.policy import (
     DocumentPolicyValidationStatus,
 )
+from julee_ceap.domain.models.policy.document_policy_validation import (
+    DocumentPolicyValidation,
+)
+from julee_ceap.domain.models.policy.policy import Policy
 from julee_ceap.domain.repositories import (
     DocumentPolicyValidationRepository,
     DocumentRepository,
