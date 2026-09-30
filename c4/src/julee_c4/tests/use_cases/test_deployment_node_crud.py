@@ -8,19 +8,21 @@ from julee_c4.domain.models.deployment_node import (
     DeploymentNode,
     NodeType,
 )
+from julee_c4.dtos.crud_deployment_node import (
+    CreateDeploymentNodeRequest,
+    DeleteDeploymentNodeRequest,
+    GetDeploymentNodeRequest,
+    ListDeploymentNodesRequest,
+    UpdateDeploymentNodeRequest,
+)
 from julee_c4.infrastructure.repositories.memory.deployment_node import (
     MemoryDeploymentNodeRepository,
 )
-from julee_c4.usecases.crud import (
-    CreateDeploymentNodeRequest,
+from julee_c4.usecases.crud_deployment_node import (
     CreateDeploymentNodeUseCase,
-    DeleteDeploymentNodeRequest,
     DeleteDeploymentNodeUseCase,
-    GetDeploymentNodeRequest,
     GetDeploymentNodeUseCase,
-    ListDeploymentNodesRequest,
     ListDeploymentNodesUseCase,
-    UpdateDeploymentNodeRequest,
     UpdateDeploymentNodeUseCase,
 )
 

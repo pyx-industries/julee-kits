@@ -6,19 +6,21 @@ from julee.core.values.text import Name, Slug
 
 from julee_c4.domain.models.dynamic_step import DynamicStep
 from julee_c4.domain.models.relationship import ElementType
+from julee_c4.dtos.crud_dynamic_step import (
+    CreateDynamicStepRequest,
+    DeleteDynamicStepRequest,
+    GetDynamicStepRequest,
+    ListDynamicStepsRequest,
+    UpdateDynamicStepRequest,
+)
 from julee_c4.infrastructure.repositories.memory.dynamic_step import (
     MemoryDynamicStepRepository,
 )
-from julee_c4.usecases.crud import (
-    CreateDynamicStepRequest,
+from julee_c4.usecases.crud_dynamic_step import (
     CreateDynamicStepUseCase,
-    DeleteDynamicStepRequest,
     DeleteDynamicStepUseCase,
-    GetDynamicStepRequest,
     GetDynamicStepUseCase,
-    ListDynamicStepsRequest,
     ListDynamicStepsUseCase,
-    UpdateDynamicStepRequest,
     UpdateDynamicStepUseCase,
 )
 

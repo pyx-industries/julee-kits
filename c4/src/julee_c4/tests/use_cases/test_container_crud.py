@@ -8,19 +8,21 @@ from julee_c4.domain.models.container import (
     Container,
     ContainerType,
 )
+from julee_c4.dtos.crud_container import (
+    CreateContainerRequest,
+    DeleteContainerRequest,
+    GetContainerRequest,
+    ListContainersRequest,
+    UpdateContainerRequest,
+)
 from julee_c4.infrastructure.repositories.memory.container import (
     MemoryContainerRepository,
 )
-from julee_c4.usecases.crud import (
-    CreateContainerRequest,
+from julee_c4.usecases.crud_container import (
     CreateContainerUseCase,
-    DeleteContainerRequest,
     DeleteContainerUseCase,
-    GetContainerRequest,
     GetContainerUseCase,
-    ListContainersRequest,
     ListContainersUseCase,
-    UpdateContainerRequest,
     UpdateContainerUseCase,
 )
 

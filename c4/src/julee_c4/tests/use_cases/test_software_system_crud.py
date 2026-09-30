@@ -8,19 +8,21 @@ from julee_c4.domain.models.software_system import (
     SoftwareSystem,
     SystemType,
 )
+from julee_c4.dtos.crud_software_system import (
+    CreateSoftwareSystemRequest,
+    DeleteSoftwareSystemRequest,
+    GetSoftwareSystemRequest,
+    ListSoftwareSystemsRequest,
+    UpdateSoftwareSystemRequest,
+)
 from julee_c4.infrastructure.repositories.memory.software_system import (
     MemorySoftwareSystemRepository,
 )
-from julee_c4.usecases.crud import (
-    CreateSoftwareSystemRequest,
+from julee_c4.usecases.crud_software_system import (
     CreateSoftwareSystemUseCase,
-    DeleteSoftwareSystemRequest,
     DeleteSoftwareSystemUseCase,
-    GetSoftwareSystemRequest,
     GetSoftwareSystemUseCase,
-    ListSoftwareSystemsRequest,
     ListSoftwareSystemsUseCase,
-    UpdateSoftwareSystemRequest,
     UpdateSoftwareSystemUseCase,
 )
 
