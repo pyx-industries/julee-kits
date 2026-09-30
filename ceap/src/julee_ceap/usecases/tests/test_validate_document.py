@@ -28,13 +28,19 @@ from julee_ceap.domain.models.policy.policy import Policy, PolicyStatus
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.query_metadata import QueryMetadata
-from julee_ceap.infrastructure.repositories.memory import (
-    MemoryDocumentPolicyValidationRepository,
+from julee_ceap.infrastructure.repositories.memory.document import (
     MemoryDocumentRepository,
-    MemoryKnowledgeServiceConfigRepository,
-    MemoryKnowledgeServiceQueryRepository,
-    MemoryPolicyRepository,
 )
+from julee_ceap.infrastructure.repositories.memory.document_policy_validation import (
+    MemoryDocumentPolicyValidationRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.knowledge_service_config import (
+    MemoryKnowledgeServiceConfigRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.knowledge_service_query import (
+    MemoryKnowledgeServiceQueryRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.policy import MemoryPolicyRepository
 from julee_ceap.infrastructure.services.knowledge_service import QueryResult
 from julee_ceap.infrastructure.services.knowledge_service.memory import (
     MemoryKnowledgeService,

@@ -37,12 +37,22 @@ from julee_ceap.infrastructure.calculators.schema import (
 from julee_ceap.infrastructure.repositories.http.schema import (
     HttpSchemaOracle,
 )
-from julee_ceap.infrastructure.repositories.memory import (
+from julee_ceap.infrastructure.repositories.memory.assembly import (
     MemoryAssemblyRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.assembly_specification import (
     MemoryAssemblySpecificationRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.document import (
     MemoryDocumentRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.knowledge_service_config import (
     MemoryKnowledgeServiceConfigRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.knowledge_service_query import (
     MemoryKnowledgeServiceQueryRepository,
+)
+from julee_ceap.infrastructure.repositories.memory.schema_oracle import (
     MemorySchemaOracle,
 )
 from julee_ceap.infrastructure.services.knowledge_service import QueryResult
