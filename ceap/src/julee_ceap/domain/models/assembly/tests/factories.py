@@ -12,10 +12,7 @@ from factory.base import Factory
 from factory.declarations import LazyFunction
 from julee.core.values.text import NonEmptyText
 
-from julee_ceap.domain.models.assembly import (
-    Assembly,
-    AssemblyStatus,
-)
+from julee_ceap.domain.models.assembly.assembly import Assembly, AssemblyStatus
 
 
 class AssemblyFactory(Factory):

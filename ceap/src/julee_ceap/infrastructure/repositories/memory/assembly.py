@@ -16,7 +16,7 @@ from typing import Any
 
 from julee.repositories.memory.base import MemoryRepositoryMixin
 
-from julee_ceap.domain.models.assembly import Assembly
+from julee_ceap.domain.models.assembly.assembly import Assembly
 from julee_ceap.domain.repositories.assembly import AssemblyRepository
 
 logger = logging.getLogger(__name__)
