@@ -12,8 +12,10 @@ from pathlib import Path
 import pytest
 from julee.core.values.text import Name, NonEmptyText
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
+)
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig

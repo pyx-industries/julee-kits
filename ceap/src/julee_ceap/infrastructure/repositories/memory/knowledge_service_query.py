@@ -17,7 +17,7 @@ from typing import Any
 
 from julee.repositories.memory.base import MemoryRepositoryMixin
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.repositories.knowledge_service_query import (

@@ -18,7 +18,7 @@ from typing import Any
 
 from julee.repositories.memory.base import MemoryRepositoryMixin
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
 )
 from julee_ceap.domain.repositories.assembly_specification import (

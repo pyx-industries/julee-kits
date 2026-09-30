@@ -12,9 +12,11 @@ from factory.base import Factory
 from factory.declarations import LazyAttribute, LazyFunction
 from julee.core.values.text import Name, NonEmptyText
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
+)
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.values.schema import JsonSchema

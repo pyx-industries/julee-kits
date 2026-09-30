@@ -30,7 +30,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from julee_ceap.domain.models.assembly_specification import (
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
 )
