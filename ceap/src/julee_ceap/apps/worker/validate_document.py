@@ -24,7 +24,7 @@ from julee_ceap.infrastructure.repositories.temporal.proxies import (
 from julee_ceap.infrastructure.services.temporal.proxies import (
     WorkflowKnowledgeServiceProxy,
 )
-from julee_ceap.usecases import ValidateDocumentUseCase
+from julee_ceap.usecases.validate_document import ValidateDocumentUseCase
 
 logger = logging.getLogger(__name__)
 

@@ -32,7 +32,7 @@ from julee_ceap.infrastructure.repositories.temporal.proxies import (
 from julee_ceap.infrastructure.services.temporal.proxies import (
     WorkflowKnowledgeServiceProxy,
 )
-from julee_ceap.usecases import ExtractAssembleDataUseCase
+from julee_ceap.usecases.extract_assemble_data import ExtractAssembleDataUseCase
 
 logger = logging.getLogger(__name__)
 
