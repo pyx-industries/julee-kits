@@ -29,7 +29,7 @@ from typing import Protocol, runtime_checkable
 
 from julee.core.repositories.base import BaseRepository
 
-from julee_ceap.domain.models import Assembly
+from julee_ceap.domain.models.assembly.assembly import Assembly
 
 
 @runtime_checkable

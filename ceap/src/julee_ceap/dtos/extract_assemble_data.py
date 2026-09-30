@@ -18,7 +18,7 @@ that wrote it.
 
 from pydantic import BaseModel
 
-from julee_ceap.domain.models import Assembly, AssemblyStatus
+from julee_ceap.domain.models.assembly.assembly import Assembly, AssemblyStatus
 
 
 class ExtractAssembleDataRequest(BaseModel):

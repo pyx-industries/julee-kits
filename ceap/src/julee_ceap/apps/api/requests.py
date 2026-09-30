@@ -13,14 +13,14 @@ from typing import Any
 from julee.core.values.text import Name, NonEmptyText
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
-from julee_ceap.domain.models import (
+from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     AssemblySpecification,
     AssemblySpecificationStatus,
-    KnowledgeServiceQuery,
-)
-from julee_ceap.domain.models.assembly_specification.assembly_specification import (
     refuse_a_bad_pointer,
     refuse_a_bad_schema,
+)
+from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
+    KnowledgeServiceQuery,
 )
 from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.schema import JsonSchema
