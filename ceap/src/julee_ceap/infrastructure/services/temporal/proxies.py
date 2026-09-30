@@ -13,7 +13,7 @@ and retry policies.
 
 from julee.integrations.temporal.decorators import temporal_workflow_proxy
 
-from julee_ceap.infrastructure.services.knowledge_service import KnowledgeService
+from julee_ceap.domain.services.knowledge_service import KnowledgeService
 
 # Import activity name bases from shared module
 from julee_ceap.infrastructure.services.temporal.activity_names import (

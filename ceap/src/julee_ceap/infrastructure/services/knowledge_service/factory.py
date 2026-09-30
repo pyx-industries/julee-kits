@@ -23,6 +23,30 @@ from julee_ceap.infrastructure.services.knowledge_service.anthropic.knowledge_se
 logger = logging.getLogger(__name__)
 
 
+def ensure_knowledge_service(service: object) -> KnowledgeService:
+    """Ensure an object satisfies the KnowledgeService protocol.
+
+    This lived in the package's __init__.py beside the re-exports, and
+    was the one thing there that was not one (ADR 019).
+
+    Args:
+        service: The service implementation to validate
+
+    Returns:
+        The validated service (type checker knows it satisfies
+        KnowledgeService)
+
+    Raises:
+        TypeError: If the service doesn't satisfy the protocol
+    """
+    if not isinstance(service, KnowledgeService):
+        raise TypeError(
+            f"Service {type(service).__name__} does not satisfy "
+            f"KnowledgeService protocol"
+        )
+    return service
+
+
 class ConfigurableKnowledgeService(KnowledgeService):
     """
     KnowledgeService implementation that uses the factory pattern.
@@ -117,11 +141,6 @@ def knowledge_service_factory(
         raise ValueError(
             f"Unsupported service API: {knowledge_service_config.service_api}"
         )
-
-    # Validate that the service satisfies the protocol
-    from julee_ceap.infrastructure.services.knowledge_service import (
-        ensure_knowledge_service,
-    )
 
     validated_service = ensure_knowledge_service(service)
 
