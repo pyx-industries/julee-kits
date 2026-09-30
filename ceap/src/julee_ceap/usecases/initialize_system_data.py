@@ -16,10 +16,14 @@ reports and an adapter logs (ADR 017).
 from julee.core.witnesses.clock import ClockWitness, SystemClockWitness
 
 from julee_ceap.domain.models.document import Document, DocumentStatus
-from julee_ceap.domain.repositories import (
+from julee_ceap.domain.repositories.assembly_specification import (
     AssemblySpecificationRepository,
-    DocumentRepository,
+)
+from julee_ceap.domain.repositories.document import DocumentRepository
+from julee_ceap.domain.repositories.knowledge_service_config import (
     KnowledgeServiceConfigRepository,
+)
+from julee_ceap.domain.repositories.knowledge_service_query import (
     KnowledgeServiceQueryRepository,
 )
 from julee_ceap.domain.services.system_data import SystemDataService

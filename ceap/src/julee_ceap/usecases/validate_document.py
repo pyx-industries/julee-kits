@@ -26,13 +26,17 @@ from julee_ceap.domain.models.policy.document_policy_validation import (
     DocumentPolicyValidation,
 )
 from julee_ceap.domain.models.policy.policy import Policy
-from julee_ceap.domain.repositories import (
+from julee_ceap.domain.repositories.document import DocumentRepository
+from julee_ceap.domain.repositories.document_policy_validation import (
     DocumentPolicyValidationRepository,
-    DocumentRepository,
-    KnowledgeServiceConfigRepository,
-    KnowledgeServiceQueryRepository,
-    PolicyRepository,
 )
+from julee_ceap.domain.repositories.knowledge_service_config import (
+    KnowledgeServiceConfigRepository,
+)
+from julee_ceap.domain.repositories.knowledge_service_query import (
+    KnowledgeServiceQueryRepository,
+)
+from julee_ceap.domain.repositories.policy import PolicyRepository
 from julee_ceap.domain.services.knowledge_service import (
     KnowledgeService,
 )
