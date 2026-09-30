@@ -39,7 +39,7 @@ from julee_ceap.infrastructure.services.knowledge_service import QueryResult
 from julee_ceap.infrastructure.services.knowledge_service.memory import (
     MemoryKnowledgeService,
 )
-from julee_ceap.usecases import ValidateDocumentUseCase
+from julee_ceap.usecases.validate_document import ValidateDocumentUseCase
 
 pytestmark = pytest.mark.unit
 
