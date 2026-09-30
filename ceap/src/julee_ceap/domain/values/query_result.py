@@ -108,6 +108,15 @@ class FileRegistrationResult:
     knowledge_service_file_id: str
     """The file identifier assigned by the knowledge service."""
 
+    # FIXME: probably cruft. Both adapters fill this -- service,
+    # registered_via, filename, content_type, size_bytes, a file id --
+    # and nothing reads it but the memory adapter's own tests. The use
+    # cases read knowledge_service_file_id, which is a field. It crosses
+    # the KnowledgeService activity, so every key is written into Temporal
+    # history on every registration for no reader. The likely fix is the
+    # one QueryResult.result_data got (#116): the adapter logs what it
+    # registered (ADR 017) and the field goes. Left until a third-party
+    # solution is being refactored and can be checked for a reader.
     registration_metadata: Mapping[str, Any] = field(default_factory=dict)
     """Additional metadata from the registration process."""
 

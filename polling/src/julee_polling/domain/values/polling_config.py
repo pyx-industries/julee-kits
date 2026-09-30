@@ -93,6 +93,16 @@ class PollingResult:
 
     success: bool
     content: bytes
+    # FIXME: probably cruft. The HTTP poller fills this with status_code,
+    # response_headers, url and method, or error_type on failure, and
+    # nothing reads it but the poller's own tests: the use case reads
+    # success, content, content_hash and polled_at, and a failure has
+    # error_message. It crosses the PollerOracle activity, so the full
+    # response headers of every poll are written into Temporal history
+    # for no reader. The likely fix is to log them in the adapter (ADR 017)
+    # and drop the field; a status code becomes a named field on the day
+    # the domain acts on one. Left until a third-party solution is being
+    # refactored and can be checked for a reader.
     metadata: Mapping[str, Any] = field(default_factory=dict)
     polled_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     content_hash: str | None = None
