@@ -26,7 +26,7 @@ from julee_ceap.domain.models.assembly_specification.knowledge_service_query imp
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.document.document import Document, DocumentStatus
-from julee_ceap.domain.oracles import SchemaOracle
+from julee_ceap.domain.oracles.schema import SchemaOracle
 from julee_ceap.domain.repositories import (
     AssemblyRepository,
     AssemblySpecificationRepository,
