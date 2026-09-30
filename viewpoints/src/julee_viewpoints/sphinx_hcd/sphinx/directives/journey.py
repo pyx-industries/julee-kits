@@ -23,7 +23,7 @@ from julee.core.utils import normalize_name
 from julee.core.values.text import Slug
 
 from julee_hcd.domain.models.journey import Journey, JourneyStep
-from julee_hcd.domain.repositories import JourneyRepository
+from julee_hcd.domain.repositories.journey import JourneyRepository
 from julee_hcd.parsers.docutils_parser import (
     content_before_nested,
     extract_nested_directives,

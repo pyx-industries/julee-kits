@@ -8,13 +8,11 @@ with a unified, type-safe interface.
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from julee_hcd.domain.repositories import (
-    AcceleratorRepository,
-    ContribRepository,
-    EpicRepository,
-    JourneyRepository,
-    PersonaRepository,
-)
+from julee_hcd.domain.repositories.accelerator import AcceleratorRepository
+from julee_hcd.domain.repositories.contrib import ContribRepository
+from julee_hcd.domain.repositories.epic import EpicRepository
+from julee_hcd.domain.repositories.journey import JourneyRepository
+from julee_hcd.domain.repositories.persona import PersonaRepository
 from julee_hcd.infrastructure.repositories.memory import (
     MemoryAcceleratorRepository,
     MemoryAppRepository,

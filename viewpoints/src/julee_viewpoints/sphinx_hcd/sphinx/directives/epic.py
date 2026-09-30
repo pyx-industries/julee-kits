@@ -19,7 +19,7 @@ from julee_hcd.domain.models.persona import (
     derive_personas_from_stories,
     get_epics_for_persona,
 )
-from julee_hcd.domain.repositories import EpicRepository
+from julee_hcd.domain.repositories.epic import EpicRepository
 from julee_hcd.parsers.docutils_parser import (
     content_before_nested,
     extract_story_refs,
