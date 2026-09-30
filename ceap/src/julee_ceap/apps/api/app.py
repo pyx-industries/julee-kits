@@ -22,14 +22,6 @@ from typing import Any
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.routing import (
-    assembly_specifications_router,
-    documents_router,
-    knowledge_service_configs_router,
-    knowledge_service_queries_router,
-    system_router,
-    workflows_router,
-)
 from fastapi_pagination import add_pagination
 from fastapi_pagination.utils import disable_installed_extensions_check
 
@@ -37,6 +29,18 @@ from julee_ceap.apps.api.dependencies import (
     get_knowledge_service_config_repository,
     get_startup_dependencies,
 )
+from julee_ceap.apps.api.routers.assembly_specifications import (
+    router as assembly_specifications_router,
+)
+from julee_ceap.apps.api.routers.documents import router as documents_router
+from julee_ceap.apps.api.routers.knowledge_service_configs import (
+    router as knowledge_service_configs_router,
+)
+from julee_ceap.apps.api.routers.knowledge_service_queries import (
+    router as knowledge_service_queries_router,
+)
+from julee_ceap.apps.api.routers.system import router as system_router
+from julee_ceap.apps.api.routers.workflows import router as workflows_router
 
 # Disable pagination extensions check for cleaner startup
 disable_installed_extensions_check()
