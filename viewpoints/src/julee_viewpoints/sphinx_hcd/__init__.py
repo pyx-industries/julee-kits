@@ -66,14 +66,6 @@ def setup(app):
         DefineAppDirective,
         DefineAppPlaceholder,
     )
-    from julee_viewpoints.sphinx_hcd.sphinx.directives.base import (
-        GherkinAppStoriesDirective,
-        GherkinStoriesDirective,
-        GherkinStoriesForAppDirective,
-        GherkinStoriesForPersonaDirective,
-        GherkinStoriesIndexDirective,
-        GherkinStoryDirective,
-    )
     from julee_viewpoints.sphinx_hcd.sphinx.directives.contrib import (
         ContribIndexDirective,
         ContribIndexPlaceholder,
@@ -115,6 +107,12 @@ def setup(app):
         PersonaIndexPlaceholder,
     )
     from julee_viewpoints.sphinx_hcd.sphinx.directives.story import (
+        GherkinAppStoriesDirective,
+        GherkinStoriesDirective,
+        GherkinStoriesForAppDirective,
+        GherkinStoriesForPersonaDirective,
+        GherkinStoriesIndexDirective,
+        GherkinStoryDirective,
         StoriesDirective,
         StoryAppDirective,
         StoryIndexDirective,
