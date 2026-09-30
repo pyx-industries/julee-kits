@@ -8,11 +8,8 @@ import logging
 
 from julee.core.parsers.ast import scan_bounded_contexts
 
-from julee_hcd.parsers import (
-    scan_app_manifests,
-    scan_feature_directory,
-    scan_integration_manifests,
-)
+from julee_hcd.parsers.gherkin import scan_feature_directory
+from julee_hcd.parsers.yaml import scan_app_manifests, scan_integration_manifests
 
 from ..config import get_config
 from .context import HCDContext, set_hcd_context
