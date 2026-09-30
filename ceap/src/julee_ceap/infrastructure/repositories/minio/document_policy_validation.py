@@ -17,7 +17,9 @@ import logging
 
 from julee.integrations.minio.client import MinioClient, MinioRepositoryMixin
 
-from julee_ceap.domain.models.policy import DocumentPolicyValidation
+from julee_ceap.domain.models.policy.document_policy_validation import (
+    DocumentPolicyValidation,
+)
 from julee_ceap.domain.repositories.document_policy_validation import (
     DocumentPolicyValidationRepository,
 )

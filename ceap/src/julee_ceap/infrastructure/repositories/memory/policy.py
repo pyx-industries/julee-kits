@@ -16,7 +16,7 @@ from typing import Any
 
 from julee.repositories.memory.base import MemoryRepositoryMixin
 
-from julee_ceap.domain.models.policy import Policy
+from julee_ceap.domain.models.policy.policy import Policy
 from julee_ceap.domain.repositories.policy import PolicyRepository
 
 logger = logging.getLogger(__name__)

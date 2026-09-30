@@ -20,12 +20,11 @@ from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config 
     KnowledgeServiceConfig,
     ServiceApi,
 )
-from julee_ceap.domain.models.policy import (
+from julee_ceap.domain.models.policy.document_policy_validation import (
     DocumentPolicyValidation,
     DocumentPolicyValidationStatus,
-    Policy,
-    PolicyStatus,
 )
+from julee_ceap.domain.models.policy.policy import Policy, PolicyStatus
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.query_metadata import QueryMetadata

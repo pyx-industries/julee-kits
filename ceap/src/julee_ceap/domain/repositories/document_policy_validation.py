@@ -31,7 +31,9 @@ from typing import Protocol, runtime_checkable
 
 from julee.core.repositories.base import BaseRepository
 
-from julee_ceap.domain.models.policy import DocumentPolicyValidation
+from julee_ceap.domain.models.policy.document_policy_validation import (
+    DocumentPolicyValidation,
+)
 
 
 @runtime_checkable

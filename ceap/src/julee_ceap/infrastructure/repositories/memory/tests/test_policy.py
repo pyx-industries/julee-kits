@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 import pytest
 from julee.core.values.text import Name, NonEmptyText
 
-from julee_ceap.domain.models.policy import Policy, PolicyStatus
+from julee_ceap.domain.models.policy.policy import Policy, PolicyStatus
 from julee_ceap.infrastructure.repositories.memory.policy import (
     MemoryPolicyRepository,
 )
