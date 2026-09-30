@@ -18,7 +18,7 @@ import pytest
 from julee.core.values.text import NonEmptyText
 from pydantic import BaseModel
 
-from julee_ceap.domain.models.assembly import Assembly, AssemblyStatus
+from julee_ceap.domain.models.assembly.assembly import Assembly, AssemblyStatus
 from julee_ceap.domain.models.policy.document_policy_validation import (
     DocumentPolicyValidation,
     DocumentPolicyValidationStatus,

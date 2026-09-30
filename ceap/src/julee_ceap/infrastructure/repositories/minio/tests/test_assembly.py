@@ -13,7 +13,7 @@ import pytest
 from julee.core.values.text import NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
-from julee_ceap.domain.models.assembly import Assembly, AssemblyStatus
+from julee_ceap.domain.models.assembly.assembly import Assembly, AssemblyStatus
 from julee_ceap.infrastructure.repositories.minio.assembly import (
     MinioAssemblyRepository,
 )
