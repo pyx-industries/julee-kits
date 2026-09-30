@@ -15,7 +15,7 @@ entity.
 import logging
 from typing import Generic, TypeVar
 
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 
 from julee_hcd.domain.models.base import Authored
 

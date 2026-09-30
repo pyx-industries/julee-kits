@@ -3,7 +3,7 @@
 import logging
 
 from julee.core.entities.bounded_context_info import BoundedContextInfo
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 
 from julee_hcd.domain.repositories.code_info import CodeInfoRepository
 

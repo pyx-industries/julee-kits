@@ -2,7 +2,7 @@
 
 import logging
 
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 
 from julee_c4.domain.models.container import Container, ContainerType
 from julee_c4.domain.repositories.container import ContainerRepository

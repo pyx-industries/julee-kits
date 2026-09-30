@@ -3,7 +3,7 @@
 import logging
 from pathlib import Path
 
-from julee.repositories.file import FileRepositoryMixin
+from julee.repositories.file.base import FileRepositoryMixin
 
 from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
 from julee_c4.domain.repositories.deployment_node import DeploymentNodeRepository

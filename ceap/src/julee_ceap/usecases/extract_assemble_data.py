@@ -11,10 +11,11 @@ from dataclasses import replace
 from typing import Any
 
 from julee.core.usecases.decorators import try_use_case_step
-from julee.core.validation import ensure_repository_protocol, validate_parameter_types
+from julee.core.validation.repository import ensure_repository_protocol
+from julee.core.validation.type_guards import validate_parameter_types
 from julee.core.values.text import NonEmptyText
-from julee.core.witnesses import ClockWitness, ExecutionWitness, SystemClockWitness
-from julee.core.witnesses.execution import DefaultExecutionWitness
+from julee.core.witnesses.clock import ClockWitness, SystemClockWitness
+from julee.core.witnesses.execution import DefaultExecutionWitness, ExecutionWitness
 
 from julee_ceap.domain.calculators.schema import SchemaCalculator
 from julee_ceap.domain.models import (

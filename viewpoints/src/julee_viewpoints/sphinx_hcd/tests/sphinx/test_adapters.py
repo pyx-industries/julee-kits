@@ -1,7 +1,7 @@
 """Tests for SyncRepositoryAdapter."""
 
 import pytest
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 from pydantic import BaseModel
 
 from julee_viewpoints.sphinx_hcd.sphinx.adapters import SyncRepositoryAdapter

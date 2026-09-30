@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from julee.core.utils import normalize_name
-from julee.repositories.file import FileRepositoryMixin
+from julee.repositories.file.base import FileRepositoryMixin
 
 from julee_hcd.domain.models.integration import Direction, Integration
 from julee_hcd.domain.repositories.integration import IntegrationRepository

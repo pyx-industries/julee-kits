@@ -3,7 +3,7 @@
 import logging
 from pathlib import Path
 
-from julee.repositories.file import FileRepositoryMixin
+from julee.repositories.file.base import FileRepositoryMixin
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.repositories.relationship import RelationshipRepository
