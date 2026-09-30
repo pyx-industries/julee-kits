@@ -16,14 +16,14 @@ from docutils.parsers.rst import directives
 from julee.core.entities.accelerator import Accelerator
 from julee.core.values.accelerator import IntegrationReference
 
-from julee_hcd.domain.repositories import AcceleratorRepository
-from julee_hcd.usecases import (
+from julee_hcd.domain.models.accelerator import (
     get_apps_for_accelerator,
     get_code_info_for_accelerator,
     get_fed_by_accelerators,
     get_publish_integrations,
     get_source_integrations,
 )
+from julee_hcd.domain.repositories import AcceleratorRepository
 
 from ...utils import (
     parse_integration_options,

@@ -1,6 +1,9 @@
-"""Tests for resolve_accelerator_references use case."""
+"""What a accelerator is connected to, as the domain works it out.
 
-import pytest
+These tested functions that lived beside a use case, since removed: it
+reached no port, did no I/O, and nothing but its own test called it.
+"""
+
 from julee.core.entities.accelerator import Accelerator
 from julee.core.entities.bounded_context_info import (
     BoundedContextInfo,
@@ -9,13 +12,7 @@ from julee.core.entities.bounded_context_info import (
 from julee.core.values.accelerator import IntegrationReference
 from julee.core.values.text import Name, NonEmptyText, Slug
 
-from julee_hcd.domain.models.app import App, AppType
-from julee_hcd.domain.models.integration import Direction, Integration
-from julee_hcd.domain.models.journey import Journey, JourneyStep
-from julee_hcd.domain.models.story import Story
-from julee_hcd.usecases.resolve_accelerator_references import (
-    ResolveAcceleratorReferencesRequest,
-    ResolveAcceleratorReferencesUseCase,
+from julee_hcd.domain.models.accelerator import (
     get_apps_for_accelerator,
     get_code_info_for_accelerator,
     get_dependent_accelerators,
@@ -25,6 +22,10 @@ from julee_hcd.usecases.resolve_accelerator_references import (
     get_source_integrations,
     get_stories_for_accelerator,
 )
+from julee_hcd.domain.models.app import App, AppType
+from julee_hcd.domain.models.integration import Direction, Integration
+from julee_hcd.domain.models.journey import Journey, JourneyStep
+from julee_hcd.domain.models.story import Story
 
 
 def create_accelerator(
@@ -461,50 +462,3 @@ class TestGetCodeInfoForAccelerator:
         result = get_code_info_for_accelerator(accelerator, code_infos)
 
         assert result is None
-
-
-class TestResolveAcceleratorReferencesUseCase:
-    """Test the use case that resolves everything an accelerator connects to."""
-
-    @pytest.mark.asyncio
-    async def test_cross_references(self) -> None:
-        """Every relationship an accelerator has comes back together."""
-        accelerator = create_accelerator(
-            "vocab-builder",
-            sources_from=["kafka"],
-            publishes_to=["elasticsearch"],
-        )
-        accelerators = [
-            accelerator,
-            create_accelerator("dependent", depends_on=["vocab-builder"]),
-            create_accelerator("feeder", feeds_into=["vocab-builder"]),
-        ]
-        apps = [create_app("vocab-app", accelerators=["vocab-builder"])]
-        stories = [create_story("Upload Document", "vocab-app")]
-        journeys = [create_journey("build-vocab", ["Upload Document"])]
-        integrations = [
-            create_integration("kafka"),
-            create_integration("elasticsearch"),
-        ]
-        code_infos = [create_code_info("vocab-builder")]
-
-        response = await ResolveAcceleratorReferencesUseCase().execute(
-            ResolveAcceleratorReferencesRequest(
-                accelerator=accelerator,
-                accelerators=tuple(accelerators),
-                apps=tuple(apps),
-                stories=tuple(stories),
-                journeys=tuple(journeys),
-                integrations=tuple(integrations),
-                code_infos=tuple(code_infos),
-            )
-        )
-
-        assert len(response.apps) == 1
-        assert len(response.stories) == 1
-        assert len(response.journeys) == 1
-        assert len(response.source_integrations) == 1
-        assert len(response.publish_integrations) == 1
-        assert len(response.dependents) == 1
-        assert len(response.fed_by) == 1
-        assert response.code_info is not None

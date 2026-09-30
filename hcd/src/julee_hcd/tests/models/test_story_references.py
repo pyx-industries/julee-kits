@@ -1,14 +1,15 @@
-"""Tests for resolve_story_references use case."""
+"""What a story is connected to, as the domain works it out.
 
-import pytest
+These tested functions that lived beside a use case, since removed: it
+reached no port, did no I/O, and nothing but its own test called it.
+"""
+
 from julee.core.values.text import Name, NonEmptyText, Slug
 
 from julee_hcd.domain.models.epic import Epic
 from julee_hcd.domain.models.journey import Journey, JourneyStep
-from julee_hcd.domain.models.story import Story
-from julee_hcd.usecases.resolve_story_references import (
-    ResolveStoryReferencesRequest,
-    ResolveStoryReferencesUseCase,
+from julee_hcd.domain.models.story import (
+    Story,
     get_epics_for_story,
     get_journeys_for_story,
     get_related_stories,
@@ -205,37 +206,3 @@ class TestGetRelatedStories:
 
         titles = [s.feature_title for s in result]
         assert titles == ["Alpha Story", "Zebra Story"]
-
-
-class TestResolveStoryReferencesUseCase:
-    """Test the use case that resolves every reference to a story."""
-
-    @pytest.mark.asyncio
-    async def test_cross_references(self) -> None:
-        """A story's epics, journeys and related stories come back together."""
-        stories = [
-            create_story("Upload Document"),
-            create_story("Review Vocabulary"),
-        ]
-        epics = [
-            create_epic(
-                "vocabulary-management", ["Upload Document", "Review Vocabulary"]
-            ),
-        ]
-        journeys = [
-            create_journey("build-vocabulary", ["Upload Document"]),
-        ]
-
-        response = await ResolveStoryReferencesUseCase().execute(
-            ResolveStoryReferencesRequest(
-                story=stories[0],
-                stories=tuple(stories),
-                epics=tuple(epics),
-                journeys=tuple(journeys),
-            )
-        )
-
-        assert len(response.epics) == 1
-        assert len(response.journeys) == 1
-        assert len(response.related_stories) == 1
-        assert response.related_stories[0].feature_title == "Review Vocabulary"
