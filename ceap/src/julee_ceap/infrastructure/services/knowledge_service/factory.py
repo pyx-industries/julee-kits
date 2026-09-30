@@ -16,8 +16,9 @@ from julee_ceap.domain.services.knowledge_service import KnowledgeService
 from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.query_result import FileRegistrationResult, QueryResult
 from julee_ceap.domain.values.schema import JsonSchema
-
-from .anthropic import AnthropicKnowledgeService
+from julee_ceap.infrastructure.services.knowledge_service.anthropic.knowledge_service import (
+    AnthropicKnowledgeService,
+)
 
 logger = logging.getLogger(__name__)
 
