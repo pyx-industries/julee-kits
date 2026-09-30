@@ -19,7 +19,7 @@ import pytest
 from julee.core.values.text import NonEmptyText
 from pydantic import TypeAdapter
 
-from julee_ceap.domain.models.policy import (
+from julee_ceap.domain.models.policy.document_policy_validation import (
     DocumentPolicyValidation,
     DocumentPolicyValidationStatus,
 )

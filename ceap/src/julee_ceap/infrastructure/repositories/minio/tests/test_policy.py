@@ -13,7 +13,7 @@ import pytest
 from julee.core.values.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
-from julee_ceap.domain.models.policy import Policy, PolicyStatus
+from julee_ceap.domain.models.policy.policy import Policy, PolicyStatus
 from julee_ceap.infrastructure.repositories.minio.policy import (
     MinioPolicyRepository,
 )

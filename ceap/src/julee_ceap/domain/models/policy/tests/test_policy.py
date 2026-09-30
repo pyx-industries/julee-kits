@@ -11,10 +11,7 @@ import pytest
 from julee.core.values.text import Name, NonEmptyText
 from pydantic import TypeAdapter
 
-from julee_ceap.domain.models.policy import (
-    Policy,
-    PolicyStatus,
-)
+from julee_ceap.domain.models.policy.policy import Policy, PolicyStatus
 
 pytestmark = pytest.mark.unit
 

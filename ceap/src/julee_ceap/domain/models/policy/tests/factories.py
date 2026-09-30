@@ -12,7 +12,7 @@ from factory.base import Factory
 from factory.declarations import LazyFunction
 from julee.core.values.text import NonEmptyText
 
-from julee_ceap.domain.models.policy import (
+from julee_ceap.domain.models.policy.document_policy_validation import (
     DocumentPolicyValidation,
     DocumentPolicyValidationStatus,
 )
