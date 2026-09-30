@@ -32,7 +32,7 @@ from julee_ceap.infrastructure.repositories.memory.knowledge_service_config impo
 from julee_ceap.infrastructure.repositories.memory.knowledge_service_query import (
     MemoryKnowledgeServiceQueryRepository,
 )
-from julee_ceap.infrastructure.services.system_data import (
+from julee_ceap.infrastructure.services.system_data.fixtures import (
     FixtureSystemDataService,
 )
 from julee_ceap.usecases.initialize_system_data import (
