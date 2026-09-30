@@ -37,7 +37,7 @@ from julee_ceap.domain.models.assembly_specification.assembly_specification impo
 from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
-from julee_ceap.domain.models.document import Document, DocumentStatus
+from julee_ceap.domain.models.document.document import Document, DocumentStatus
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,

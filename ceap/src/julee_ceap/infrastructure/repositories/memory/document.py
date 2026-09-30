@@ -16,7 +16,7 @@ from typing import Any
 
 from julee.repositories.memory.base import MemoryRepositoryMixin
 
-from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.document import Document
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import (
     ContentMultihash,

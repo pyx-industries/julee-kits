@@ -10,7 +10,7 @@ import hashlib
 import pytest
 from julee.core.values.text import NonEmptyText
 
-from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.document import Document
 from julee_ceap.domain.values.multihash import (
     ContentMultihash,
     content_multihash,

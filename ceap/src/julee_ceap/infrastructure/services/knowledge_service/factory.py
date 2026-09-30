@@ -7,7 +7,7 @@ KnowledgeService instances based on the service API configuration.
 
 import logging
 
-from julee_ceap.domain.models.document import Document
+from julee_ceap.domain.models.document.document import Document
 from julee_ceap.domain.models.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
