@@ -18,7 +18,7 @@ from julee_ceap.apps.api.app import app
 from julee_ceap.apps.api.dependencies import (
     get_knowledge_service_config_repository,
 )
-from julee_ceap.domain.models.knowledge_service_config import (
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )

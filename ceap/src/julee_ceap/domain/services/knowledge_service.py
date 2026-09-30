@@ -17,7 +17,9 @@ from typing import (
 )
 
 from julee_ceap.domain.models.document.document import Document
-from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
+    KnowledgeServiceConfig,
+)
 from julee_ceap.domain.values.query_metadata import QueryMetadata
 from julee_ceap.domain.values.query_result import (
     FileRegistrationResult,

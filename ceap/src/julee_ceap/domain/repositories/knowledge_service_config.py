@@ -32,7 +32,7 @@ from typing import Protocol, runtime_checkable
 
 from julee.core.repositories.base import BaseRepository
 
-from julee_ceap.domain.models.knowledge_service_config import (
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
     KnowledgeServiceConfig,
 )
 

@@ -13,7 +13,7 @@ import pytest
 from julee.core.values.text import Name, NonEmptyText
 from julee.integrations.minio.testing import FakeMinioClient
 
-from julee_ceap.domain.models.knowledge_service_config import (
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
     KnowledgeServiceConfig,
     ServiceApi,
 )
