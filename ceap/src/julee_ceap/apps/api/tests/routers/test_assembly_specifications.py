@@ -23,7 +23,7 @@ from julee_ceap.domain.models.assembly_specification.assembly_specification impo
     AssemblySpecificationStatus,
 )
 from julee_ceap.domain.values.schema import JsonSchema
-from julee_ceap.infrastructure.repositories.memory import (
+from julee_ceap.infrastructure.repositories.memory.assembly_specification import (
     MemoryAssemblySpecificationRepository,
 )
 

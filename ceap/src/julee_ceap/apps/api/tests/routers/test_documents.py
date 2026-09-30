@@ -22,7 +22,7 @@ from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.multihash import (
     content_multihash as multihash_of,
 )
-from julee_ceap.infrastructure.repositories.memory import (
+from julee_ceap.infrastructure.repositories.memory.document import (
     MemoryDocumentRepository,
 )
 

@@ -22,7 +22,7 @@ from julee_ceap.domain.models.assembly_specification.knowledge_service_query imp
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.values.query_metadata import QueryMetadata
-from julee_ceap.infrastructure.repositories.memory import (
+from julee_ceap.infrastructure.repositories.memory.knowledge_service_query import (
     MemoryKnowledgeServiceQueryRepository,
 )
 
