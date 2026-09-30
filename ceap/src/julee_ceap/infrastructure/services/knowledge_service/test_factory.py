@@ -19,13 +19,11 @@ from julee_ceap.domain.values.multihash import ContentMultihash
 from julee_ceap.domain.values.multihash import (
     content_multihash as multihash_of,
 )
-from julee_ceap.infrastructure.services.knowledge_service import (
-    ensure_knowledge_service,
-)
 from julee_ceap.infrastructure.services.knowledge_service.anthropic.knowledge_service import (
     AnthropicKnowledgeService,
 )
 from julee_ceap.infrastructure.services.knowledge_service.factory import (
+    ensure_knowledge_service,
     knowledge_service_factory,
 )
 
