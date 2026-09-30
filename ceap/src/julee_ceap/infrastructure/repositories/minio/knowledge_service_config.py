@@ -17,7 +17,7 @@ import logging
 
 from julee.integrations.minio.client import MinioClient, MinioRepositoryMixin
 
-from julee_ceap.domain.models.knowledge_service_config import (
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
     KnowledgeServiceConfig,
 )
 from julee_ceap.domain.repositories.knowledge_service_config import (

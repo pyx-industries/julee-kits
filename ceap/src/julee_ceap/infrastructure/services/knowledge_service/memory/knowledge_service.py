@@ -13,7 +13,7 @@ from collections import deque
 from datetime import UTC, datetime
 
 from julee_ceap.domain.models.document.document import Document
-from julee_ceap.domain.models.knowledge_service_config import (
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
     KnowledgeServiceConfig,
 )
 from julee_ceap.domain.services.knowledge_service import (

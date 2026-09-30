@@ -22,9 +22,9 @@ from julee_ceap.domain.models.assembly_specification.knowledge_service_query imp
     KnowledgeServiceQuery,
 )
 from julee_ceap.domain.models.document.document import Document, DocumentStatus
-from julee_ceap.domain.models.knowledge_service_config import ServiceApi
 from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
     KnowledgeServiceConfig,
+    ServiceApi,
 )
 from julee_ceap.domain.repositories.document import DocumentRepository
 from julee_ceap.domain.values.multihash import ContentMultihash

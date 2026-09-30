@@ -18,7 +18,9 @@ from julee_ceap.domain.models.assembly_specification.assembly_specification impo
 from julee_ceap.domain.models.assembly_specification.knowledge_service_query import (
     KnowledgeServiceQuery,
 )
-from julee_ceap.domain.models.knowledge_service_config import KnowledgeServiceConfig
+from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config import (
+    KnowledgeServiceConfig,
+)
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.domain.values.seed import DocumentSeed
 from julee_ceap.infrastructure.services.system_data import FixtureSystemDataService
