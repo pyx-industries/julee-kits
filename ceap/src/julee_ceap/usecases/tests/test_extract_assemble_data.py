@@ -55,7 +55,7 @@ from julee_ceap.infrastructure.repositories.memory.knowledge_service_query impor
 from julee_ceap.infrastructure.repositories.memory.schema_oracle import (
     MemorySchemaOracle,
 )
-from julee_ceap.infrastructure.services.knowledge_service.memory import (
+from julee_ceap.infrastructure.services.knowledge_service.memory.knowledge_service import (
     MemoryKnowledgeService,
 )
 from julee_ceap.usecases.extract_assemble_data import ExtractAssembleDataUseCase
