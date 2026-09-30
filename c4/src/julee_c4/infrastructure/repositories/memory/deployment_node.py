@@ -2,7 +2,7 @@
 
 import logging
 
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 
 from julee_c4.domain.models.deployment_node import DeploymentNode, NodeType
 from julee_c4.domain.repositories.deployment_node import DeploymentNodeRepository

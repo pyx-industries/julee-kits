@@ -2,7 +2,7 @@
 
 import logging
 
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 
 from julee_c4.domain.models.relationship import ElementType, Relationship
 from julee_c4.domain.repositories.relationship import RelationshipRepository

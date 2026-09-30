@@ -3,7 +3,7 @@
 import logging
 
 from julee.core.utils import normalize_name
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 
 from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository

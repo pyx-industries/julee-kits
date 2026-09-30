@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from julee.core.utils import normalize_name
-from julee.repositories.file import FileRepositoryMixin
+from julee.repositories.file.base import FileRepositoryMixin
 
 from julee_c4.domain.models.software_system import SoftwareSystem, SystemType
 from julee_c4.domain.repositories.software_system import SoftwareSystemRepository

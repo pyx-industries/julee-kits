@@ -3,7 +3,7 @@
 import logging
 
 from julee.core.entities.accelerator import Accelerator
-from julee.repositories.memory import MemoryRepositoryMixin
+from julee.repositories.memory.base import MemoryRepositoryMixin
 
 from julee_hcd.domain.repositories.accelerator import AcceleratorRepository
 
