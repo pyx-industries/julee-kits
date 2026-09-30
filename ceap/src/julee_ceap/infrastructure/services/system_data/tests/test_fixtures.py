@@ -23,7 +23,9 @@ from julee_ceap.domain.models.knowledge_service_config.knowledge_service_config 
 )
 from julee_ceap.domain.values.schema import JsonSchema
 from julee_ceap.domain.values.seed import DocumentSeed
-from julee_ceap.infrastructure.services.system_data import FixtureSystemDataService
+from julee_ceap.infrastructure.services.system_data.fixtures import (
+    FixtureSystemDataService,
+)
 
 pytestmark = pytest.mark.unit
 

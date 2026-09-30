@@ -49,7 +49,7 @@ from julee_ceap.infrastructure.repositories.minio.knowledge_service_config impor
 from julee_ceap.infrastructure.repositories.minio.knowledge_service_query import (
     MinioKnowledgeServiceQueryRepository,
 )
-from julee_ceap.infrastructure.services.system_data import (
+from julee_ceap.infrastructure.services.system_data.fixtures import (
     FixtureSystemDataService,
 )
 
