@@ -45,11 +45,6 @@ from .resolve_accelerator_references import (
     get_source_integrations,
     get_stories_for_accelerator,
 )
-from .resolve_app_references import (
-    ResolveAppReferencesRequest,
-    ResolveAppReferencesResponse,
-    ResolveAppReferencesUseCase,
-)
 from .resolve_story_references import (
     ResolveStoryReferencesRequest,
     ResolveStoryReferencesResponse,
@@ -91,9 +86,6 @@ __all__ = [
     "ResolveAcceleratorReferencesRequest",
     "ResolveAcceleratorReferencesResponse",
     "ResolveAcceleratorReferencesUseCase",
-    "ResolveAppReferencesRequest",
-    "ResolveAppReferencesResponse",
-    "ResolveAppReferencesUseCase",
     "ResolveStoryReferencesRequest",
     "ResolveStoryReferencesResponse",
     "ResolveStoryReferencesUseCase",
