@@ -42,7 +42,7 @@ from julee_ceap.infrastructure.repositories.memory.knowledge_service_query impor
     MemoryKnowledgeServiceQueryRepository,
 )
 from julee_ceap.infrastructure.repositories.memory.policy import MemoryPolicyRepository
-from julee_ceap.infrastructure.services.knowledge_service.memory import (
+from julee_ceap.infrastructure.services.knowledge_service.memory.knowledge_service import (
     MemoryKnowledgeService,
 )
 from julee_ceap.usecases.validate_document import ValidateDocumentUseCase
