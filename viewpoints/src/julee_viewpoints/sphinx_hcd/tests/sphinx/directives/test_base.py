@@ -147,10 +147,16 @@ class TestEventHandlerImports:
 
     def test_event_handlers_import(self) -> None:
         """Test event handler imports."""
-        from julee_viewpoints.sphinx_hcd.sphinx.event_handlers import (
+        from julee_viewpoints.sphinx_hcd.sphinx.event_handlers.builder_inited import (
             on_builder_inited,
+        )
+        from julee_viewpoints.sphinx_hcd.sphinx.event_handlers.doctree_read import (
             on_doctree_read,
+        )
+        from julee_viewpoints.sphinx_hcd.sphinx.event_handlers.doctree_resolved import (
             on_doctree_resolved,
+        )
+        from julee_viewpoints.sphinx_hcd.sphinx.event_handlers.env_purge_doc import (
             on_env_purge_doc,
         )
 
