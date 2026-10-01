@@ -144,7 +144,11 @@ class UpdateDynamicStepRequest(BaseModel):
         — so the message answers it. A use case asks for the changes
         and never learns how they were worked out.
         """
-        return self.model_dump(exclude={"slug"}, exclude_unset=True)
+        return {
+            name: getattr(self, name)
+            for name in self.model_fields_set
+            if name != "slug"
+        }
 
 
 class UpdateDynamicStepResponse(BaseModel):

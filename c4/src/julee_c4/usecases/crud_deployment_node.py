@@ -86,7 +86,9 @@ class CreateDeploymentNodeUseCase(
             description=request.description,
             technology=request.technology,
             instances=request.instances,
-            parent_slug=request.parent_slug,
+            parent_slug=None
+            if request.parent_slug is None
+            else Slug(request.parent_slug),
             tags=request.tags,
             docname=request.docname,
         )
@@ -111,6 +113,10 @@ class UpdateDeploymentNodeUseCase(
             changes["name"] = Name(changes["name"])
         if changes.get("node_type") is not None:
             changes["node_type"] = NodeType(changes["node_type"])
+        if changes.get("parent_slug") is not None:
+            changes["parent_slug"] = (
+                None if changes["parent_slug"] is None else Slug(changes["parent_slug"])
+            )
         entity = await self._update_by_id(request.slug, changes)
         return UpdateDeploymentNodeResponse.of(entity)
 

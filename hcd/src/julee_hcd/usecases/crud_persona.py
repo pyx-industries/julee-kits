@@ -84,10 +84,10 @@ class CreatePersonaUseCase(CreateUseCase[Persona, PersonaRepository]):
             frustrations=request.frustrations,
             jobs_to_be_done=request.jobs_to_be_done,
             context=request.context,
-            app_slugs=request.app_slugs,
-            epic_slugs=request.epic_slugs,
-            accelerator_slugs=request.accelerator_slugs,
-            contrib_slugs=request.contrib_slugs,
+            app_slugs=tuple(Slug(item0) for item0 in request.app_slugs),
+            epic_slugs=tuple(Slug(item0) for item0 in request.epic_slugs),
+            accelerator_slugs=tuple(Slug(item0) for item0 in request.accelerator_slugs),
+            contrib_slugs=tuple(Slug(item0) for item0 in request.contrib_slugs),
             solution_slug=request.solution_slug,
             docname=request.docname,
             page_title=request.page_title,
@@ -107,6 +107,20 @@ class UpdatePersonaUseCase(UpdateUseCase[Persona, PersonaRepository]):
     async def execute(self, request: UpdatePersonaRequest) -> UpdatePersonaResponse:
         """Execute the update persona use case."""
         changes = request.changes()
+        if changes.get("accelerator_slugs") is not None:
+            changes["accelerator_slugs"] = tuple(
+                Slug(item0) for item0 in changes["accelerator_slugs"]
+            )
+        if changes.get("app_slugs") is not None:
+            changes["app_slugs"] = tuple(Slug(item0) for item0 in changes["app_slugs"])
+        if changes.get("contrib_slugs") is not None:
+            changes["contrib_slugs"] = tuple(
+                Slug(item0) for item0 in changes["contrib_slugs"]
+            )
+        if changes.get("epic_slugs") is not None:
+            changes["epic_slugs"] = tuple(
+                Slug(item0) for item0 in changes["epic_slugs"]
+            )
         if changes.get("name") is not None:
             changes["name"] = Name(changes["name"])
         entity = await self._update_by_id(request.slug, changes)
