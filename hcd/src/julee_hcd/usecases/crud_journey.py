@@ -76,7 +76,7 @@ class CreateJourneyUseCase(CreateUseCase[Journey, JourneyRepository]):
             intent=request.intent,
             outcome=request.outcome,
             goal=request.goal,
-            depends_on=request.depends_on,
+            depends_on=tuple(Slug(item0) for item0 in request.depends_on),
             steps=request.steps,
             preconditions=request.preconditions,
             postconditions=request.postconditions,
@@ -98,7 +98,12 @@ class UpdateJourneyUseCase(UpdateUseCase[Journey, JourneyRepository]):
 
     async def execute(self, request: UpdateJourneyRequest) -> UpdateJourneyResponse:
         """Execute the update journey use case."""
-        entity = await self._update_by_id(request.slug, request.changes())
+        changes = request.changes()
+        if changes.get("depends_on") is not None:
+            changes["depends_on"] = tuple(
+                Slug(item0) for item0 in changes["depends_on"]
+            )
+        entity = await self._update_by_id(request.slug, changes)
         return UpdateJourneyResponse.of(entity)
 
 
