@@ -9,11 +9,10 @@ package = false
 
 # For the duration of the deep-clean refactor only.
 #
-# The kits' own pin is julee>=0.12,<0.13, and 0.12.0 is what PyPI has.
-# That release predates the move of RepositoryOf/BaseRepository/Deletable
+# The kits require julee>=0.13,<0.14. Releases predating the move of
+# RepositoryOf/BaseRepository/Deletable
 # out of julee.repositories (an adapters package) into
-# julee.core.repositories, so a kit's domain/repositories/ cannot import
-# them from the released version at all.
+# julee.core.repositories cannot satisfy the kits' domain imports.
 #
 # Pointing at julee's deep-clean makes CI test the pair that will ship
 # together, rather than one half against a release that cannot satisfy
