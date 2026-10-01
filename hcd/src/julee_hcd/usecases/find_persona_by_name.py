@@ -1,6 +1,8 @@
-"""GetPersonaUseCase with co-located request/response.
+"""Finding a persona by its name.
 
-Use case for getting a persona by name.
+The generated ``GetPersonaUseCase`` fetches a defined persona by its
+slug. This searches the defined and the derived personas together by
+name, and may find none.
 """
 
 from julee.core.utils import normalize_name
@@ -10,14 +12,14 @@ from julee_hcd.domain.repositories.epic import EpicRepository
 from julee_hcd.domain.repositories.persona import PersonaRepository
 from julee_hcd.domain.repositories.story import StoryRepository
 
-from ..dtos.get_persona import (
-    GetPersonaRequest,
-    GetPersonaResponse,
+from ..dtos.find_persona_by_name import (
+    FindPersonaByNameRequest,
+    FindPersonaByNameResponse,
 )
 
 
-class GetPersonaUseCase:
-    """Get a persona by name.
+class FindPersonaByNameUseCase:
+    """Find a persona by name.
 
     Searches both defined and derived personas, returning merged results.
     """
@@ -39,8 +41,10 @@ class GetPersonaUseCase:
         self.epic_repo = epic_repo
         self.persona_repo = persona_repo
 
-    async def execute(self, request: GetPersonaRequest) -> GetPersonaResponse:
-        """Get a persona by name (case-insensitive).
+    async def execute(
+        self, request: FindPersonaByNameRequest
+    ) -> FindPersonaByNameResponse:
+        """Find a persona by name (case-insensitive).
 
         Searches merged personas (defined + derived) and returns
         the matching persona if found.
@@ -58,6 +62,6 @@ class GetPersonaUseCase:
         normalized_search = normalize_name(request.name)
         for persona in merge_personas(defined, stories, epics):
             if persona.normalized_name == normalized_search:
-                return GetPersonaResponse(persona=persona)
+                return FindPersonaByNameResponse(persona=persona)
 
-        return GetPersonaResponse(persona=None)
+        return FindPersonaByNameResponse(persona=None)
