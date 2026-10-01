@@ -193,6 +193,10 @@ class ExtractAssembleDataUseCase:
             document_id: ID of the document to assemble
             assembly_specification_id: ID of the specification to use
 
+        Once the initial assembly is saved, ordinary processing errors mark
+        it FAILED before being re-raised. This records the failure; it does
+        not undo registrations or other completed external operations.
+
         Returns:
             New Assembly with the assembled document iteration
 
@@ -226,17 +230,17 @@ class ExtractAssembleDataUseCase:
         )
         await self.assembly_repo.save(assembly)
 
-        # Step 4: Retrieve all knowledge service queries once
-        queries = await self._retrieve_all_queries(assembly_specification)
-
-        # Step 5: Register the document with knowledge services
-        document = await self._retrieve_document(document_id)
-        document_registrations = await self._register_document_with_services(
-            document, queries
-        )
-
-        # Step 7: Perform the assembly iteration
         try:
+            # Step 4: Retrieve all knowledge service queries once
+            queries = await self._retrieve_all_queries(assembly_specification)
+
+            # Step 5: Register the document with knowledge services
+            document = await self._retrieve_document(document_id)
+            document_registrations = await self._register_document_with_services(
+                document, queries
+            )
+
+            # Step 7: Perform the assembly iteration
             assembled_document_id = await self._assemble_iteration(
                 document,
                 assembly_specification,
