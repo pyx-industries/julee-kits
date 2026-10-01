@@ -11,8 +11,9 @@ A KnowledgeServiceQuery defines a specific extraction operation that can be
 performed against a knowledge service to extract data for a particular part
 of an AssemblySpecification's JSON schema.
 
-All domain models use Pydantic BaseModel for validation, serialization,
-and type safety, following the patterns established in the sample project.
+Entities are frozen standard-library dataclasses. Domain constructors and
+value types carry the business rules; Pydantic DTOs validate and serialize
+boundary messages.
 """
 
 from dataclasses import dataclass, field

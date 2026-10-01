@@ -9,8 +9,9 @@ An AssemblySpecification defines a type of document output (like "meeting
 minutes"), includes information about its applicability and and specifies
 which extractors are needed to collect the data for that output.
 
-All domain models use Pydantic BaseModel for validation, serialization,
-and type safety, following the patterns established in the sample project.
+Entities are frozen standard-library dataclasses. Domain constructors and
+value types carry the business rules; Pydantic DTOs validate and serialize
+boundary messages.
 """
 
 from collections.abc import Mapping

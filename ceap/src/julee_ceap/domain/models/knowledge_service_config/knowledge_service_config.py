@@ -9,8 +9,9 @@ A KnowledgeService defines a service that can store documents and execute
 queries against them. It acts as an interface to external AI/ML services
 that can analyze and extract information from documents.
 
-All domain models use Pydantic BaseModel for validation, serialization,
-and type safety, following the patterns established in the sample project.
+Entities are frozen standard-library dataclasses. Domain constructors and
+value types carry the business rules; Pydantic DTOs validate and serialize
+boundary messages.
 """
 
 from dataclasses import dataclass, field

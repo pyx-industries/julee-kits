@@ -8,8 +8,9 @@ An Assembly represents a specific instance of assembling a document using
 an AssemblySpecification. It links an input document with an assembly
 specification and produces a single assembled document as output.
 
-All domain models use Pydantic BaseModel for validation, serialization,
-and type safety, following the patterns established in the sample project.
+Entities are frozen standard-library dataclasses. Domain constructors and
+value types carry the business rules; Pydantic DTOs validate and serialize
+boundary messages.
 """
 
 from dataclasses import dataclass
