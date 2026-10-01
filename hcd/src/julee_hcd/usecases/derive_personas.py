@@ -10,7 +10,7 @@ Defined personas are authoritative and get enriched with story data.
 Derived personas fill gaps when stories reference undefined personas.
 
 The derivation itself is in domain/calculators/personas.py. It was
-here, and GetPersonaUseCase imported this module to reach it.
+here, and FindPersonaByNameUseCase imported this module to reach it.
 """
 
 from julee_hcd.domain.models.persona import merge_personas
