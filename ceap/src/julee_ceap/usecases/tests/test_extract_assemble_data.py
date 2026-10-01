@@ -537,6 +537,114 @@ class TestExtractAssembleDataUseCase:
                 max_tokens=100, temperature=0.1
             )
 
+    @pytest.mark.parametrize(
+        "stage",
+        [
+            "query_lookup",
+            "document_lookup",
+            "config_lookup",
+            "content_read",
+            "registration",
+            "after_registration",
+            "query_execution",
+        ],
+    )
+    async def test_processing_error_persists_failed_and_propagates(
+        self,
+        stage: str,
+        configured_use_case: ExtractAssembleDataUseCase,
+        document_repo: MemoryDocumentRepository,
+        assembly_repo: MemoryAssemblyRepository,
+        assembly_specification_repo: MemoryAssemblySpecificationRepository,
+        knowledge_service_query_repo: MemoryKnowledgeServiceQueryRepository,
+        knowledge_service_config_repo: MemoryKnowledgeServiceConfigRepository,
+        configured_knowledge_service: MemoryKnowledgeService,
+    ) -> None:
+        """Processing failure records FAILED without compensating registration."""
+        content = b"A document"
+        document = Document(
+            document_id=NonEmptyText("doc"),
+            original_filename=NonEmptyText("document.txt"),
+            content_type=NonEmptyText("text/plain"),
+            size_bytes=len(content),
+            content_multihash=ContentMultihash(
+                await stored_name(document_repo, content)
+            ),
+        )
+        await document_repo.save(document)
+        stored_document = await document_repo.get("doc")
+        specification = AssemblySpecification(
+            assembly_specification_id=NonEmptyText("spec"),
+            name=Name("Specification"),
+            applicability=NonEmptyText("Documents"),
+            jsonschema=JsonSchema(
+                {"type": "object", "properties": {"title": {"type": "string"}}}
+            ),
+            status=AssemblySpecificationStatus.ACTIVE,
+            knowledge_service_queries={"/properties/title": NonEmptyText("query")},
+        )
+        await assembly_specification_repo.save(specification)
+        query = KnowledgeServiceQuery(
+            query_id=NonEmptyText("query"),
+            name=Name("Title"),
+            knowledge_service_id=NonEmptyText("ks-123"),
+            prompt=NonEmptyText("Extract the title from this document"),
+        )
+        await knowledge_service_query_repo.save(query)
+        config = KnowledgeServiceConfig(
+            knowledge_service_id=NonEmptyText("ks-123"),
+            name=Name("Service"),
+            description=NonEmptyText("Test service"),
+            service_api=ServiceApi.ANTHROPIC,
+        )
+        await knowledge_service_config_repo.save(config)
+
+        failure = RuntimeError(f"Injected {stage} failure")
+        register = configured_knowledge_service.register_file
+
+        async def register_then_fail(*args, **kwargs):
+            await register(*args, **kwargs)
+            raise failure
+
+        dependencies = {
+            "query_lookup": (knowledge_service_query_repo, "get_many"),
+            "document_lookup": (document_repo, "get"),
+            "config_lookup": (knowledge_service_config_repo, "get"),
+            "content_read": (document_repo, "content_of"),
+            "registration": (configured_knowledge_service, "register_file"),
+            "after_registration": (configured_knowledge_service, "register_file"),
+            "query_execution": (configured_knowledge_service, "execute_query"),
+        }
+        target, method = dependencies[stage]
+        side_effect = register_then_fail if stage == "after_registration" else failure
+        saves: list[Assembly] = []
+        save = assembly_repo.save
+
+        async def record_save(assembly: Assembly) -> None:
+            saves.append(assembly)
+            await save(assembly)
+
+        with (
+            patch.object(target, method, side_effect=side_effect),
+            patch.object(assembly_repo, "save", side_effect=record_save),
+        ):
+            with pytest.raises(RuntimeError) as raised:
+                await configured_use_case.assemble_data("doc", "spec")
+
+        assert raised.value is failure
+        assert [assembly.status for assembly in saves] == [
+            AssemblyStatus.IN_PROGRESS,
+            AssemblyStatus.FAILED,
+        ]
+        (saved,) = assembly_repo.storage_dict.values()
+        assert saved.status == AssemblyStatus.FAILED
+        assert saved.assembled_document_id is None
+        assert await document_repo.get("doc") == stored_document
+        registrations = configured_knowledge_service.get_all_registered_files()
+        assert len(registrations) == (
+            1 if stage in {"after_registration", "query_execution"} else 0
+        )
+
     @pytest.mark.asyncio
     async def test_assembly_fails_when_specification_not_found(
         self, use_case: ExtractAssembleDataUseCase
@@ -554,6 +662,7 @@ class TestExtractAssembleDataUseCase:
         self,
         use_case: ExtractAssembleDataUseCase,
         assembly_specification_repo: MemoryAssemblySpecificationRepository,
+        assembly_repo: MemoryAssemblyRepository,
     ) -> None:
         """Test that assembly fails when input document is not found."""
         # Arrange - Create assembly specification but no document
@@ -576,12 +685,17 @@ class TestExtractAssembleDataUseCase:
                 assembly_specification_id="spec-123",
             )
 
+        (saved,) = assembly_repo.storage_dict.values()
+        assert saved.status == AssemblyStatus.FAILED
+        assert saved.assembled_document_id is None
+
     @pytest.mark.asyncio
     async def test_assembly_fails_when_query_not_found(
         self,
         use_case: ExtractAssembleDataUseCase,
         document_repo: MemoryDocumentRepository,
         assembly_specification_repo: MemoryAssemblySpecificationRepository,
+        assembly_repo: MemoryAssemblyRepository,
     ) -> None:
         """Test that assembly fails when query is not found."""
         # Arrange - Create document and spec with non-existent query
@@ -626,6 +740,10 @@ class TestExtractAssembleDataUseCase:
                 document_id="doc-123",
                 assembly_specification_id="spec-123",
             )
+
+        (saved,) = assembly_repo.storage_dict.values()
+        assert saved.status == AssemblyStatus.FAILED
+        assert saved.assembled_document_id is None
 
     @pytest.mark.asyncio
     async def test_assembly_fails_with_invalid_json_schema(
