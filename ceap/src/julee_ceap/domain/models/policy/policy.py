@@ -9,8 +9,9 @@ A Policy defines validation criteria and optional transformations
 for documents. It includes validation scores that must be met and optional
 transformation queries that can be applied to improve document quality.
 
-All domain models use Pydantic BaseModel for validation, serialization,
-and type safety, following the patterns established in the sample project.
+Entities are frozen standard-library dataclasses. Domain constructors and
+value types carry the business rules; Pydantic DTOs validate and serialize
+boundary messages.
 """
 
 from dataclasses import dataclass, field

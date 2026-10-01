@@ -4,8 +4,9 @@ Document domain models for the Capture, Extract, Assemble, Publish workflow.
 This module contains the core document domain objects that represent
 documents and their metadata in the CEAP workflow system.
 
-All domain models use Pydantic BaseModel for validation, serialization,
-and type safety, following the patterns established in the sample project.
+Entities are frozen standard-library dataclasses. Domain constructors and
+value types carry the business rules; Pydantic DTOs validate and serialize
+boundary messages.
 """
 
 from collections.abc import Mapping
@@ -98,6 +99,7 @@ class Document:
     # field, which is why it waits until a third-party solution is being
     # refactored and can be checked for a reader.
     additional_metadata: Mapping[str, Any] = field(default_factory=dict)
+    """Freezing the document does not freeze this mapping or nested values."""
 
     def __post_init__(self) -> None:
         """Refuse a document with no content.
